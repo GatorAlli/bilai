@@ -1,6 +1,15 @@
 import { betterAuth } from "better-auth"
+import { drizzleAdapter } from "@better-auth/drizzle-adapter";
+import { db } from "@/db";
+import { headers } from "next/headers";
 
 export const auth = betterAuth({
+     database: drizzleAdapter(db, { 
+    provider: "pg", // or "pg" or "mysql"
+  }), 
+  pages: {
+    signIn: "/login", // Custom sign-in page
+  },
     baseURL: process.env.BETTER_AUTH_URL, 
     socialProviders: {
         google: { 
@@ -14,4 +23,8 @@ export const auth = betterAuth({
     
 
 })
+
+export const getSession = async () => auth.api.getSession({
+    headers: await headers()
+});
 
