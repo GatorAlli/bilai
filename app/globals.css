@@ -8,6 +8,14 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-cream: #f9f6ec;
+  --color-forest: #263a2e;
+  --color-leaf: #e6ebdc;
+  --color-brand: #f47e2e;
+  --color-brand-dark: #c25a1b;
+  --color-rust: #c0522a;
+  --font-heading: var(--font-bitter);
+  --font-sans: var(--font-figtree);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
