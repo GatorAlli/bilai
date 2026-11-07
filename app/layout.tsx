@@ -35,7 +35,7 @@ export default function RootLayout({
       lang="en"
       className={cn(bree.variable, albert.variable, matcha.variable, "font-sans", figtree.variable, loraHeading.variable)}
     >
-      <body className="min-h-screen font-sans antialiased">{children}</body>
+      <body className="flex min-h-screen flex-col font-sans antialiased">{children}</body>
     </html>
   );
 }
