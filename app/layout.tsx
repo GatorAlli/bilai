@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
-import { Albert_Sans, Bree_Serif } from "next/font/google";
+import { Albert_Sans, Bree_Serif, Figtree, Lora } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
+import { cn } from "@/lib/utils";
+
+const loraHeading = Lora({subsets:['latin'],variable:'--font-heading'});
+
+const figtree = Figtree({subsets:['latin'],variable:'--font-sans'});
 
 const bree = Bree_Serif({
   subsets: ["latin"],
@@ -28,7 +33,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${bree.variable} ${albert.variable} ${matcha.variable}`}
+      className={cn(bree.variable, albert.variable, matcha.variable, "font-sans", figtree.variable, loraHeading.variable)}
     >
       <body className="min-h-screen font-sans antialiased">{children}</body>
     </html>

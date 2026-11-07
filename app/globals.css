@@ -1,18 +1,59 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --color-cream: #f9f7ed;
-  --color-paper: #fffdf6;
-  --color-forest: #273729;
-  --color-leaf: #e8eddb;
-  --color-line: #d9dfcf;
-  --color-muted: #5d695c;
-  --color-brand: #fa7d1f;
-  --color-brand-dark: #ac4d13;
-  --color-rust: #bd5519;
-  --font-heading: var(--font-bree), Georgia, serif;
-  --font-sans: var(--font-albert), Arial, sans-serif;
+  --color-cream: var(--background);
+  --color-paper: var(--card);
+  --color-forest: var(--foreground);
+  --color-leaf: var(--accent);
+  --color-line: var(--border);
+  --color-muted: var(--muted);
+  --color-brand: var(--primary);
+  --color-brand-dark: #bc4422;
+  --color-rust: #f18a6c;
+  --font-heading: var(--font-heading);
+  --font-sans: var(--font-sans);
   --font-brand: var(--font-matcha), sans-serif;
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
 @utility wrap {
@@ -25,7 +66,59 @@ html {
   scroll-padding-top: 110px;
 }
 
-body {
-  background: var(--color-cream);
-  color: var(--color-forest);
+:root {
+  color-scheme: dark;
+
+  /* Reference palette: Spicy Paprika, Jungle Teal, Alabaster Grey, Carbon Black. */
+  --background: #252627;
+  --foreground: #e5e7e6;
+  --primary: #e4572e;
+  --primary-foreground: #171819;
+  --secondary: #5b9279;
+  --secondary-foreground: #171819;
+
+  /* Supporting surfaces and readable secondary text. */
+  --card: #2e3031;
+  --card-foreground: var(--foreground);
+  --popover: #343738;
+  --popover-foreground: var(--foreground);
+  --muted: #343738;
+  --muted-foreground: #adb5b1;
+  --accent: #334b40;
+  --accent-foreground: #d6e8de;
+  --destructive: #f07878;
+  --border: #505655;
+  --input: #606866;
+  --ring: var(--primary);
+
+  --chart-1: var(--primary);
+  --chart-2: var(--secondary);
+  --chart-3: #e5b567;
+  --chart-4: #78a9bf;
+  --chart-5: #b397c7;
+  --radius: 0.625rem;
+
+  --sidebar: #202223;
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: var(--accent);
+  --sidebar-accent-foreground: var(--accent-foreground);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  button:not(:disabled), [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+  html {
+    @apply font-sans;
+  }
 }
