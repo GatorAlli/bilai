@@ -1,7 +1,7 @@
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 
-export default function AddACat() {
+export default function PageBody() {
   return (
     <div>
       {/* <FormElement/> is way to remove the pain of having to add and
@@ -25,7 +25,7 @@ function FormElement({
   return (
     <div>
       <Label>{labelText}</Label>
-      <Input type={inputType} placeholder={inputPlaceholder}></Input>
+      <Input type={inputType} placeholder={inputPlaceholder} />
     </div>
   );
 }
