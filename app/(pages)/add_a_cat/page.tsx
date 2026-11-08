@@ -45,99 +45,101 @@ export default function PageBody() {
   const [images, setImages] = useState<GalleryImage[]>([]);
 
   return (
-    <main className="wrap flex justify-center py-8">
-      <form
-        // Backend isn't hooked up yet, so submitting does nothing for now.
-        onSubmit={(e) => e.preventDefault()}
-        className="flex w-full max-w-2xl flex-col gap-6 rounded-3xl border border-border bg-card p-5 sm:p-8"
-      >
-        {/* <FormElement/> is way to remove the pain of having to add and
+    <div className="theme-light flex flex-1 flex-col bg-background text-foreground">
+      <main className="wrap flex justify-center py-8">
+        <form
+          // Backend isn't hooked up yet, so submitting does nothing for now.
+          onSubmit={(e) => e.preventDefault()}
+          className="flex w-full max-w-2xl flex-col gap-6 rounded-3xl border border-border bg-card p-5 shadow-sm sm:p-8"
+        >
+          {/* <FormElement/> is way to remove the pain of having to add and
         style labels and inputs individually for every single form field */}
-        <FormElement
-          labelText="Name"
-          inputPlaceholder="Name"
-          value={name}
-          onChange={(e) => {
-            setName(e.target.value);
-          }}
-        />
+          <FormElement
+            labelText="Name"
+            inputPlaceholder="Name"
+            value={name}
+            onChange={(e) => {
+              setName(e.target.value);
+            }}
+          />
 
-        <FormElement
-          labelText="Breed"
-          inputPlaceholder="Start typing or pick a suggestion"
-          suggestions={BREED_SUGGESTIONS}
-          value={breed}
-          onChange={(e) => {
-            setBreed(e.target.value);
-          }}
-        />
+          <FormElement
+            labelText="Breed"
+            inputPlaceholder="Start typing or pick a suggestion"
+            suggestions={BREED_SUGGESTIONS}
+            value={breed}
+            onChange={(e) => {
+              setBreed(e.target.value);
+            }}
+          />
 
-        <fieldset className="flex flex-col gap-2">
-          <legend className="mb-2 text-sm font-medium">Age</legend>
-          <div className="grid grid-cols-2 gap-4">
+          <fieldset className="flex flex-col gap-2">
+            <legend className="mb-2 text-sm font-medium">Age</legend>
+            <div className="grid grid-cols-2 gap-4">
+              <FormElement
+                labelText="Years"
+                inputPlaceholder="0"
+                inputType="number"
+                min={0}
+                max={30}
+                value={ageYears}
+                onChange={(e) => {
+                  setAgeYears(clamp(e.target.value, 0, 30));
+                }}
+              />
+              <FormElement
+                labelText="Months"
+                inputPlaceholder="0"
+                inputType="number"
+                min={0}
+                max={11}
+                value={ageMonths}
+                onChange={(e) => {
+                  setAgeMonths(clamp(e.target.value, 0, 11));
+                }}
+              />
+            </div>
+          </fieldset>
+
+          <div className="grid gap-6 sm:grid-cols-2 sm:gap-4">
             <FormElement
-              labelText="Years"
-              inputPlaceholder="0"
-              inputType="number"
-              min={0}
-              max={30}
-              value={ageYears}
+              labelText="Locality"
+              inputPlaceholder="e.g. Mirpur"
+              value={locality}
               onChange={(e) => {
-                setAgeYears(clamp(e.target.value, 0, 30));
+                setLocality(e.target.value);
               }}
             />
             <FormElement
-              labelText="Months"
-              inputPlaceholder="0"
-              inputType="number"
-              min={0}
-              max={11}
-              value={ageMonths}
+              labelText="City"
+              inputPlaceholder="e.g. Dhaka"
+              value={city}
               onChange={(e) => {
-                setAgeMonths(clamp(e.target.value, 0, 11));
+                setCity(e.target.value);
               }}
             />
           </div>
-        </fieldset>
 
-        <div className="grid gap-6 sm:grid-cols-2 sm:gap-4">
-          <FormElement
-            labelText="Locality"
-            inputPlaceholder="e.g. Mirpur"
-            value={locality}
-            onChange={(e) => {
-              setLocality(e.target.value);
-            }}
+          <RadioGroup
+            legend="Gender"
+            name="gender"
+            options={GENDER_OPTIONS}
+            value={gender}
+            onChange={setGender}
           />
-          <FormElement
-            labelText="City"
-            inputPlaceholder="e.g. Dhaka"
-            value={city}
-            onChange={(e) => {
-              setCity(e.target.value);
-            }}
-          />
-        </div>
 
-        <RadioGroup
-          legend="Gender"
-          name="gender"
-          options={GENDER_OPTIONS}
-          value={gender}
-          onChange={setGender}
-        />
+          <ImageGallery images={images} onChange={setImages} />
 
-        <ImageGallery images={images} onChange={setImages} />
-
-        <Button
-          type="submit"
-          size="lg"
-          className="h-12 w-full text-base font-bold"
-        >
-          Save Cat Profile
-        </Button>
-      </form>
-    </main>
+          <Button
+            type="submit"
+            size="lg"
+            className="h-12 w-full bg-[#ff7640] text-base font-bold text-mauve-950 hover:bg-[#ff7640]/85"
+          >
+            Save Cat Profile
+          </Button>
+        </form>
+      </main>
+    </div>
   );
 }
 
