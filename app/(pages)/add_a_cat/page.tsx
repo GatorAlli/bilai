@@ -7,8 +7,7 @@ import { useId, useState } from "react";
 import ImageGallery, { type GalleryImage } from "./ImageGallery";
 
 const BREED_SUGGESTIONS = [
-  "Domestic Shorthair",
-  "Local / Street Cat",
+  "Local / Street / Deshi Cat",
   "Persian",
   "Siamese",
   "Himalayan",
@@ -130,7 +129,11 @@ export default function PageBody() {
 
         <ImageGallery images={images} onChange={setImages} />
 
-        <Button type="submit" size="lg" className="h-12 w-full text-base font-bold">
+        <Button
+          type="submit"
+          size="lg"
+          className="h-12 w-full text-base font-bold"
+        >
           Save Cat Profile
         </Button>
       </form>

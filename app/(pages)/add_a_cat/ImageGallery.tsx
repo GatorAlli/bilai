@@ -62,7 +62,9 @@ export default function ImageGallery({
 
     for (const file of incoming) {
       if (!ACCEPTED_TYPES.includes(file.type)) {
-        nextErrors.push(`${file.name}: only JPG, PNG, GIF or WebP files are allowed.`);
+        nextErrors.push(
+          `${file.name}: only JPG, PNG, GIF or WebP files are allowed.`,
+        );
       } else if (file.size > MAX_SIZE_MB * 1024 * 1024) {
         nextErrors.push(`${file.name}: larger than ${MAX_SIZE_MB} MB.`);
       } else if (slotsLeft <= 0) {
@@ -121,8 +123,7 @@ export default function ImageGallery({
         </div>
         <p className="mt-1 text-sm text-muted-foreground">
           JPG, PNG, GIF or WebP format, {MAX_SIZE_MB} MB max file size. For best
-          results, use a 3:2 ratio. Up to {MAX_IMAGES} images. The first image
-          is the cover photo.
+          results, use a 3:2 ratio. The first image is the cover photo.
         </p>
       </div>
 
@@ -174,7 +175,10 @@ export default function ImageGallery({
       </div>
 
       {errors.length > 0 && (
-        <ul role="alert" className="flex flex-col gap-1 text-sm text-destructive">
+        <ul
+          role="alert"
+          className="flex flex-col gap-1 text-sm text-destructive"
+        >
           {errors.map((message) => (
             <li key={message}>{message}</li>
           ))}
@@ -222,7 +226,10 @@ export default function ImageGallery({
                   if (e.key === "ArrowUp" && index > 0) {
                     e.preventDefault();
                     onChange(moveItem(images, index, index - 1));
-                  } else if (e.key === "ArrowDown" && index < images.length - 1) {
+                  } else if (
+                    e.key === "ArrowDown" &&
+                    index < images.length - 1
+                  ) {
                     e.preventDefault();
                     onChange(moveItem(images, index, index + 1));
                   }
