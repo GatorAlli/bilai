@@ -3,8 +3,9 @@
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useId, useState } from "react";
+import { useId, useState, useTransition } from "react";
 import ImageGallery, { type GalleryImage } from "./ImageGallery";
+import { createUploadUrls, submitForm } from "./actions";
 
 const BREED_SUGGESTIONS = [
   "Local / Street / Deshi Cat",
@@ -43,13 +44,80 @@ export default function PageBody() {
   const [city, setCity] = useState("");
   const [gender, setGender] = useState<Gender | "">("");
   const [images, setImages] = useState<GalleryImage[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError(null);
+
+    if (!gender) {
+      setError("Please choose a gender.");
+      return;
+    }
+    if (images.length === 0) {
+      setError("Please add at least one image.");
+      return;
+    }
+
+    startTransition(async () => {
+      try {
+        // 1. Ask the server for presigned upload URLs.
+        const urls = await createUploadUrls(
+          images.map((img) => ({
+            contentType: img.file.type,
+            size: img.file.size,
+          })),
+        );
+        if (!urls.ok) {
+          setError(urls.error);
+          return;
+        }
+
+        // 2. Upload the files straight to R2.
+        await Promise.all(
+          urls.data.map(async ({ uploadUrl }, i) => {
+            const res = await fetch(uploadUrl, {
+              method: "PUT",
+              headers: { "Content-Type": images[i].file.type },
+              body: images[i].file,
+            });
+            if (!res.ok)
+              throw new Error(`Upload failed for ${images[i].file.name}.`);
+          }),
+        );
+
+        // 3. Save the cat. On success the action redirects, so we only
+        //    get a result back when something went wrong.
+        const result = await submitForm({
+          name,
+          breed,
+          ageYears: Number(ageYears || 0),
+          ageMonths: Number(ageMonths || 0),
+          locality,
+          city,
+          gender,
+          images: images.map((img, i) => ({
+            key: urls.data[i].key,
+            caption: img.caption,
+          })),
+        });
+        if (result && !result.ok) setError(result.error);
+      } catch (err) {
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Something went wrong. Please try again.",
+        );
+      }
+    });
+  }
 
   return (
     <div className="theme-light flex flex-1 flex-col bg-background text-foreground">
       <main className="wrap flex justify-center py-8">
         <form
-          // Backend isn't hooked up yet, so submitting does nothing for now.
-          onSubmit={(e) => e.preventDefault()}
+          onSubmit={handleSubmit}
           className="flex w-full max-w-2xl flex-col gap-6 rounded-3xl border border-border bg-card p-5 shadow-sm sm:p-8"
         >
           {/* <FormElement/> is way to remove the pain of having to add and
@@ -130,12 +198,19 @@ export default function PageBody() {
 
           <ImageGallery images={images} onChange={setImages} />
 
+          {error && (
+            <p role="alert" className="text-sm text-destructive">
+              {error}
+            </p>
+          )}
+
           <Button
             type="submit"
             size="lg"
+            disabled={isPending}
             className="h-12 w-full bg-[#ff7640] text-base font-bold text-mauve-950 hover:bg-[#ff7640]/85"
           >
-            Save Cat Profile
+            {isPending ? "Saving…" : "Save Cat Profile"}
           </Button>
         </form>
       </main>

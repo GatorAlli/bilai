@@ -7,6 +7,11 @@ import { GripVertical, ImagePlus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import {
+  ACCEPTED_IMAGE_TYPES,
+  MAX_IMAGES,
+  MAX_IMAGE_SIZE_MB,
+} from "@/lib/cat-limits";
 
 export type GalleryImage = {
   id: string;
@@ -15,9 +20,8 @@ export type GalleryImage = {
   caption: string;
 };
 
-const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
-const MAX_IMAGES = 15;
-const MAX_SIZE_MB = 5;
+const ACCEPTED_TYPES: string[] = [...ACCEPTED_IMAGE_TYPES];
+const MAX_SIZE_MB = MAX_IMAGE_SIZE_MB;
 
 function moveItem<T>(list: T[], from: number, to: number): T[] {
   const next = [...list];

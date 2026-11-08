@@ -6,6 +6,7 @@ import {
   timestamp,
   varchar,
   integer,
+  uuid,
 } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
@@ -101,11 +102,34 @@ export const verification = pgTable(
 );
 
 export const cats = pgTable("cats", {
-  id: integer().primaryKey(),
+  id: integer().primaryKey().generatedByDefaultAsIdentity(),
   name: text().notNull(),
   breed: text().notNull(),
   ageMonths: integer().notNull(), // Age is to be inserted in months here
   locality: text().notNull(),
   city: text().notNull(),
   gender: text().notNull(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
 });
+
+export const catImages = pgTable(
+  "cat_images",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    catId: integer("cat_id")
+      .notNull()
+      .references(() => cats.id, { onDelete: "cascade" }),
+    // Object key inside the R2 bucket, e.g. "cats/<userId>/<uuid>.jpg"
+    key: text().notNull(),
+    url: text().notNull(),
+    caption: text(),
+    // 0 = cover photo
+    position: integer().notNull(),
+  },
+  (table) => [index("cat_images_catId_idx").on(table.catId)],
+);
