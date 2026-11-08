@@ -1,10 +1,8 @@
-import { number } from "better-auth";
 import {
   boolean,
   index,
   pgTable,
   text,
-  time,
   timestamp,
   varchar,
   integer,
@@ -106,7 +104,7 @@ export const cats = pgTable("cats", {
   id: integer().primaryKey(),
   name: text().notNull(),
   breed: text().notNull(),
-  ageMonths: integer().notNull(), // Age must be inserted in months
+  ageMonths: integer().notNull(), // Age is to be inserted in months here
   locality: text().notNull(),
   city: text().notNull(),
   gender: text().notNull(),
