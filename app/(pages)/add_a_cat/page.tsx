@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useId, useState, useTransition } from "react";
 import ImageGallery, { type GalleryImage } from "./ImageGallery";
-import { createUploadUrls, submitForm } from "./actions";
+import { submitForm } from "./actions";
 
 const BREED_SUGGESTIONS = [
   "Local / Street / Deshi Cat",
@@ -62,46 +62,23 @@ export default function PageBody() {
 
     startTransition(async () => {
       try {
-        // 1. Ask the server for presigned upload URLs.
-        const urls = await createUploadUrls(
-          images.map((img) => ({
-            contentType: img.file.type,
-            size: img.file.size,
-          })),
-        );
-        if (!urls.ok) {
-          setError(urls.error);
-          return;
+        // On success the action redirects, so we only get a result back
+        // when something went wrong.
+        const formData = new FormData();
+        formData.set("name", name);
+        formData.set("breed", breed);
+        formData.set("ageYears", ageYears || "0");
+        formData.set("ageMonths", ageMonths || "0");
+        formData.set("locality", locality);
+        formData.set("city", city);
+        formData.set("gender", gender);
+        // Same order as the gallery: the first image is the cover.
+        for (const img of images) {
+          formData.append("images", img.file);
+          formData.append("captions", img.caption);
         }
 
-        // 2. Upload the files straight to R2.
-        await Promise.all(
-          urls.data.map(async ({ uploadUrl }, i) => {
-            const res = await fetch(uploadUrl, {
-              method: "PUT",
-              headers: { "Content-Type": images[i].file.type },
-              body: images[i].file,
-            });
-            if (!res.ok)
-              throw new Error(`Upload failed for ${images[i].file.name}.`);
-          }),
-        );
-
-        // 3. Save the cat. On success the action redirects, so we only
-        //    get a result back when something went wrong.
-        const result = await submitForm({
-          name,
-          breed,
-          ageYears: Number(ageYears || 0),
-          ageMonths: Number(ageMonths || 0),
-          locality,
-          city,
-          gender,
-          images: images.map((img, i) => ({
-            key: urls.data[i].key,
-            caption: img.caption,
-          })),
-        });
+        const result = await submitForm(formData);
         if (result && !result.ok) setError(result.error);
       } catch (err) {
         setError(

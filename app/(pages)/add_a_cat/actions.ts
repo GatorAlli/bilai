@@ -1,107 +1,35 @@
 "use server";
 
 import { randomUUID } from "node:crypto";
-import { PutObjectCommand } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { mkdir, rm, writeFile } from "node:fs/promises";
+import path from "node:path";
+import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 
 import { db } from "@/db";
-import { cats, catImages } from "@/db/schema";
+import { catImages, cats } from "@/db/schema";
 import { getSession } from "@/lib/auth";
-import {
-  ACCEPTED_IMAGE_TYPES,
-  EXTENSION_BY_TYPE,
-  MAX_IMAGES,
-  MAX_IMAGE_SIZE_BYTES,
-} from "@/lib/cat-limits";
-import { R2_BUCKET, R2_PUBLIC_URL, r2 } from "@/lib/r2";
+import { MAX_IMAGES, MAX_STORED_SIZE_BYTES } from "@/lib/cat-limits";
+import { UPLOAD_ROOT, isWebp } from "@/lib/uploads";
 
 const GENDERS = ["male", "female", "unknown"] as const;
 
-export type ActionResult<T = undefined> =
-  { ok: true; data: T } | { ok: false; error: string };
+export type ActionResult = { ok: true } | { ok: false; error: string };
 
-type ImageMeta = { contentType: string; size: number };
-
-type UploadTarget = { key: string; uploadUrl: string };
-
-/**
- * Step 1: the browser tells us what it wants to upload; we hand back
- * short-lived presigned PUT URLs so the files go straight to R2
- * (Server Actions are capped at 1 MB, so files can't pass through here).
- */
-export async function createUploadUrls(
-  files: ImageMeta[],
-): Promise<ActionResult<UploadTarget[]>> {
-  const session = await getSession();
-  if (!session?.user) return { ok: false, error: "Please log in first." };
-
-  if (!Array.isArray(files) || files.length > MAX_IMAGES) {
-    return { ok: false, error: `You can upload up to ${MAX_IMAGES} images.` };
-  }
-
-  const targets: UploadTarget[] = [];
-  for (const file of files) {
-    if (
-      !(ACCEPTED_IMAGE_TYPES as readonly string[]).includes(file.contentType)
-    ) {
-      return {
-        ok: false,
-        error: "Only JPG, PNG, GIF or WebP images are allowed.",
-      };
-    }
-    if (
-      !Number.isFinite(file.size) ||
-      file.size <= 0 ||
-      file.size > MAX_IMAGE_SIZE_BYTES
-    ) {
-      return { ok: false, error: "Each image must be 5 MB or smaller." };
-    }
-
-    const key = `cats/${session.user.id}/${randomUUID()}.${EXTENSION_BY_TYPE[file.contentType]}`;
-    const uploadUrl = await getSignedUrl(
-      r2,
-      new PutObjectCommand({
-        Bucket: R2_BUCKET,
-        Key: key,
-        ContentType: file.contentType,
-        // Signed in, so R2 rejects an upload whose size differs.
-        ContentLength: file.size,
-      }),
-      { expiresIn: 300 },
-    );
-    targets.push({ key, uploadUrl });
-  }
-
-  return { ok: true, data: targets };
-}
-
-export type SubmitCatInput = {
-  name: string;
-  breed: string;
-  ageYears: number;
-  ageMonths: number;
-  locality: string;
-  city: string;
-  gender: string;
-  images: { key: string; caption: string }[];
-};
-
-/** Step 2: after the uploads finish, validate everything and save the cat. */
 export async function submitForm(
-  input: SubmitCatInput,
+  formData: FormData,
 ): Promise<ActionResult | never> {
   const session = await getSession();
   if (!session?.user) return { ok: false, error: "Please log in first." };
   const userId = session.user.id;
 
-  const name = String(input.name ?? "").trim();
-  const breed = String(input.breed ?? "").trim();
-  const locality = String(input.locality ?? "").trim();
-  const city = String(input.city ?? "").trim();
-  const gender = String(input.gender ?? "");
-  const years = Number(input.ageYears);
-  const months = Number(input.ageMonths);
+  const name = String(formData.get("name") ?? "").trim();
+  const breed = String(formData.get("breed") ?? "").trim();
+  const locality = String(formData.get("locality") ?? "").trim();
+  const city = String(formData.get("city") ?? "").trim();
+  const gender = String(formData.get("gender") ?? "");
+  const years = Number(formData.get("ageYears"));
+  const months = Number(formData.get("ageMonths"));
 
   if (!name) return { ok: false, error: "Name is required." };
   if (!breed) return { ok: false, error: "Breed is required." };
@@ -120,55 +48,83 @@ export async function submitForm(
     return { ok: false, error: "Please enter the cat's age." };
   }
 
-  const images = Array.isArray(input.images) ? input.images : [];
-  if (images.length === 0) {
+  const files = formData
+    .getAll("images")
+    .filter((v): v is File => v instanceof File);
+  const captions = formData.getAll("captions").map(String);
+  if (files.length === 0) {
     return { ok: false, error: "Please add at least one image." };
   }
-  if (images.length > MAX_IMAGES) {
+  if (files.length > MAX_IMAGES) {
     return { ok: false, error: `You can upload up to ${MAX_IMAGES} images.` };
   }
-  // Only accept keys that were issued to this user (blocks pointing at others' files).
-  const prefix = `cats/${userId}/`;
-  const keys = new Set<string>();
-  for (const image of images) {
-    if (
-      typeof image.key !== "string" ||
-      !image.key.startsWith(prefix) ||
-      image.key.includes("..") ||
-      keys.has(image.key)
-    ) {
-      return { ok: false, error: "Invalid image reference." };
-    }
-    keys.add(image.key);
+  if (captions.length !== files.length) {
+    return { ok: false, error: "Invalid submission." };
   }
 
-  // The neon-http driver doesn't support transactions, so insert the cat
-  // first and the images in a single statement after it.
-  const [cat] = await db
-    .insert(cats)
-    .values({
-      name,
-      breed,
-      ageMonths: years * 12 + months,
-      locality,
-      city,
-      gender,
-      userId,
-    })
-    .returning({ id: cats.id });
+  // Read and validate everything BEFORE writing anything to disk.
+  const buffers: Buffer[] = [];
+  for (const file of files) {
+    const buf = Buffer.from(await file.arrayBuffer());
+    if (buf.length > MAX_STORED_SIZE_BYTES) {
+      return { ok: false, error: "An image is too large." };
+    }
+    if (!isWebp(buf)) {
+      return { ok: false, error: "Only WebP images are accepted." };
+    }
+    buffers.push(buf);
+  }
 
-  await db.insert(catImages).values(
-    images.map((image, position) => ({
-      catId: cat.id,
-      key: image.key,
-      url: `${R2_PUBLIC_URL}/${image.key}`,
-      caption:
-        String(image.caption ?? "")
-          .trim()
-          .slice(0, 200) || null,
-      position,
-    })),
-  );
+  const writtenKeys: string[] = [];
+  let catId: number | null = null;
+  try {
+    await mkdir(path.join(UPLOAD_ROOT, userId), { recursive: true });
 
+    const rows: {
+      key: string;
+      url: string;
+      caption: string | null;
+      position: number;
+    }[] = [];
+    for (const [position, buf] of buffers.entries()) {
+      const key = `${userId}/${randomUUID()}.webp`;
+      await writeFile(path.join(UPLOAD_ROOT, key), buf);
+      writtenKeys.push(key);
+      rows.push({
+        key,
+        url: `/uploads/${key}`,
+        caption: captions[position].trim().slice(0, 200) || null,
+        position,
+      });
+    }
+
+    const [cat] = await db
+      .insert(cats)
+      .values({
+        name,
+        breed,
+        ageMonths: years * 12 + months,
+        locality,
+        city,
+        gender,
+        userId,
+      })
+      .returning({ id: cats.id });
+    catId = cat.id;
+
+    await db
+      .insert(catImages)
+      .values(rows.map((row) => ({ ...row, catId: cat.id })));
+  } catch (err) {
+    // Clean up so we don't leave orphan files or a cat with no images.
+    await Promise.all(
+      writtenKeys.map((k) => rm(path.join(UPLOAD_ROOT, k), { force: true })),
+    );
+    if (catId !== null) await db.delete(cats).where(eq(cats.id, catId));
+    console.error(err);
+    return { ok: false, error: "Couldn't save the cat. Please try again." };
+  }
+
+  // Must stay outside the try/catch: redirect() works by throwing.
   redirect("/");
 }

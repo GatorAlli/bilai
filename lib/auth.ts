@@ -1,30 +1,28 @@
-import { betterAuth } from "better-auth"
+import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter";
 import { db } from "@/db";
 import { headers } from "next/headers";
 
 export const auth = betterAuth({
-     database: drizzleAdapter(db, { 
+  database: drizzleAdapter(db, {
     provider: "pg", // or "pg" or "mysql"
-  }), 
+  }),
   pages: {
     signIn: "/login", // Custom sign-in page
   },
-    baseURL: process.env.BETTER_AUTH_URL, 
-    socialProviders: {
-        google: { 
-            clientId: process.env.GOOGLE_CLIENT_ID as string, 
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET as string, 
-        }, 
-            emailAndPassword: {    
-        enabled: true
-    } 
+  baseURL: process.env.BETTER_AUTH_URL,
+  socialProviders: {
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
     },
-    
-
-})
-
-export const getSession = async () => auth.api.getSession({
-    headers: await headers()
+    emailAndPassword: {
+      enabled: true,
+    },
+  },
 });
 
+export const getSession = async () =>
+  auth.api.getSession({
+    headers: await headers(),
+  });

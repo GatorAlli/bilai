@@ -6,12 +6,13 @@ export const ACCEPTED_IMAGE_TYPES = [
   "image/webp",
 ] as const;
 export const MAX_IMAGES = 15;
-export const MAX_IMAGE_SIZE_MB = 5;
-export const MAX_IMAGE_SIZE_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024;
 
-export const EXTENSION_BY_TYPE: Record<string, string> = {
-  "image/jpeg": "jpg",
-  "image/png": "png",
-  "image/gif": "gif",
-  "image/webp": "webp",
-};
+// What the user may pick (phone photos are big); we shrink them afterwards.
+export const MAX_INPUT_SIZE_MB = 25;
+export const MAX_INPUT_SIZE_BYTES = MAX_INPUT_SIZE_MB * 1024 * 1024;
+
+// What we store: always WebP, long edge <= 1600px, <= 1 MB.
+export const MAX_DIMENSION = 1600;
+export const TARGET_SIZE_BYTES = 1 * 1024 * 1024;
+// Server accepts a little slack over the target.
+export const MAX_STORED_SIZE_BYTES = Math.round(1.25 * 1024 * 1024);

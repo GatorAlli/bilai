@@ -124,7 +124,7 @@ export const catImages = pgTable(
     catId: integer("cat_id")
       .notNull()
       .references(() => cats.id, { onDelete: "cascade" }),
-    // Object key inside the R2 bucket, e.g. "cats/<userId>/<uuid>.jpg"
+    // Storage key/path of the uploaded file
     key: text().notNull(),
     url: text().notNull(),
     caption: text(),
