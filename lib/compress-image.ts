@@ -38,6 +38,7 @@ function encodeWebp(
  * in at most two encodes. Errors thrown are ImageUploadError with a plain
  * message; the technical cause goes to the console.
  */
+
 export async function compressImage(file: File): Promise<File> {
   let bitmap: ImageBitmap | undefined;
   try {

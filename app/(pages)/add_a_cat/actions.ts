@@ -9,7 +9,14 @@ import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { catImages, cats } from "@/db/schema";
 import { getSession } from "@/lib/auth";
-import { MAX_IMAGES, MAX_STORED_SIZE_BYTES } from "@/lib/cat-limits";
+import {
+  MAX_DESCRIPTION_LENGTH,
+  MAX_IMAGES,
+  MAX_REHOMING_REASON_LENGTH,
+  MAX_STORED_SIZE_BYTES,
+  MAX_TEMPERAMENT_LENGTH,
+  YES_NO_UNKNOWN,
+} from "@/lib/cat-limits";
 import { UPLOAD_ROOT, isWebp } from "@/lib/uploads";
 
 const GENDERS = ["male", "female", "unknown"] as const;
@@ -28,6 +35,16 @@ export async function submitForm(
   const locality = String(formData.get("locality") ?? "").trim();
   const city = String(formData.get("city") ?? "").trim();
   const gender = String(formData.get("gender") ?? "");
+  const vaccinated = String(formData.get("vaccinated") ?? "");
+  const neutered = String(formData.get("neutered") ?? "");
+  // Optional text fields: empty becomes null.
+  const optional = (key: string, max: number) =>
+    String(formData.get(key) ?? "")
+      .trim()
+      .slice(0, max) || null;
+  const temperament = optional("temperament", MAX_TEMPERAMENT_LENGTH);
+  const description = optional("description", MAX_DESCRIPTION_LENGTH);
+  const rehomingReason = optional("rehomingReason", MAX_REHOMING_REASON_LENGTH);
   const years = Number(formData.get("ageYears"));
   const months = Number(formData.get("ageMonths"));
 
@@ -37,6 +54,15 @@ export async function submitForm(
   if (!city) return { ok: false, error: "City is required." };
   if (!(GENDERS as readonly string[]).includes(gender)) {
     return { ok: false, error: "Please choose a gender." };
+  }
+  if (!(YES_NO_UNKNOWN as readonly string[]).includes(vaccinated)) {
+    return { ok: false, error: "Please say whether the cat is vaccinated." };
+  }
+  if (!(YES_NO_UNKNOWN as readonly string[]).includes(neutered)) {
+    return {
+      ok: false,
+      error: "Please say whether the cat is spayed/neutered.",
+    };
   }
   if (!Number.isInteger(years) || years < 0 || years > 30) {
     return { ok: false, error: "Years must be between 0 and 30." };
@@ -70,7 +96,9 @@ export async function submitForm(
   for (const file of files) {
     const buf = Buffer.from(await file.arrayBuffer());
     if (buf.length > MAX_STORED_SIZE_BYTES) {
-      console.error(`submitForm: image is ${buf.length} bytes, over the limit.`);
+      console.error(
+        `submitForm: image is ${buf.length} bytes, over the limit.`,
+      );
       return { ok: false, error: "One of the photos is too large." };
     }
     if (!isWebp(buf)) {
@@ -112,6 +140,12 @@ export async function submitForm(
         locality,
         city,
         gender,
+        vaccinated,
+        neutered,
+        temperament,
+        description,
+        rehomingReason,
+        // status defaults to 'available' in the database
         userId,
       })
       .returning({ id: cats.id });

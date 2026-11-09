@@ -16,3 +16,9 @@ export const MAX_DIMENSION = 1600;
 export const TARGET_SIZE_BYTES = 1 * 1024 * 1024;
 // Server accepts a little slack over the target.
 export const MAX_STORED_SIZE_BYTES = Math.round(1.25 * 1024 * 1024);
+
+export const CAT_STATUSES = ["available", "pending", "adopted"] as const;
+export const YES_NO_UNKNOWN = ["yes", "no", "unknown"] as const;
+export const MAX_DESCRIPTION_LENGTH = 1000;
+export const MAX_TEMPERAMENT_LENGTH = 200;
+export const MAX_REHOMING_REASON_LENGTH = 500;

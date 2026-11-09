@@ -6,6 +6,11 @@ import { Button } from "@/components/ui/button";
 import { useId, useState, useTransition } from "react";
 import ImageGallery, { type GalleryImage } from "./ImageGallery";
 import { submitForm } from "./actions";
+import {
+  MAX_DESCRIPTION_LENGTH,
+  MAX_REHOMING_REASON_LENGTH,
+  MAX_TEMPERAMENT_LENGTH,
+} from "@/lib/cat-limits";
 
 const BREED_SUGGESTIONS = [
   "Local / Street / Deshi Cat",
@@ -28,6 +33,14 @@ const GENDER_OPTIONS: { value: Gender; label: string }[] = [
   { value: "unknown", label: "Unknown" },
 ];
 
+type YesNoUnknown = "yes" | "no" | "unknown";
+
+const YES_NO_UNKNOWN_OPTIONS: { value: YesNoUnknown; label: string }[] = [
+  { value: "yes", label: "Yes" },
+  { value: "no", label: "No" },
+  { value: "unknown", label: "Unknown" },
+];
+
 function clamp(value: string, min: number, max: number) {
   if (value === "") return "";
   const n = Math.floor(Number(value));
@@ -43,6 +56,11 @@ export default function PageBody() {
   const [locality, setLocality] = useState("");
   const [city, setCity] = useState("");
   const [gender, setGender] = useState<Gender | "">("");
+  const [vaccinated, setVaccinated] = useState<YesNoUnknown | "">("");
+  const [neutered, setNeutered] = useState<YesNoUnknown | "">("");
+  const [temperament, setTemperament] = useState("");
+  const [description, setDescription] = useState("");
+  const [rehomingReason, setRehomingReason] = useState("");
   const [images, setImages] = useState<GalleryImage[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -53,6 +71,14 @@ export default function PageBody() {
 
     if (!gender) {
       setError("Please choose a gender.");
+      return;
+    }
+    if (!vaccinated) {
+      setError("Please say whether the cat is vaccinated.");
+      return;
+    }
+    if (!neutered) {
+      setError("Please say whether the cat is spayed/neutered.");
       return;
     }
     if (images.length === 0) {
@@ -72,6 +98,11 @@ export default function PageBody() {
         formData.set("locality", locality);
         formData.set("city", city);
         formData.set("gender", gender);
+        formData.set("vaccinated", vaccinated);
+        formData.set("neutered", neutered);
+        formData.set("temperament", temperament);
+        formData.set("description", description);
+        formData.set("rehomingReason", rehomingReason);
         // Same order as the gallery: the first image is the cover.
         for (const img of images) {
           formData.append("images", img.file);
@@ -171,6 +202,48 @@ export default function PageBody() {
             onChange={setGender}
           />
 
+          <RadioGroup
+            legend="Vaccinated"
+            name="vaccinated"
+            options={YES_NO_UNKNOWN_OPTIONS}
+            value={vaccinated}
+            onChange={setVaccinated}
+          />
+
+          <RadioGroup
+            legend="Spayed / neutered"
+            name="neutered"
+            options={YES_NO_UNKNOWN_OPTIONS}
+            value={neutered}
+            onChange={setNeutered}
+          />
+
+          <FormElement
+            labelText="Temperament"
+            inputPlaceholder="Playful, Shy, Calm, Friendly..."
+            maxLength={MAX_TEMPERAMENT_LENGTH}
+            value={temperament}
+            onChange={(e) => {
+              setTemperament(e.target.value);
+            }}
+          />
+
+          <TextAreaElement
+            labelText="Description"
+            placeholder="Tell people about this cat"
+            maxLength={MAX_DESCRIPTION_LENGTH}
+            value={description}
+            onChange={setDescription}
+          />
+
+          <TextAreaElement
+            labelText="Reason for rehoming"
+            placeholder="Why does this cat need a new home?"
+            maxLength={MAX_REHOMING_REASON_LENGTH}
+            value={rehomingReason}
+            onChange={setRehomingReason}
+          />
+
           <ImageGallery images={images} onChange={setImages} />
 
           {error && (
@@ -202,6 +275,7 @@ function FormElement({
   suggestions,
   min,
   max,
+  maxLength,
 }: {
   labelText: string;
   inputPlaceholder: string;
@@ -212,6 +286,7 @@ function FormElement({
   suggestions?: string[];
   min?: number;
   max?: number;
+  maxLength?: number;
 }) {
   /* A way to remove the pain of having to add and style
     labels and inputs individually for every single form field */
@@ -228,6 +303,7 @@ function FormElement({
         value={value}
         min={min}
         max={max}
+        maxLength={maxLength}
         list={suggestions ? listId : undefined}
         className="h-10 bg-background"
         onChange={(e) => onChange(e)}
@@ -239,6 +315,39 @@ function FormElement({
           ))}
         </datalist>
       )}
+    </div>
+  );
+}
+
+function TextAreaElement({
+  labelText,
+  placeholder,
+  value,
+  onChange,
+  maxLength,
+}: {
+  labelText: string;
+  placeholder: string;
+  value: string;
+  onChange: (value: string) => void;
+  maxLength: number;
+}) {
+  const id = useId();
+  return (
+    <div className="flex flex-col gap-2">
+      <Label htmlFor={id}>{labelText}</Label>
+      <textarea
+        id={id}
+        rows={4}
+        placeholder={placeholder}
+        maxLength={maxLength}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full resize-y rounded-lg border border-input bg-background px-2.5 py-2 text-base transition-colors outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:text-sm"
+      />
+      <span className="self-end text-xs text-muted-foreground">
+        {value.length} / {maxLength}
+      </span>
     </div>
   );
 }

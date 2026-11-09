@@ -109,12 +109,24 @@ export const cats = pgTable("cats", {
   locality: text().notNull(),
   city: text().notNull(),
   gender: text().notNull(),
+  description: text(),
+  // 'available' | 'pending' | 'adopted'
+  status: text().notNull().default("available"),
+  // 'yes' | 'no' | 'unknown'
+  vaccinated: text().notNull().default("unknown"),
+  neutered: text().notNull().default("unknown"), // spayed or neutered
+  temperament: text(),
+  rehomingReason: text("rehoming_reason"),
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
 });
 
 export const catImages = pgTable(
