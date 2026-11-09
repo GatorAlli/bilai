@@ -1,7 +1,10 @@
+import Navbar from "@/components/view/navbar/Navbar";
 import Link from "next/link";
 
 export default function LoginPage() {
   return (
+    <>
+      <Navbar />
     <div className="flex flex-col flex-1 items-center justify-center font-sans">
     This is the Login page
           <Link
@@ -11,5 +14,6 @@ export default function LoginPage() {
         return to Home
       </Link>
     </div>
+    </>
   );
 }

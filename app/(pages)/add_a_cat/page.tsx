@@ -1,5 +1,7 @@
 "use client";
 
+import Navbar from "@/components/view/navbar/Navbar";
+
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -121,6 +123,7 @@ export default function PageBody() {
 
   return (
     <div className="theme-light flex flex-1 flex-col bg-background text-foreground">
+      <Navbar />
       <main className="wrap flex justify-center py-8">
         <form
           onSubmit={handleSubmit}
