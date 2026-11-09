@@ -7,7 +7,7 @@ import { GripVertical, ImagePlus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { compressImage } from "@/lib/compress-image";
+import { compressImage, ImageUploadError } from "@/lib/compress-image";
 import {
   ACCEPTED_IMAGE_TYPES,
   MAX_IMAGES,
@@ -71,13 +71,15 @@ export default function ImageGallery({
     try {
       for (const file of incoming) {
         if (!ACCEPTED_TYPES.includes(file.type)) {
-          nextErrors.push(
-            `${file.name}: only JPG, PNG, GIF or WebP files are allowed.`,
-          );
+          nextErrors.push(`${file.name}: this file isn't a photo we can use.`);
         } else if (file.size > MAX_INPUT_SIZE_BYTES) {
-          nextErrors.push(`${file.name}: larger than ${MAX_INPUT_SIZE_MB} MB.`);
+          nextErrors.push(
+            `${file.name}: this photo is too large (over ${MAX_INPUT_SIZE_MB} MB).`,
+          );
         } else if (slotsLeft <= 0) {
-          nextErrors.push(`${file.name}: the limit is ${MAX_IMAGES} images.`);
+          nextErrors.push(
+            `${file.name}: you can add up to ${MAX_IMAGES} photos.`,
+          );
         } else {
           try {
             // One at a time so a big batch doesn't freeze the page.
@@ -90,9 +92,14 @@ export default function ImageGallery({
             });
             slotsLeft -= 1;
           } catch (err) {
-            nextErrors.push(
-              err instanceof Error ? err.message : `${file.name}: failed.`,
-            );
+            // compressImage only throws ImageUploadError, whose message is
+            // user-friendly; anything else is unexpected.
+            if (err instanceof ImageUploadError) {
+              nextErrors.push(err.message);
+            } else {
+              console.error(err);
+              nextErrors.push(`${file.name}: upload failed.`);
+            }
           }
         }
       }
@@ -142,9 +149,8 @@ export default function ImageGallery({
           </span>
         </div>
         <p className="mt-1 text-sm text-muted-foreground">
-          JPG, PNG, GIF or WebP format. Photos are resized and compressed
-          automatically (GIFs become still images). For best results, use a 3:2
-          ratio. The first image is the cover photo.
+          Add up to {MAX_IMAGES} photos. Wide (landscape) photos look best. The
+          first photo is the cover.
         </p>
       </div>
 

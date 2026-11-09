@@ -53,13 +53,16 @@ export async function submitForm(
     .filter((v): v is File => v instanceof File);
   const captions = formData.getAll("captions").map(String);
   if (files.length === 0) {
-    return { ok: false, error: "Please add at least one image." };
+    return { ok: false, error: "Please add at least one photo." };
   }
   if (files.length > MAX_IMAGES) {
-    return { ok: false, error: `You can upload up to ${MAX_IMAGES} images.` };
+    return { ok: false, error: `You can add up to ${MAX_IMAGES} photos.` };
   }
   if (captions.length !== files.length) {
-    return { ok: false, error: "Invalid submission." };
+    console.error(
+      `submitForm: ${files.length} images but ${captions.length} captions.`,
+    );
+    return { ok: false, error: "Something went wrong. Please try again." };
   }
 
   // Read and validate everything BEFORE writing anything to disk.
@@ -67,10 +70,12 @@ export async function submitForm(
   for (const file of files) {
     const buf = Buffer.from(await file.arrayBuffer());
     if (buf.length > MAX_STORED_SIZE_BYTES) {
-      return { ok: false, error: "An image is too large." };
+      console.error(`submitForm: image is ${buf.length} bytes, over the limit.`);
+      return { ok: false, error: "One of the photos is too large." };
     }
     if (!isWebp(buf)) {
-      return { ok: false, error: "Only WebP images are accepted." };
+      console.error("submitForm: uploaded image is not WebP.");
+      return { ok: false, error: "Upload failed. Please try again." };
     }
     buffers.push(buf);
   }

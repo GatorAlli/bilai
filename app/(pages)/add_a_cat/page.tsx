@@ -56,7 +56,7 @@ export default function PageBody() {
       return;
     }
     if (images.length === 0) {
-      setError("Please add at least one image.");
+      setError("Please add at least one photo.");
       return;
     }
 
@@ -81,11 +81,9 @@ export default function PageBody() {
         const result = await submitForm(formData);
         if (result && !result.ok) setError(result.error);
       } catch (err) {
-        setError(
-          err instanceof Error
-            ? err.message
-            : "Something went wrong. Please try again.",
-        );
+        // Network/server errors carry technical messages; keep them out of the UI.
+        console.error(err);
+        setError("Something went wrong. Please try again.");
       }
     });
   }

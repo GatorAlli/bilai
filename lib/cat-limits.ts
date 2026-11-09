@@ -5,7 +5,7 @@ export const ACCEPTED_IMAGE_TYPES = [
   "image/gif",
   "image/webp",
 ] as const;
-export const MAX_IMAGES = 15;
+export const MAX_IMAGES = 5;
 
 // What the user may pick (phone photos are big); we shrink them afterwards.
 export const MAX_INPUT_SIZE_MB = 25;

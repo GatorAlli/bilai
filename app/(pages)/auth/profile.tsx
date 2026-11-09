@@ -1,2 +1,2 @@
-import {signOut} from '@components/auth/signOut';\
+import { SignOutButton } from "@/components/auth/signOut";
 
