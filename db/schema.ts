@@ -101,33 +101,41 @@ export const verification = pgTable(
   (table) => [index("verification_identifier_idx").on(table.identifier)],
 );
 
-export const cats = pgTable("cats", {
-  id: integer().primaryKey().generatedByDefaultAsIdentity(),
-  name: text().notNull(),
-  breed: text().notNull(),
-  ageMonths: integer().notNull(), // Age is to be inserted in months here
-  locality: text().notNull(),
-  city: text().notNull(),
-  gender: text().notNull(),
-  description: text(),
-  // 'available' | 'pending' | 'adopted'
-  status: text().notNull().default("available"),
-  // 'yes' | 'no' | 'unknown'
-  vaccinated: text().notNull().default("unknown"),
-  neutered: text().notNull().default("unknown"), // spayed or neutered
-  temperament: text(),
-  rehomingReason: text("rehoming_reason"),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true })
-    .notNull()
-    .defaultNow()
-    .$onUpdate(() => new Date()),
-});
+export const cats = pgTable(
+  "cats",
+  {
+    id: integer().primaryKey().generatedByDefaultAsIdentity(),
+    name: text().notNull(),
+    breed: text().notNull(),
+    ageMonths: integer().notNull(), // Age is to be inserted in months here
+    locality: text().notNull(),
+    city: text().notNull(),
+    gender: text().notNull(),
+    description: text(),
+    // 'available' | 'pending' | 'adopted'
+    status: text().notNull().default("available"),
+    // 'yes' | 'no' | 'unknown'
+    vaccinated: text().notNull().default("unknown"),
+    neutered: text().notNull().default("unknown"), // spayed or neutered
+    temperament: text(),
+    rehomingReason: text("rehoming_reason"),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [
+    index("cats_status_idx").on(table.status),
+    index("cats_city_idx").on(table.city),
+    index("cats_breed_idx").on(table.breed),
+  ],
+);
 
 export const catImages = pgTable(
   "cat_images",
