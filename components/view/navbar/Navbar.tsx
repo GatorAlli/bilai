@@ -24,9 +24,8 @@ export default function Navbar() {
           <ul className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 text-sm font-medium text-mauve-950 md:flex">
             <li>
               <Link
-                href="/"
+                href="/find_a_cat"
                 className="border-b-2 border-[#ff7640] py-2"
-                aria-current="page"
               >
                 Find a cat
               </Link>
