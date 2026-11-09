@@ -8,7 +8,7 @@ export const auth = betterAuth({
     provider: "pg", // or "pg" or "mysql"
   }),
   pages: {
-    signIn: "/login", // Custom sign-in page
+    signIn: "/auth", // Custom sign-in page
   },
   baseURL: process.env.BETTER_AUTH_URL,
   socialProviders: {

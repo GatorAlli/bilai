@@ -43,7 +43,7 @@ function NavBar() {
 
           <div className="flex items-center gap-3 sm:gap-5">
             <Link
-              href="/login"
+              href="/auth"
               className="flex items-center gap-2 rounded-lg bg-mauve-950 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-mauve-900"
             >
               <LogIn className="size-4" aria-hidden />

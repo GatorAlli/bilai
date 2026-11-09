@@ -10,7 +10,7 @@ export const SignOutButton = () => {
     await authClient.signOut({
       fetchOptions: {
         onSuccess: () => {
-          router.push("/login");
+          router.push("/auth");
         },
       },
     });
