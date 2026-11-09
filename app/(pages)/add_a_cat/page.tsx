@@ -147,34 +147,6 @@ export default function PageBody() {
             }}
           />
 
-          <fieldset className="flex flex-col gap-2">
-            <legend className="mb-2 text-sm font-medium">Age</legend>
-            <div className="grid grid-cols-2 gap-4">
-              <FormElement
-                labelText="Years"
-                inputPlaceholder="0"
-                inputType="number"
-                min={0}
-                max={30}
-                value={ageYears}
-                onChange={(e) => {
-                  setAgeYears(clamp(e.target.value, 0, 30));
-                }}
-              />
-              <FormElement
-                labelText="Months"
-                inputPlaceholder="0"
-                inputType="number"
-                min={0}
-                max={11}
-                value={ageMonths}
-                onChange={(e) => {
-                  setAgeMonths(clamp(e.target.value, 0, 11));
-                }}
-              />
-            </div>
-          </fieldset>
-
           <div className="grid gap-6 sm:grid-cols-2 sm:gap-4">
             <FormElement
               labelText="Locality"
@@ -193,6 +165,34 @@ export default function PageBody() {
               }}
             />
           </div>
+
+          <fieldset className="flex flex-col gap-2">
+            <legend className="mb-2 text-sm font-bold">Age</legend>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+              <Input
+                id="age-years"
+                type="number"
+                min={0}
+                max={30}
+                placeholder="0"
+                value={ageYears}
+                onChange={(e) => setAgeYears(clamp(e.target.value, 0, 30))}
+                className="h-10 w-20 bg-background"
+              />
+              <Label htmlFor="age-years">Years</Label>
+              <Input
+                id="age-months"
+                type="number"
+                min={0}
+                max={11}
+                placeholder="0"
+                value={ageMonths}
+                onChange={(e) => setAgeMonths(clamp(e.target.value, 0, 11))}
+                className="ml-2 h-10 w-20 bg-background"
+              />
+              <Label htmlFor="age-months">Months</Label>
+            </div>
+          </fieldset>
 
           <RadioGroup
             legend="Gender"
@@ -295,7 +295,9 @@ function FormElement({
 
   return (
     <div className="flex flex-col gap-2">
-      <Label htmlFor={id}>{labelText}</Label>
+      <Label htmlFor={id} className="font-bold">
+        {labelText}
+      </Label>
       <Input
         id={id}
         type={inputType}
@@ -335,7 +337,9 @@ function TextAreaElement({
   const id = useId();
   return (
     <div className="flex flex-col gap-2">
-      <Label htmlFor={id}>{labelText}</Label>
+      <Label htmlFor={id} className="font-bold">
+        {labelText}
+      </Label>
       <textarea
         id={id}
         rows={4}
@@ -367,7 +371,7 @@ function RadioGroup<T extends string>({
 }) {
   return (
     <fieldset className="flex flex-col gap-2">
-      <legend className="mb-2 text-sm font-medium">{legend}</legend>
+      <legend className="mb-2 text-sm font-bold">{legend}</legend>
       <div className="flex flex-wrap gap-3">
         {options.map((option) => (
           <label
