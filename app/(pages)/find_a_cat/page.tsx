@@ -1,10 +1,10 @@
 import { Suspense } from "react";
-import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Cat } from "lucide-react";
-import Navbar from "@/components/view/navbar/Navbar";
+import { ChevronDown, SlidersHorizontal } from "lucide-react";
+import BilaiPage from "@/components/view/BilaiPage";
+import CatCard from "@/components/view/cat/CatCard";
 import Searchbar from "@/components/view/search/Searchbar";
-import { CATS_PER_PAGE, formatCatAge, getCats, getCatBreeds } from "@/lib/cats";
+import { getCats, getCatBreeds } from "@/lib/cats";
 
 import CatFilters from "@/components/view/search/CatFilters";
 import {
@@ -21,27 +21,24 @@ export default function FindCatsPage({
   searchParams: SearchParams;
 }) {
   return (
-    <div className="theme-light flex flex-1 flex-col bg-background text-foreground">
-      <Navbar currentPage="find" />
+    <BilaiPage currentPage="find" mainClassName="bilai-frame bilai-inner">
+      <header className="bilai-page-heading">
+        <h1>Find a cat</h1>
+        <p>Search by name, breed, or area to find cats in Bangladesh.</p>
+      </header>
       <Suspense fallback={<Searchbar />}>
         <AppliedSearchbar searchParams={searchParams} />
       </Suspense>
-      <main className="wrap py-8">
-        <h1 className="font-heading text-3xl font-bold">Find a cat</h1>
-        <p className="mt-2 text-muted-foreground">
-          A little friend. A whole lot of love.
-        </p>
-        <Suspense
-          fallback={
-            <p className="py-8" role="status">
-              Loading cats…
-            </p>
-          }
-        >
-          <CatResults searchParams={searchParams} />
-        </Suspense>
-      </main>
-    </div>
+      <Suspense
+        fallback={
+          <p className="py-8" role="status">
+            Loading cats…
+          </p>
+        }
+      >
+        <CatResults searchParams={searchParams} />
+      </Suspense>
+    </BilaiPage>
   );
 }
 
@@ -65,6 +62,7 @@ async function CatResults({ searchParams }: { searchParams: SearchParams }) {
   ]);
   const { items, total, page, totalPages } = results;
   const appliedParams = catFilterParams(filters);
+  const filterCount = new Set([...appliedParams.keys()].filter((key) => key !== "q")).size;
   const href = (target: number) => {
     const query = new URLSearchParams(appliedParams);
     query.set("page", String(target));
@@ -77,68 +75,32 @@ async function CatResults({ searchParams }: { searchParams: SearchParams }) {
     "flex min-h-10 min-w-10 items-center justify-center rounded-lg border border-border px-3 text-sm font-semibold hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2";
 
   return (
-    <div className="mt-6 grid items-start gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
-      <CatFilters
-        key={appliedParams.toString()}
-        initialFilters={filters}
-        breeds={breeds}
-      />
+    <>
+      <details className="bilai-filter-panel">
+        <summary>
+          <SlidersHorizontal size={17} aria-hidden="true" />
+          Filters{filterCount > 0 ? " (" + filterCount + " applied)" : ""}
+          <ChevronDown size={17} aria-hidden="true" />
+        </summary>
+        <CatFilters
+          key={appliedParams.toString()}
+          initialFilters={filters}
+          breeds={breeds}
+        />
+      </details>
       <section aria-label="Cat results" className="min-w-0">
-        <p className="mb-6 text-sm text-muted-foreground">
-          Showing {items.length} out of {total} cats · {CATS_PER_PAGE} per page
+        <p className="mb-3 text-sm text-muted-foreground">
+          Showing {items.length} of {total} cats
         </p>
         {items.length > 0 ? (
-          <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="bilai-directory-grid">
             {items.map((cat) => (
-              <Link
+              <CatCard
                 key={cat.id}
-                href={`/find_a_cat/${cat.id}`}
-                prefetch={false}
-                aria-label={`View profile for ${cat.name}`}
-                className="group flex flex-col overflow-hidden rounded-[20px] border border-[var(--bilai-line)] bg-[var(--bilai-on-dark)] text-[var(--bilai-ink)] transition-colors hover:border-[var(--bilai-action)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--bilai-focus)]"
-              >
-                <div className="relative aspect-[32/15] shrink-0 overflow-hidden bg-muted">
-                  {cat.coverImageUrl ? (
-                    <Image
-                      src={cat.coverImageUrl}
-                      alt={cat.name}
-                      fill
-                      unoptimized
-                      sizes="(min-width: 1280px) 25vw, (min-width: 1024px) 35vw, (min-width: 640px) 50vw, 100vw"
-                      className="object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-full items-center justify-center">
-                      <Cat
-                        className="size-12 text-muted-foreground"
-                        aria-label="No photo yet"
-                      />
-                    </div>
-                  )}
-                </div>
-                <div className="flex flex-1 flex-col p-4">
-                  <h2 className="text-xl leading-tight font-bold tracking-tight [overflow-wrap:anywhere]">
-                    {cat.name}
-                  </h2>
-                  <p className="mt-2 text-sm leading-relaxed text-[var(--bilai-muted)]">
-                    {cat.breed} · {formatCatAge(cat.ageMonths)} ·{" "}
-                    <span className="capitalize">{cat.gender}</span>
-                  </p>
-                  <div className="mt-auto pt-4">
-                    <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border-t border-[var(--bilai-line)] pt-4 text-sm">
-                      <p className="min-w-0 text-[var(--bilai-muted)] [overflow-wrap:anywhere]">
-                        {cat.area}, {cat.district}
-                      </p>
-                      <span className="inline-flex shrink-0 items-center gap-2 font-bold text-[var(--bilai-action)]">
-                        <span className="underline decoration-1 underline-offset-4 group-hover:decoration-2">
-                          View profile
-                        </span>
-                        <ArrowRight className="size-4" aria-hidden="true" />
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </Link>
+                cat={cat}
+                nameAs="h2"
+                sizes="(max-width: 384px) 100vw, (max-width: 640px) 50vw, (max-width: 1056px) 33vw, 25vw"
+              />
             ))}
           </div>
         ) : (
@@ -207,6 +169,6 @@ async function CatResults({ searchParams }: { searchParams: SearchParams }) {
           </nav>
         )}
       </section>
-    </div>
+    </>
   );
 }

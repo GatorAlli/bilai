@@ -142,15 +142,14 @@ export default function ImageGallery({
   return (
     <section className="flex flex-col gap-3">
       <div>
-        <div className="flex items-baseline justify-between gap-3">
-          <h2 className="font-heading text-lg font-bold">Image gallery</h2>
+        <div className="flex flex-wrap items-baseline justify-between gap-3">
+          <h2 className="text-lg font-extrabold">Cat photos</h2>
           <span className="text-sm text-muted-foreground">
             {images.length} / {MAX_IMAGES}
           </span>
         </div>
         <p className="mt-1 text-sm text-muted-foreground">
-          Add up to {MAX_IMAGES} photos. Wide (landscape) photos look best. The
-          first photo is the cover.
+          Add up to {MAX_IMAGES} photos, {MAX_INPUT_SIZE_MB} MB each. The first photo is the cover.
         </p>
       </div>
 
@@ -170,13 +169,14 @@ export default function ImageGallery({
           addFiles(e.dataTransfer.files);
         }}
         className={cn(
-          "flex flex-col items-center gap-3 rounded-2xl border-2 border-dashed border-input px-4 py-8 text-center transition-colors",
+          "flex flex-wrap items-center gap-3 rounded-lg transition-colors",
           isDropTarget && "border-secondary bg-secondary/15",
         )}
       >
         <input
           ref={fileInputRef}
           type="file"
+          aria-label="Add cat photos"
           multiple
           accept={ACCEPTED_TYPES.join(",")}
           className="sr-only"
@@ -189,15 +189,16 @@ export default function ImageGallery({
         />
         <Button
           type="button"
-          variant="secondary"
+          variant="outline"
           size="lg"
+          className="h-11 bg-card font-bold"
           disabled={isFull || isProcessing}
           onClick={() => fileInputRef.current?.click()}
         >
           <ImagePlus />
-          Choose files
+          Add photos
         </Button>
-        <p className="text-sm text-muted-foreground">
+        <p role="status" className="text-sm text-muted-foreground">
           {isProcessing
             ? "Processing…"
             : isFull
@@ -241,7 +242,7 @@ export default function ImageGallery({
               }}
               onDragEnd={resetDrag}
               className={cn(
-                "flex items-center gap-3 rounded-xl border border-border bg-muted p-3 transition-opacity",
+                "grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-xl border border-border bg-card p-3 transition-opacity sm:flex sm:gap-3",
                 draggingId === img.id && "opacity-40",
                 overId === img.id &&
                   draggingId !== img.id &&
@@ -270,7 +271,7 @@ export default function ImageGallery({
                 <GripVertical className="size-5" />
               </button>
 
-              <div className="relative h-16 w-24 shrink-0 overflow-hidden rounded-lg bg-background sm:h-20 sm:w-32">
+              <div className="relative col-span-2 h-16 w-24 shrink-0 overflow-hidden rounded-lg bg-background sm:h-20 sm:w-32">
                 <Image
                   src={img.previewUrl}
                   alt={img.caption || img.file.name}
@@ -291,7 +292,7 @@ export default function ImageGallery({
                 placeholder="Add a caption (optional)"
                 value={img.caption}
                 onChange={(e) => setCaption(img.id, e.target.value)}
-                className="h-10 min-w-0 flex-1 bg-background"
+                className="col-span-2 row-start-2 h-11 min-w-0 flex-1 bg-background"
               />
 
               <span className="hidden w-5 text-center text-sm text-muted-foreground sm:block">
@@ -302,6 +303,7 @@ export default function ImageGallery({
                 type="button"
                 variant="ghost"
                 size="icon"
+                className="col-start-3 row-start-2"
                 aria-label={`Remove image ${index + 1}`}
                 onClick={() => removeImage(img.id)}
               >

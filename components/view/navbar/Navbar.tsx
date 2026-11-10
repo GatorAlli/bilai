@@ -73,20 +73,20 @@ export default function Navbar({ currentPage }: { currentPage: Page }) {
         >
           <div className="bilai-nav-tabs" data-active={findCurrent ? "find" : currentPage}>
             <Link
+              href="/"
+              className="bilai-nav-tab"
+              aria-current={currentPage === "home" ? "page" : undefined}
+              onClick={closeMenu}
+            >
+              Homepage
+            </Link>
+            <Link
               href="/find_a_cat"
               className="bilai-nav-tab"
               aria-current={findCurrent ? (currentPage === "find" ? "page" : "location") : undefined}
               onClick={closeMenu}
             >
               Find a cat
-            </Link>
-            <Link
-              href="/"
-              className="bilai-nav-tab"
-              aria-current={currentPage === "home" ? "page" : undefined}
-              onClick={closeMenu}
-            >
-              Home
             </Link>
           </div>
           <div className="bilai-nav-actions">
