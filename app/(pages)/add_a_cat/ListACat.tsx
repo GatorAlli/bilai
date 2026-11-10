@@ -1,0 +1,545 @@
+"use client";
+
+import Link from "next/link";
+
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { SearchSelect } from "@/components/ui/search-select";
+import { useId, useMemo, useState, useTransition } from "react";
+import { DISTRICT_NAMES, getAreaGroups } from "@/lib/locations";
+import ImageGallery, { type GalleryImage } from "./ImageGallery";
+import { submitForm } from "./actions";
+import { authClient } from "@/lib/auth-client";
+import { normalizeBdPhone, PHONE_ERROR } from "@/lib/phone";
+import {
+  type ContactMethod,
+  MAX_DESCRIPTION_LENGTH,
+  MAX_REHOMING_REASON_LENGTH,
+  MAX_TEMPERAMENT_LENGTH,
+} from "@/lib/cat-limits";
+
+const BREED_SUGGESTIONS = [
+  "Local / Street / Deshi Cat",
+  "Persian",
+  "Siamese",
+  "Himalayan",
+  "Ragdoll",
+  "Maine Coon",
+  "British Shorthair",
+  "Bengal",
+  "Scottish Fold",
+  "Mixed / Unknown",
+];
+
+type Gender = "male" | "female" | "unknown";
+
+const GENDER_OPTIONS: { value: Gender; label: string }[] = [
+  { value: "male", label: "Male" },
+  { value: "female", label: "Female" },
+  { value: "unknown", label: "Unknown" },
+];
+
+type YesNoUnknown = "yes" | "no" | "unknown";
+
+const YES_NO_UNKNOWN_OPTIONS: { value: YesNoUnknown; label: string }[] = [
+  { value: "yes", label: "Yes" },
+  { value: "no", label: "No" },
+  { value: "unknown", label: "Unknown" },
+];
+
+const CONTACT_OPTIONS: { value: ContactMethod; label: string }[] = [
+  { value: "whatsapp", label: "WhatsApp" },
+  { value: "call", label: "Phone call" },
+];
+
+function clamp(value: string, min: number, max: number) {
+  if (value === "") return "";
+  const n = Math.floor(Number(value));
+  if (Number.isNaN(n)) return "";
+  return String(Math.min(max, Math.max(min, n)));
+}
+
+export default function ListACat() {
+  const [name, setName] = useState("");
+  const [breed, setBreed] = useState("");
+  const [ageYears, setAgeYears] = useState("0");
+  const [ageMonths, setAgeMonths] = useState("0");
+  const [district, setDistrict] = useState("");
+  const [area, setArea] = useState("");
+  const [gender, setGender] = useState<Gender | "">("");
+  const [vaccinated, setVaccinated] = useState<YesNoUnknown | "">("");
+  const [neutered, setNeutered] = useState<YesNoUnknown | "">("");
+  const [temperament, setTemperament] = useState("");
+  const [description, setDescription] = useState("");
+  const [rehomingReason, setRehomingReason] = useState("");
+  const [contactMethods, setContactMethods] = useState<ContactMethod[]>([]);
+  const [images, setImages] = useState<GalleryImage[]>([]);
+  const [phone, setPhone] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+  // Signed up with Google (or before phones existed)? Ask for a number once.
+  const { data: session } = authClient.useSession();
+  const needsPhone = Boolean(session?.user) && !session?.user.phone;
+
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError(null);
+
+    if (needsPhone && !normalizeBdPhone(phone)) {
+      setError(PHONE_ERROR);
+      return;
+    }
+
+    if (!district) {
+      setError("Please choose a district.");
+      return;
+    }
+    if (!area) {
+      setError("Please choose an area.");
+      return;
+    }
+    if (!gender) {
+      setError("Please choose a gender.");
+      return;
+    }
+    if (!vaccinated) {
+      setError("Please say whether the cat is vaccinated.");
+      return;
+    }
+    if (!neutered) {
+      setError("Please say whether the cat is spayed/neutered.");
+      return;
+    }
+    if (contactMethods.length === 0) {
+      setError("Please choose how adopters can contact you.");
+      return;
+    }
+    if (images.length === 0) {
+      setError("Please add at least one photo.");
+      return;
+    }
+
+    startTransition(async () => {
+      try {
+        // On success the action redirects, so we only get a result back
+        // when something went wrong.
+        const formData = new FormData();
+        formData.set("name", name);
+        formData.set("breed", breed);
+        formData.set("ageYears", ageYears || "0");
+        formData.set("ageMonths", ageMonths || "0");
+        formData.set("district", district);
+        formData.set("area", area);
+        formData.set("gender", gender);
+        formData.set("vaccinated", vaccinated);
+        formData.set("neutered", neutered);
+        formData.set("temperament", temperament);
+        formData.set("description", description);
+        formData.set("rehomingReason", rehomingReason);
+        if (needsPhone) formData.set("phone", phone);
+        for (const method of contactMethods) {
+          formData.append("contactMethods", method);
+        }
+        // Same order as the gallery: the first image is the cover.
+        for (const img of images) {
+          formData.append("images", img.file);
+          formData.append("captions", img.caption);
+        }
+
+        const result = await submitForm(formData);
+        if (result && !result.ok) setError(result.error);
+      } catch (err) {
+        // Network/server errors carry technical messages; keep them out of the UI.
+        console.error(err);
+        setError("Something went wrong. Please try again.");
+      }
+    });
+  }
+
+  return (
+    <form className="bilai-form" onSubmit={handleSubmit} aria-labelledby="list-title">
+      <ImageGallery images={images} onChange={setImages} />
+
+      <section className="grid gap-4" aria-labelledby="cat-details-title">
+        <h2 id="cat-details-title" className="text-lg font-extrabold">Cat details</h2>
+        <div className="bilai-form-pair">
+          <FormElement
+            labelText="Name"
+            inputPlaceholder="Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+          <FormElement
+            labelText="Breed"
+            inputPlaceholder="Start typing or pick a suggestion"
+            suggestions={BREED_SUGGESTIONS}
+            value={breed}
+            onChange={(e) => setBreed(e.target.value)}
+          />
+        </div>
+
+        <LocationFields
+          district={district}
+          area={area}
+          onDistrictChange={(next) => {
+            setDistrict(next);
+            if (next !== district) setArea("");
+          }}
+          onAreaChange={setArea}
+        />
+
+        <div className="bilai-form-pair">
+          <fieldset className="min-w-0">
+            <legend className="mb-2 text-sm font-bold">Age</legend>
+            <div className="grid max-w-xs grid-cols-2 gap-2">
+              <div className="grid min-w-0 gap-1">
+                <Label htmlFor="age-years">Years</Label>
+                <Input
+                  id="age-years"
+                  type="number"
+                  min={0}
+                  max={30}
+                  value={ageYears}
+                  onChange={(e) => setAgeYears(clamp(e.target.value, 0, 30))}
+                />
+              </div>
+              <div className="grid min-w-0 gap-1">
+                <Label htmlFor="age-months">Months</Label>
+                <Input
+                  id="age-months"
+                  type="number"
+                  min={0}
+                  max={11}
+                  value={ageMonths}
+                  onChange={(e) => setAgeMonths(clamp(e.target.value, 0, 11))}
+                />
+              </div>
+            </div>
+          </fieldset>
+          <RadioGroup
+            legend="Gender"
+            name="gender"
+            options={GENDER_OPTIONS}
+            value={gender}
+            onChange={setGender}
+          />
+        </div>
+
+        <div className="bilai-form-pair">
+          <RadioGroup
+            legend="Vaccinated"
+            name="vaccinated"
+            options={YES_NO_UNKNOWN_OPTIONS}
+            value={vaccinated}
+            onChange={setVaccinated}
+          />
+          <RadioGroup
+            legend="Spayed / neutered"
+            name="neutered"
+            options={YES_NO_UNKNOWN_OPTIONS}
+            value={neutered}
+            onChange={setNeutered}
+          />
+        </div>
+      </section>
+
+      <section className="grid gap-4" aria-labelledby="cat-story-title">
+        <h2 id="cat-story-title" className="text-lg font-extrabold">Their story</h2>
+        <FormElement
+          labelText="Temperament"
+          inputPlaceholder="e.g. Playful, shy, calm"
+          maxLength={MAX_TEMPERAMENT_LENGTH}
+          value={temperament}
+          onChange={(e) => setTemperament(e.target.value)}
+        />
+        <TextAreaElement
+          labelText="Description"
+          placeholder="Tell people about this cat"
+          maxLength={MAX_DESCRIPTION_LENGTH}
+          value={description}
+          onChange={setDescription}
+        />
+        <TextAreaElement
+          labelText="Reason for rehoming"
+          placeholder="Why does this cat need a new home?"
+          maxLength={MAX_REHOMING_REASON_LENGTH}
+          value={rehomingReason}
+          onChange={setRehomingReason}
+        />
+      </section>
+
+      <CheckboxGroup
+        legend="How can adopters contact you?"
+        hint="Pick one or both. We use the phone number on your profile."
+        name="contactMethods"
+        options={CONTACT_OPTIONS}
+        value={contactMethods}
+        onChange={setContactMethods}
+      />
+
+      {needsPhone && (
+        <FormElement
+          labelText="Your phone number"
+          inputPlaceholder="01712345678"
+          inputType="tel"
+          maxLength={20}
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+        />
+      )}
+
+      <div className="grid justify-items-start gap-2">
+        {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
+        <div className="flex flex-wrap items-center gap-3">
+          <Button type="submit" variant="secondary" size="lg" disabled={isPending} className="h-11 font-bold">
+            {isPending ? "Saving…" : "Save cat profile"}
+          </Button>
+          <Link href="/find_a_cat" className="bilai-outline">Back to Find a Cat</Link>
+        </div>
+      </div>
+    </form>
+  );
+}
+
+function FormElement({
+  labelText,
+  inputPlaceholder,
+  inputType = "text",
+  value,
+  onChange,
+  suggestions,
+  min,
+  max,
+  maxLength,
+}: {
+  labelText: string;
+  inputPlaceholder: string;
+  inputType?: string;
+  value: string;
+  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  /** Optional autocomplete suggestions, rendered as a <datalist> */
+  suggestions?: string[];
+  min?: number;
+  max?: number;
+  maxLength?: number;
+}) {
+  /* A way to remove the pain of having to add and style
+    labels and inputs individually for every single form field */
+  const id = useId();
+  const listId = `${id}-list`;
+
+  return (
+    <div className="flex flex-col gap-2">
+      <Label htmlFor={id} className="font-bold">
+        {labelText}
+      </Label>
+      <Input
+        id={id}
+        type={inputType}
+        placeholder={inputPlaceholder}
+        value={value}
+        min={min}
+        max={max}
+        maxLength={maxLength}
+        list={suggestions ? listId : undefined}
+        className="h-10 bg-background"
+        onChange={(e) => onChange(e)}
+      />
+      {suggestions && (
+        <datalist id={listId}>
+          {suggestions.map((suggestion) => (
+            <option key={suggestion} value={suggestion} />
+          ))}
+        </datalist>
+      )}
+    </div>
+  );
+}
+
+/* District -> Area, the way Bangladeshi listing sites do it. Not every place
+   is a city: an area is a city neighbourhood or an upazila. */
+function LocationFields({
+  district,
+  area,
+  onDistrictChange,
+  onAreaChange,
+}: {
+  district: string;
+  area: string;
+  onDistrictChange: (value: string) => void;
+  onAreaChange: (value: string) => void;
+}) {
+  const districtId = useId();
+  const areaId = useId();
+  const areaGroups = useMemo(() => getAreaGroups(district), [district]);
+
+  return (
+    <div className="bilai-form-pair">
+      <div className="flex flex-col gap-2">
+        <Label htmlFor={districtId} className="font-bold">
+          District
+        </Label>
+        <SearchSelect
+          id={districtId}
+          items={DISTRICT_NAMES}
+          value={district}
+          onChange={onDistrictChange}
+          placeholder="e.g. Dhaka"
+          emptyText="No district found."
+          popupClassName="bilai-theme"
+        />
+      </div>
+      <div className="flex flex-col gap-2">
+        <Label htmlFor={areaId} className="font-bold">
+          Area
+        </Label>
+        <SearchSelect
+          // Remount per district so the typed filter and highlight reset too.
+          key={district}
+          id={areaId}
+          items={areaGroups}
+          value={area}
+          onChange={onAreaChange}
+          placeholder={
+            district ? "Neighbourhood or upazila" : "Choose a district first"
+          }
+          emptyText="No area found."
+          popupClassName="bilai-theme"
+          disabled={!district}
+        />
+      </div>
+    </div>
+  );
+}
+
+function TextAreaElement({
+  labelText,
+  placeholder,
+  value,
+  onChange,
+  maxLength,
+}: {
+  labelText: string;
+  placeholder: string;
+  value: string;
+  onChange: (value: string) => void;
+  maxLength: number;
+}) {
+  const id = useId();
+  return (
+    <div className="flex flex-col gap-2">
+      <Label htmlFor={id} className="font-bold">
+        {labelText}
+      </Label>
+      <textarea
+        id={id}
+        rows={4}
+        placeholder={placeholder}
+        maxLength={maxLength}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full resize-y rounded-lg border border-input bg-background px-2.5 py-2 text-base transition-colors outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:text-sm"
+      />
+      <span className="self-end text-xs text-muted-foreground">
+        {value.length} / {maxLength}
+      </span>
+    </div>
+  );
+}
+
+function RadioGroup<T extends string>({
+  legend,
+  name,
+  options,
+  value,
+  onChange,
+}: {
+  legend: string;
+  name: string;
+  options: { value: T; label: string }[];
+  value: T | "";
+  onChange: (value: T) => void;
+}) {
+  return (
+    <fieldset className="flex flex-col gap-2">
+      <legend className="mb-2 text-sm font-bold">{legend}</legend>
+      <div className="flex flex-wrap gap-3">
+        {options.map((option) => (
+          <label
+            key={option.value}
+            className="flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-input bg-card px-3 text-sm font-medium transition-colors hover:bg-muted has-checked:border-secondary has-checked:bg-secondary/20 has-focus-visible:ring-3 has-focus-visible:ring-ring/50"
+          >
+            <input
+              type="radio"
+              name={name}
+              value={option.value}
+              checked={value === option.value}
+              onChange={() => onChange(option.value)}
+              className="size-4 accent-[var(--bilai-action)] outline-none"
+            />
+            {option.label}
+          </label>
+        ))}
+      </div>
+    </fieldset>
+  );
+}
+
+function CheckboxGroup<T extends string>({
+  legend,
+  hint,
+  name,
+  options,
+  value,
+  onChange,
+}: {
+  legend: string;
+  hint?: string;
+  name: string;
+  options: { value: T; label: string }[];
+  value: T[];
+  onChange: (value: T[]) => void;
+}) {
+  const hintId = useId();
+  return (
+    <fieldset
+      className="flex flex-col gap-2"
+      aria-describedby={hint ? hintId : undefined}
+    >
+      <legend className="mb-1 text-sm font-bold">{legend}</legend>
+      {hint && (
+        <p id={hintId} className="mb-1 text-sm text-muted-foreground">
+          {hint}
+        </p>
+      )}
+      <div className="flex flex-wrap gap-3">
+        {options.map((option) => (
+          <label
+            key={option.value}
+            className="flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-input bg-card px-3 text-sm font-medium transition-colors hover:bg-muted has-checked:border-secondary has-checked:bg-secondary/20 has-focus-visible:ring-3 has-focus-visible:ring-ring/50"
+          >
+            <input
+              type="checkbox"
+              name={name}
+              value={option.value}
+              checked={value.includes(option.value)}
+              onChange={(e) =>
+                onChange(
+                  e.target.checked
+                    ? // Keep the options' order so the payload is predictable.
+                      options
+                        .map((o) => o.value)
+                        .filter((v) => v === option.value || value.includes(v))
+                    : value.filter((v) => v !== option.value),
+                )
+              }
+              className="size-4 accent-[var(--bilai-action)] outline-none"
+            />
+            {option.label}
+          </label>
+        ))}
+      </div>
+    </fieldset>
+  );
+}
