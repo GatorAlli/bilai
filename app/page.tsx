@@ -7,7 +7,7 @@ export default function Home() {
       <Navbar />
       <Searchbar />
       <main className="wrap flex flex-1 items-center justify-center">
-        <p className="font-bold text-mauve-950">This is the landing page</p>
+        <p className="font-bold text-mauve-950">how are u</p>
       </main>
     </div>
   );
