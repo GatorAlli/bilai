@@ -39,9 +39,3 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-
-# Image uploads
-/uploads
-
-# local image uploads
-/uploads

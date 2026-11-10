@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { notFound } from "next/navigation";
 import BilaiPage from "@/components/view/BilaiPage";
+import DeleteListingButton from "@/components/view/cat/DeleteListingButton";
 import ContactButtons from "@/components/view/cat/ContactButtons";
 import { getSession } from "@/lib/auth";
 import { formatCatAge, getCat } from "@/lib/cats";
@@ -108,6 +109,9 @@ async function CatDetails({ params }: { params: Promise<{ id: string }> }) {
                 isOwner={session?.user.id === cat.owner.id}
               />
             </div>
+          ) : null}
+          {session?.user.id === cat.owner.id ? (
+            <DeleteListingButton catId={cat.id} />
           ) : null}
         </div>
       </div>
