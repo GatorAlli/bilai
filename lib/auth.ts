@@ -8,6 +8,35 @@ import { eq } from "drizzle-orm";
 import { normalizeBdPhone, PHONE_ERROR } from "@/lib/phone";
 
 export const auth = betterAuth({
+  user: {
+  additionalFields: {
+    phone: { type: "string", required: true },
+  },
+},
+
+databaseHooks: {
+  user: {
+    create: {
+      before: async (user) => {
+        const phone = normalizeBdPhone(String((user as { phone?: string }).phone ?? ""));
+        if (!phone) throw new APIError("BAD_REQUEST", { message: PHONE_ERROR });
+
+        const taken = await db
+          .select({ id: schema.user.id })
+          .from(schema.user)
+          .where(eq(schema.user.phone, phone))
+          .limit(1);
+        if (taken.length > 0) {
+          throw new APIError("BAD_REQUEST", {
+            message: "An account with this phone number already exists.",
+          });
+        }
+
+        return { data: { ...user, phone } }; // saved as 8801712345678
+      },
+    },
+  },
+},
   database: drizzleAdapter(db, {
     provider: "pg",
     schema,
