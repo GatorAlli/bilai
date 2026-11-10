@@ -10,6 +10,8 @@ import { useId, useMemo, useState, useTransition } from "react";
 import { DISTRICT_NAMES, getAreaGroups } from "@/lib/locations";
 import ImageGallery, { type GalleryImage } from "./ImageGallery";
 import { submitForm } from "./actions";
+import { authClient } from "@/lib/auth-client";
+import { normalizeBdPhone, PHONE_ERROR } from "@/lib/phone";
 import {
   type ContactMethod,
   MAX_DESCRIPTION_LENGTH,
@@ -73,12 +75,21 @@ export default function PageBody() {
   const [rehomingReason, setRehomingReason] = useState("");
   const [contactMethods, setContactMethods] = useState<ContactMethod[]>([]);
   const [images, setImages] = useState<GalleryImage[]>([]);
+  const [phone, setPhone] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  // Signed up with Google (or before phones existed)? Ask for a number once.
+  const { data: session } = authClient.useSession();
+  const needsPhone = Boolean(session?.user) && !session?.user.phone;
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
+
+    if (needsPhone && !normalizeBdPhone(phone)) {
+      setError(PHONE_ERROR);
+      return;
+    }
 
     if (!district) {
       setError("Please choose a district.");
@@ -126,6 +137,7 @@ export default function PageBody() {
         formData.set("temperament", temperament);
         formData.set("description", description);
         formData.set("rehomingReason", rehomingReason);
+        if (needsPhone) formData.set("phone", phone);
         for (const method of contactMethods) {
           formData.append("contactMethods", method);
         }
@@ -273,6 +285,17 @@ export default function PageBody() {
             value={contactMethods}
             onChange={setContactMethods}
           />
+
+          {needsPhone && (
+            <FormElement
+              labelText="Your phone number"
+              inputPlaceholder="01712345678"
+              inputType="tel"
+              maxLength={20}
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+            />
+          )}
 
           {error && (
             <p role="alert" className="text-sm text-destructive">

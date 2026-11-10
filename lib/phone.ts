@@ -1,6 +1,9 @@
 export const PHONE_ERROR =
   "Enter a valid Bangladesh mobile number, like 01712345678 or +8801712345678.";
 
+export const PHONE_TAKEN_ERROR =
+  "An account with this phone number already exists.";
+
 /**
  * Accepts 01712345678, +8801712345678, 8801712345678
  * (spaces, dashes and brackets are ignored).
