@@ -3,6 +3,9 @@ import { drizzleAdapter } from "@better-auth/drizzle-adapter";
 import { db } from "@/db";
 import * as schema from "@/db/schema";
 import { headers } from "next/headers";
+import { APIError } from "better-auth/api";
+import { eq } from "drizzle-orm";
+import { normalizeBdPhone, PHONE_ERROR } from "@/lib/phone";
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
