@@ -3,6 +3,7 @@
 import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 
 import { db } from "@/db";
 import { catImages, cats } from "@/db/schema";
@@ -17,6 +18,7 @@ import {
   YES_NO_UNKNOWN,
 } from "@/lib/cat-limits";
 import { getUserPhone, saveUserPhone } from "@/lib/contact";
+import { purgeExpiredListings } from "@/lib/listing-expiry";
 import { isValidLocation } from "@/lib/locations";
 import { normalizeBdPhone, PHONE_ERROR } from "@/lib/phone";
 import { isWebp } from "@/lib/uploads";
@@ -189,6 +191,7 @@ export async function submitForm(
     return { ok: false, error: "Couldn't save the cat. Please try again." };
   }
 
+  after(purgeExpiredListings);
   // Must stay outside the try/catch: redirect() works by throwing.
   redirect("/");
 }

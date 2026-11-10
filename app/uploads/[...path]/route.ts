@@ -1,9 +1,9 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
-import { catImages } from "@/db/schema";
-
+import { catImages, cats } from "@/db/schema";
+import { isLiveListing } from "@/lib/listing-expiry";
 import { UPLOAD_ROOT } from "@/lib/uploads";
 
 export async function GET(
@@ -25,9 +25,10 @@ export async function GET(
     const [photo] = await db
       .select({ data: catImages.data })
       .from(catImages)
-      .where(eq(catImages.key, key))
+      .innerJoin(cats, eq(catImages.catId, cats.id))
+      .where(and(eq(catImages.key, key), isLiveListing))
       .limit(1);
-    // Only serve images belonging to a current listing.
+    // Only serve images belonging to a current, unexpired listing.
     if (!photo) return new Response("Not found", { status: 404 });
     const data = photo.data
       ? Buffer.from(photo.data, "base64")
@@ -35,7 +36,8 @@ export async function GET(
     return new Response(new Uint8Array(data), {
       headers: {
         "Content-Type": "image/webp",
-        "Cache-Control": "public, max-age=31536000, immutable",
+        // Listings expire after a week, so browsers needn't keep photos longer.
+        "Cache-Control": "public, max-age=604800, immutable",
       },
     });
   } catch (error) {
