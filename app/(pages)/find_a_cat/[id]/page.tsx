@@ -12,7 +12,7 @@ export default function CatPage({
 }) {
   return (
     <div className="theme-light flex flex-1 flex-col bg-background text-foreground">
-      <Navbar />
+      <Navbar currentPage="profile" />
       <main className="wrap py-8">
         <Link href="/find_a_cat" className="text-sm font-bold underline">
           ← Find a cat

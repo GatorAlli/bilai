@@ -22,7 +22,7 @@ export default function FindCatsPage({
 }) {
   return (
     <div className="theme-light flex flex-1 flex-col bg-background text-foreground">
-      <Navbar />
+      <Navbar currentPage="find" />
       <Suspense fallback={<Searchbar />}>
         <AppliedSearchbar searchParams={searchParams} />
       </Suspense>

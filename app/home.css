@@ -1,0 +1,146 @@
+.bilai-home-page {
+  flex: 1;
+  background: var(--bilai-paper);
+  color: var(--bilai-ink);
+  color-scheme: light;
+}
+
+.bilai-home-hero {
+  width: calc(100% - 2 * var(--bilai-gutter));
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: minmax(0, .88fr) minmax(0, 1.12fr);
+  align-items: center;
+  gap: clamp(1.35rem, 4vw, 3.5rem);
+  padding-block: clamp(1.15rem, 2vw, 1.85rem) clamp(1.35rem, 2.5vw, 2.25rem);
+}
+
+.bilai-home-copy {
+  container-type: inline-size;
+}
+
+.bilai-home-copy h1 {
+  font-size: clamp(2rem, 4.3vw, 4rem);
+  font-size: clamp(2rem, 13.3cqi, 4rem);
+  font-weight: 660;
+  line-height: 1.02;
+  letter-spacing: -.042em;
+}
+
+.bilai-home-copy h1 span {
+  display: block;
+}
+
+.bilai-home-accent {
+  color: var(--bilai-action);
+}
+
+.bilai-home-copy p {
+  max-width: 28rem;
+  margin-block-start: .75rem;
+  color: var(--bilai-muted);
+  font-size: .9375rem;
+  line-height: 1.6;
+}
+
+.bilai-home-cta {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: .55rem;
+  margin-block-start: 1rem;
+  padding: .65rem 1rem;
+  border-radius: .65rem;
+  background: var(--bilai-action);
+  color: var(--bilai-on-dark);
+  font-size: .9375rem;
+  font-weight: 700;
+  line-height: 1.3;
+  transition: background-color .16s ease;
+}
+
+.bilai-home-cta:hover,
+.bilai-home-cta:active {
+  background: var(--bilai-action-hover);
+}
+
+.bilai-home-cta:focus-visible {
+  outline: 2px solid var(--bilai-focus);
+  outline-offset: 4px;
+}
+
+.bilai-home-photo {
+  overflow: hidden;
+  border-radius: .875rem;
+  background: var(--bilai-forest);
+  color: var(--bilai-on-dark);
+}
+
+.bilai-home-photo img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1.67;
+  max-height: clamp(19rem, 24vw, 25rem);
+  object-fit: cover;
+  object-position: 59% 43%;
+}
+
+.bilai-home-photo figcaption {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: .15rem 1rem;
+  padding: .6rem .95rem;
+  font-size: .9375rem;
+  line-height: 1.4;
+}
+
+.bilai-home-photo figcaption span {
+  color: var(--bilai-forest-muted);
+  font-size: .75rem;
+}
+
+@media (max-width: 54rem) {
+  .bilai-home-hero {
+    grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+    gap: 1.75rem;
+  }
+}
+
+@media (max-width: 40rem) {
+  .bilai-home-hero {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.25rem;
+  }
+
+  .bilai-home-photo img {
+    aspect-ratio: 1.55;
+  }
+
+  .bilai-home-photo figcaption {
+    padding-inline: .75rem;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .bilai-home-copy h1 span {
+    animation: bilai-title-arrive .42s cubic-bezier(.2, .68, .26, 1) both;
+  }
+
+  .bilai-home-copy h1 .bilai-home-accent {
+    animation-delay: .075s;
+  }
+
+  @keyframes bilai-title-arrive {
+    from { opacity: .7; transform: translateY(.3rem); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bilai-home-cta {
+    transition: none;
+  }
+}

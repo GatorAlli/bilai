@@ -1,58 +1,111 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
-import { LogIn, Plus } from "lucide-react";
+import { LogIn, Menu, Plus, X } from "lucide-react";
+import { useEffect, useId, useRef, useState } from "react";
+import "./navbar.css";
 
-export default function Navbar() {
+type Page = "home" | "find" | "profile" | "login" | "list";
+
+export default function Navbar({ currentPage }: { currentPage: Page }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuId = useId();
+  const headerRef = useRef<HTMLElement>(null);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+
+    const desktop = window.matchMedia("(width > 54rem)");
+    const closeMenu = () => setMenuOpen(false);
+
+    function handlePointerDown(event: PointerEvent) {
+      if (event.target instanceof Node && !headerRef.current?.contains(event.target)) {
+        closeMenu();
+      }
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        closeMenu();
+        menuButtonRef.current?.focus();
+      }
+    }
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    desktop.addEventListener("change", closeMenu);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+      desktop.removeEventListener("change", closeMenu);
+    };
+  }, [menuOpen]);
+
+  const closeMenu = () => setMenuOpen(false);
+  const findCurrent = currentPage === "find" || currentPage === "profile";
+  const MenuIcon = menuOpen ? X : Menu;
+
   return (
-    <header className="bg-[#FAF6EE]">
-      <div className="wrap">
-        <nav className="relative flex items-center justify-between py-5">
-          <Link href="/" className="flex items-center gap-3">
-            <Image
-              src="/logo.png"
-              alt="bilai logo"
-              width={48}
-              height={48}
-              priority
-              className="size-12 mix-blend-multiply"
-            />
-            <span className="font-brand text-3xl leading-none text-mauve-950">
-              bilai.
-            </span>
-          </Link>
-
-          <ul className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 text-sm font-medium text-mauve-950 md:flex">
-            <li>
-              <Link
-                href="/find_a_cat"
-                className="border-b-2 border-[#ff7640] py-2"
-              >
-                Find a cat
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/#how-it-works"
-                className="border-b-2 border-transparent py-2 hover:border-mauve-950/30"
-              >
-                How it works
-              </Link>
-            </li>
-          </ul>
-
-          <div className="flex items-center gap-3 sm:gap-5">
+    <header ref={headerRef} className="bilai-nav-header">
+      <div className="bilai-nav-bar">
+        <Link href="/" className="bilai-nav-brand" aria-label="Bilai home" onClick={closeMenu}>
+          <Image src="/logo.png" alt="" width={48} height={48} loading="eager" />
+          <span>bilai.</span>
+        </Link>
+        <button
+          ref={menuButtonRef}
+          type="button"
+          className="bilai-nav-menu-button"
+          aria-label={menuOpen ? "Close menu" : "Open menu"}
+          aria-controls={menuId}
+          aria-expanded={menuOpen}
+          onClick={() => setMenuOpen((open) => !open)}
+        >
+          <MenuIcon size={20} aria-hidden="true" />
+        </button>
+        <nav
+          id={menuId}
+          aria-label="Main navigation"
+          className="bilai-nav-navigation"
+          data-open={menuOpen}
+        >
+          <div className="bilai-nav-tabs" data-active={findCurrent ? "find" : currentPage}>
+            <Link
+              href="/find_a_cat"
+              className="bilai-nav-tab"
+              aria-current={findCurrent ? (currentPage === "find" ? "page" : "location") : undefined}
+              onClick={closeMenu}
+            >
+              Find a cat
+            </Link>
+            <Link
+              href="/"
+              className="bilai-nav-tab"
+              aria-current={currentPage === "home" ? "page" : undefined}
+              onClick={closeMenu}
+            >
+              Home
+            </Link>
+          </div>
+          <div className="bilai-nav-actions">
             <Link
               href="/auth"
-              className="flex items-center gap-2 rounded-lg bg-mauve-950 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-mauve-900"
+              className="bilai-nav-login"
+              aria-current={currentPage === "login" ? "page" : undefined}
+              onClick={closeMenu}
             >
-              <LogIn className="size-4" aria-hidden />
+              <LogIn size={16} aria-hidden="true" />
               Login
             </Link>
             <Link
               href="/add_a_cat"
-              className="flex items-center gap-2 rounded-lg border border-mauve-950 px-4 py-2 text-sm font-semibold text-mauve-950 transition-colors hover:bg-mauve-950 hover:text-white"
+              className="bilai-nav-list"
+              aria-current={currentPage === "list" ? "page" : undefined}
+              onClick={closeMenu}
             >
-              <Plus className="size-4" aria-hidden />
+              <Plus size={16} aria-hidden="true" />
               List a cat
             </Link>
           </div>

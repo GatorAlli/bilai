@@ -133,7 +133,7 @@ export default function PageBody() {
 
   return (
     <div className="theme-light flex flex-1 flex-col bg-background text-foreground">
-      <Navbar />
+      <Navbar currentPage="list" />
       <main className="wrap flex justify-center py-8">
         <form
           onSubmit={handleSubmit}

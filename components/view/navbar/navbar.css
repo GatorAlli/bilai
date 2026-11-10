@@ -1,0 +1,207 @@
+.bilai-nav-header {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 5;
+  border-block-end: 1px solid var(--bilai-line);
+  background: var(--bilai-paper);
+  color: var(--bilai-brand-ink);
+  color-scheme: light;
+}
+
+.bilai-nav-bar {
+  position: relative;
+  display: flex;
+  width: calc(100% - 2 * var(--bilai-gutter));
+  min-height: 4.25rem;
+  align-items: center;
+  justify-content: space-between;
+  margin-inline: auto;
+}
+
+.bilai-nav-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: .75rem;
+  font-family: var(--font-matcha), sans-serif;
+  font-size: 1.875rem;
+  line-height: 1;
+}
+
+.bilai-nav-brand img {
+  width: 3rem;
+  height: 3rem;
+  mix-blend-mode: multiply;
+}
+
+.bilai-nav-navigation {
+  display: flex;
+  align-items: center;
+}
+
+.bilai-nav-tabs {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .25rem;
+  padding: .25rem;
+  translate: -50% -50%;
+}
+
+.bilai-nav-tabs::before {
+  position: absolute;
+  inset: .25rem auto .25rem .25rem;
+  width: calc((100% - .75rem) / 2);
+  border-radius: 999px;
+  background: var(--bilai-active);
+  opacity: 0;
+  content: "";
+  pointer-events: none;
+  transition: transform .28s cubic-bezier(.22, .8, .28, 1), opacity .16s ease;
+}
+
+.bilai-nav-tabs:is([data-active="find"], [data-active="home"])::before {
+  opacity: 1;
+}
+
+.bilai-nav-tabs[data-active="home"]::before {
+  transform: translateX(calc(100% + .25rem));
+}
+
+.bilai-nav-tab {
+  position: relative;
+  display: grid;
+  min-height: 2.75rem;
+  place-items: center;
+  padding-inline: 1rem;
+  border-radius: 999px;
+  font-size: .9375rem;
+  font-weight: 650;
+  white-space: nowrap;
+  transition: background-color .16s ease, color .16s ease;
+}
+
+.bilai-nav-tab[aria-current] {
+  color: var(--bilai-action);
+}
+
+.bilai-nav-tab:not([aria-current]):is(:hover, :active) {
+  background: var(--bilai-on-dark);
+}
+
+.bilai-nav-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .75rem;
+}
+
+.bilai-nav-login,
+.bilai-nav-list,
+.bilai-nav-menu-button {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  padding: .6rem 1rem;
+  border: 1px solid var(--bilai-brand-ink);
+  border-radius: .65rem;
+  font-size: .9375rem;
+  font-weight: 700;
+  line-height: 1.3;
+  transition: background-color .16s ease;
+}
+
+.bilai-nav-login {
+  background: var(--bilai-brand-ink);
+  color: var(--bilai-on-dark);
+}
+
+.bilai-nav-login:hover,
+.bilai-nav-login:active {
+  background: #332a32;
+}
+
+.bilai-nav-list:is(:hover, :active, [aria-current]),
+.bilai-nav-menu-button:is(:hover, :active) {
+  background: var(--bilai-active);
+}
+
+.bilai-nav-menu-button {
+  display: none;
+  width: 2.75rem;
+  padding: 0;
+  border-color: transparent;
+}
+
+.bilai-nav-header :is(a, button):focus-visible {
+  outline: 2px solid var(--bilai-focus);
+  outline-offset: 3px;
+}
+
+@media (max-width: 54rem) {
+  .bilai-nav-menu-button {
+    display: inline-flex;
+  }
+
+  .bilai-nav-navigation {
+    position: absolute;
+    inset: 100% 0 auto;
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    gap: .5rem;
+    padding: .75rem;
+    border: 1px solid var(--bilai-line);
+    border-radius: .65rem;
+    background: var(--bilai-on-dark);
+  }
+
+  .bilai-nav-navigation[data-open="true"] {
+    display: flex;
+  }
+
+  .bilai-nav-tabs {
+    position: static;
+    grid-template-columns: minmax(0, 1fr);
+    padding: 0;
+    translate: none;
+  }
+
+  .bilai-nav-tabs::before {
+    display: none;
+  }
+
+  .bilai-nav-tab {
+    justify-items: start;
+    padding-inline: .75rem;
+    border-radius: .65rem;
+  }
+
+  .bilai-nav-tab:is(:hover, :active, [aria-current]) {
+    background: var(--bilai-active);
+  }
+
+  .bilai-nav-actions {
+    padding-inline: .25rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bilai-nav-tabs::before,
+  .bilai-nav-tab,
+  .bilai-nav-login,
+  .bilai-nav-list,
+  .bilai-nav-menu-button {
+    transition: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .bilai-nav-tab[aria-current] {
+    outline: 1px solid Highlight;
+    outline-offset: -1px;
+  }
+}

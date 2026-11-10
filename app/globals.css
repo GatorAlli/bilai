@@ -69,6 +69,21 @@ html {
 :root {
   color-scheme: dark;
 
+  /* Oat and olive palette for the homepage and shared navigation. */
+  --bilai-paper: #faf3e6;
+  --bilai-ink: #2d3624;
+  --bilai-muted: #505140;
+  --bilai-action: #465834;
+  --bilai-action-hover: #364428;
+  --bilai-on-dark: #fffaf1;
+  --bilai-line: #d4c9ad;
+  --bilai-focus: #596541;
+  --bilai-active: #ebe9d5;
+  --bilai-brand-ink: #140f14;
+  --bilai-forest: #3b4a31;
+  --bilai-forest-muted: #ece8d5;
+  --bilai-gutter: clamp(.85rem, 1.7vw, 1.5rem);
+
   /* Reference palette: Spicy Paprika, Jungle Teal, Alabaster Grey, Carbon Black. */
   --background: #252627;
   --foreground: #e5e7e6;
@@ -108,8 +123,7 @@ html {
   --sidebar-ring: var(--ring);
 }
 
-/* Light theme, matching the Home page: warm cream surfaces, mauve-950 ink and
-   the #ff7640 orange accent. Opt in per page with the `theme-light` class. */
+/* Light theme for the existing browsing and account pages. */
 .theme-light {
   color-scheme: light;
 
