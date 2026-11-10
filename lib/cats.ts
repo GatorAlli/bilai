@@ -1,18 +1,54 @@
 import "server-only";
 
-import { asc, count, desc, eq, getTableColumns, sql } from "drizzle-orm";
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  getTableColumns,
+  gte,
+  inArray,
+  lte,
+  sql,
+} from "drizzle-orm";
 import { db } from "@/db";
 import { catImages, cats, user } from "@/db/schema";
+import { MAX_FILTER_AGE, type CatFilters } from "@/lib/cat-filters";
 
 export const CATS_PER_PAGE = 20;
 // Deliberately uncached: render these reads under Suspense with cacheComponents.
 // Each navigation queries just its requested page, so new listings stay fresh.
 export async function getCats({
   page = 1,
+  filters,
 }: {
   page?: number;
+  filters?: CatFilters;
 } = {}) {
   const requestedPage = Number.isSafeInteger(page) && page > 0 ? page : 1;
+  const filter = filters
+    ? and(
+        filters.minAge > 0 ? gte(cats.ageMonths, filters.minAge) : undefined,
+        filters.maxAge < MAX_FILTER_AGE
+          ? lte(cats.ageMonths, filters.maxAge)
+          : undefined,
+        filters.breeds.length ? inArray(cats.breed, filters.breeds) : undefined,
+        filters.genders.length
+          ? inArray(cats.gender, filters.genders)
+          : undefined,
+        filters.district ? eq(cats.district, filters.district) : undefined,
+        filters.district && filters.area
+          ? eq(cats.area, filters.area)
+          : undefined,
+        filters.vaccinated.length
+          ? inArray(cats.vaccinated, filters.vaccinated)
+          : undefined,
+        filters.neutered.length
+          ? inArray(cats.neutered, filters.neutered)
+          : undefined,
+      )
+    : undefined;
   const offset = (requestedPage - 1) * CATS_PER_PAGE;
   const [items, totals] = await Promise.all([
     db
@@ -34,10 +70,11 @@ export async function getCats({
       })
       .from(cats)
       .innerJoin(user, eq(cats.userId, user.id))
+      .where(filter)
       .orderBy(desc(cats.createdAt), desc(cats.id))
       .limit(CATS_PER_PAGE)
       .offset(offset),
-    db.select({ total: count() }).from(cats),
+    db.select({ total: count() }).from(cats).where(filter),
   ]);
   const total = totals[0].total;
   return {
@@ -46,6 +83,14 @@ export async function getCats({
     page: requestedPage,
     totalPages: Math.ceil(total / CATS_PER_PAGE),
   };
+}
+
+export async function getCatBreeds() {
+  const rows = await db
+    .selectDistinct({ breed: cats.breed })
+    .from(cats)
+    .orderBy(asc(cats.breed));
+  return rows.map(({ breed }) => breed);
 }
 
 export async function getCat(id: number) {

@@ -54,7 +54,10 @@ export async function submitForm(
   if (!district) return { ok: false, error: "Please choose a district." };
   if (!area) return { ok: false, error: "Please choose an area." };
   if (!isValidLocation(district, area)) {
-    return { ok: false, error: "Please pick a district and area from the lists." };
+    return {
+      ok: false,
+      error: "Please pick a district and area from the lists.",
+    };
   }
   if (!(GENDERS as readonly string[]).includes(gender)) {
     return { ok: false, error: "Please choose a gender." };
