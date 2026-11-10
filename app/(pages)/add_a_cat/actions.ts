@@ -18,7 +18,9 @@ import {
   MAX_TEMPERAMENT_LENGTH,
   YES_NO_UNKNOWN,
 } from "@/lib/cat-limits";
+import { getUserPhone, saveUserPhone } from "@/lib/contact";
 import { isValidLocation } from "@/lib/locations";
+import { normalizeBdPhone, PHONE_ERROR } from "@/lib/phone";
 import { UPLOAD_ROOT, isWebp } from "@/lib/uploads";
 
 const GENDERS = ["male", "female", "unknown"] as const;
@@ -126,6 +128,15 @@ export async function submitForm(
       return { ok: false, error: "Upload failed. Please try again." };
     }
     buffers.push(buf);
+  }
+
+  // Adopters reach the lister on the number from their profile. Google
+  // sign-ups (and older accounts) have none yet, so take it from this form.
+  if (!(await getUserPhone(userId))) {
+    const phone = normalizeBdPhone(String(formData.get("phone") ?? ""));
+    if (!phone) return { ok: false, error: PHONE_ERROR };
+    const saved = await saveUserPhone(userId, phone);
+    if (!saved.ok) return saved;
   }
 
   const writtenKeys: string[] = [];

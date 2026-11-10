@@ -6,12 +6,14 @@ import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { normalizeBdPhone, PHONE_ERROR, PHONE_TAKEN_ERROR } from "@/lib/phone";
 
 export default function AuthForm() {
   const router = useRouter();
   const [isSignUp, setIsSignUp] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -24,15 +26,30 @@ export default function AuthForm() {
       setError("Please enter your name.");
       return;
     }
+    // Check the number here for a quick error; the server checks it again.
+    const normalizedPhone = isSignUp ? normalizeBdPhone(phone) : null;
+    if (isSignUp && !normalizedPhone) {
+      setError(PHONE_ERROR);
+      return;
+    }
     setIsPending(true);
     try {
       const credentials = { email: email.trim(), password };
       const result = isSignUp
-        ? await authClient.signUp.email({ ...credentials, name: name.trim() })
+        ? await authClient.signUp.email({
+            ...credentials,
+            name: name.trim(),
+            phone: normalizedPhone!,
+          })
         : await authClient.signIn.email(credentials);
       if (result.error) {
         const code = result.error.code;
         if (
+          result.error.message === PHONE_ERROR ||
+          result.error.message === PHONE_TAKEN_ERROR
+        ) {
+          setError(result.error.message);
+        } else if (
           code === "INVALID_EMAIL_OR_PASSWORD" ||
           code === "INVALID_PASSWORD"
         ) {
@@ -145,6 +162,32 @@ export default function AuthForm() {
           className="h-11 bg-background"
         />
       </div>
+      {isSignUp ? (
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="auth-phone" className="font-bold text-mauve-950">
+            Phone number
+          </Label>
+          <Input
+            id="auth-phone"
+            name="phone"
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+            required
+            maxLength={20}
+            placeholder="01712345678"
+            value={phone}
+            onChange={(event) => setPhone(event.target.value)}
+            disabled={isPending}
+            aria-describedby="phone-hint"
+            className="h-11 bg-background text-mauve-950"
+          />
+          <p id="phone-hint" className="text-xs text-muted-foreground">
+            A Bangladesh mobile number. Adopters use it to reach you about
+            your cats.
+          </p>
+        </div>
+      ) : null}
       <div className="flex flex-col gap-2">
         <Label htmlFor="auth-password" className="font-bold">
           Password

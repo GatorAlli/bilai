@@ -1,17 +1,46 @@
 import "server-only";
 
-import { eq } from "drizzle-orm";
+import { and, eq, ne } from "drizzle-orm";
 import { db } from "@/db";
-import { cats } from "@/db/schema";
+import { cats, user } from "@/db/schema";
 import type { ContactMethod } from "@/lib/cat-limits";
+import { PHONE_TAKEN_ERROR } from "@/lib/phone";
 
-// TODO: replace with the phone number from the user's profile once that
-// column exists. Keep the E.164 format (+880...) so the links below work.
-const PLACEHOLDER_PHONE = "+8801732290601";
-
+// The database keeps 8801712345678. We hand out +8801712345678, which works
+// for tel: links, and buildContactUrl strips it back to digits for wa.me.
 export async function getUserPhone(userId: string): Promise<string | null> {
-  void userId;
-  return PLACEHOLDER_PHONE;
+  const [row] = await db
+    .select({ phone: user.phone })
+    .from(user)
+    .where(eq(user.id, userId))
+    .limit(1);
+  return row?.phone ? `+${row.phone}` : null;
+}
+
+// For people who have no number yet (Google sign-up, or accounts made before
+// phones existed). `phone` must already be normalized by normalizeBdPhone.
+export async function saveUserPhone(
+  userId: string,
+  phone: string,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const taken = await db
+    .select({ id: user.id })
+    .from(user)
+    .where(and(eq(user.phone, phone), ne(user.id, userId)))
+    .limit(1);
+  if (taken.length > 0) return { ok: false, error: PHONE_TAKEN_ERROR };
+
+  try {
+    await db
+      .update(user)
+      .set({ phone, updatedAt: new Date() })
+      .where(eq(user.id, userId));
+  } catch (err) {
+    // Two people saving the same number at once: the unique constraint wins.
+    console.error(err);
+    return { ok: false, error: PHONE_TAKEN_ERROR };
+  }
+  return { ok: true };
 }
 
 // Only what the contact action needs. Never select the phone number into

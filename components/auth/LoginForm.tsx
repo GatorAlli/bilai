@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
+import { normalizeBdPhone, PHONE_ERROR } from "@/lib/phone";
 
 function GoogleLogo() {
   return (
@@ -40,6 +41,7 @@ export function LoginForm() {
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -49,10 +51,22 @@ export function LoginForm() {
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
+
+    // Quick check here; the server checks the number again.
+    const normalizedPhone = isSignup ? normalizeBdPhone(phone) : null;
+    if (isSignup && !normalizedPhone) {
+      setError(PHONE_ERROR);
+      return;
+    }
     setPending(true);
 
     const { error } = isSignup
-      ? await authClient.signUp.email({ name, email, password })
+      ? await authClient.signUp.email({
+          name,
+          email,
+          password,
+          phone: normalizedPhone!,
+        })
       : await authClient.signIn.email({ email, password });
 
     setPending(false);
@@ -126,6 +140,30 @@ export function LoginForm() {
             className={inputClass}
           />
         </div>
+
+        {isSignup && (
+          <div className="flex flex-col gap-1.5">
+            <label
+              htmlFor="phone"
+              className="text-sm font-medium text-mauve-950"
+            >
+              Phone number
+            </label>
+            <input
+              id="phone"
+              name="phone"
+              type="tel"
+              inputMode="tel"
+              autoComplete="tel"
+              required
+              maxLength={20}
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="01712345678"
+              className={inputClass}
+            />
+          </div>
+        )}
 
         <div className="flex flex-col gap-1.5">
           <label
