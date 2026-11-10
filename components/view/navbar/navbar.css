@@ -38,6 +38,61 @@
   align-items: center;
 }
 
+.bilai-nav-tab {
+  display: flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  padding-inline: 1rem;
+  border-radius: .65rem;
+  font-size: .9375rem;
+  font-weight: 650;
+  white-space: nowrap;
+  transition: color .16s ease;
+}
+
+.bilai-nav-tab:is([aria-current], :hover, :focus-visible) {
+  color: var(--bilai-action);
+}
+
+.bilai-nav-label {
+  position: relative;
+}
+
+.bilai-nav-label::after {
+  position: absolute;
+  inset: auto 0 -.15rem;
+  height: 1px;
+  background: currentColor;
+  content: "";
+  transform: scaleX(0);
+  transition: transform .3s cubic-bezier(.77, 0, .175, 1);
+}
+
+.bilai-nav-tab:is(:hover, :focus-visible) .bilai-nav-label::after {
+  transform: scaleX(1);
+}
+
+.bilai-nav-arrow {
+  display: grid;
+  width: 1rem;
+  height: 1rem;
+  flex: none;
+  place-items: center;
+  border-radius: 50%;
+  background: currentColor;
+  transition: transform .22s cubic-bezier(.2, .8, .2, 1);
+}
+
+.bilai-nav-arrow svg {
+  color: var(--bilai-paper);
+}
+
+.bilai-nav-tab:is(:hover, :focus-visible) .bilai-nav-arrow {
+  transform: rotate(90deg);
+}
+
 .bilai-nav-actions {
   display: flex;
   flex-wrap: wrap;
@@ -74,7 +129,7 @@
 
 /* Signed in: the button shows the person's name, cut short if it is long. */
 .bilai-nav-user span {
-  max-width: 10rem;
+  max-width: clamp(4rem, 50vw - 25rem, 10rem);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -129,15 +184,56 @@
     display: flex;
   }
 
+  .bilai-nav-tab {
+    justify-content: flex-start;
+    padding-inline: .75rem;
+  }
+
+  .bilai-nav-tab[aria-current] {
+    background: var(--bilai-active);
+  }
+
+  .bilai-nav-user span {
+    max-width: 10rem;
+  }
+
   .bilai-nav-actions {
     padding-inline: .25rem;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .bilai-nav-tab:is(:hover, :focus-visible) .bilai-nav-arrow {
+    transform: none;
+  }
+
+  .bilai-nav-tab,
+  .bilai-nav-label::after,
+  .bilai-nav-arrow,
   .bilai-nav-login,
   .bilai-nav-list,
   .bilai-nav-menu-button {
     transition: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .bilai-nav-tab[aria-current] {
+    outline: 1px solid Highlight;
+    outline-offset: -1px;
+  }
+
+  .bilai-nav-label::after {
+    background: LinkText;
+    forced-color-adjust: none;
+  }
+
+  .bilai-nav-arrow {
+    background: CanvasText;
+    forced-color-adjust: none;
+  }
+
+  .bilai-nav-arrow svg {
+    color: Canvas;
   }
 }

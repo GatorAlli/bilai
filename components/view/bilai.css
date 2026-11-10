@@ -99,9 +99,28 @@ html:has(.bilai-site)[data-bilai-dark-edge] {
 }
 
 .bilai-footer {
-  border-block-start: 1px solid #393836;
+  position: relative;
   background: var(--bilai-ink);
   color: var(--bilai-paper);
+}
+
+.bilai-footer::before {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 10px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 10'%3E%3Cpath d='M0 5C40 1 80 1 120 5S200 9 240 5' fill='none' stroke='%2379847b'/%3E%3C/svg%3E") 0 0 / 240px 10px repeat-x;
+  content: "";
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .bilai-footer::before {
+    animation: bilai-footer-wave 10s linear infinite;
+  }
+
+  @keyframes bilai-footer-wave {
+    to { background-position-x: 240px; }
+  }
 }
 
 .bilai-footer-row {
@@ -422,7 +441,7 @@ html:has(.bilai-site)[data-bilai-dark-edge] {
     color: #000;
   }
 
-  .bilai-site .bilai-nav-header, .bilai-skip, .bilai-footer-top,
+  .bilai-site .bilai-nav-header, .bilai-skip, .bilai-footer-top, .bilai-footer::before,
   .bilai-cat-profile, .bilai-filter-panel, .bilai-search {
     display: none;
   }
