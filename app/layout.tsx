@@ -4,9 +4,9 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 
-const loraHeading = Lora({subsets:['latin'],variable:'--font-heading'});
+const loraHeading = Lora({ subsets: ["latin"], variable: "--font-heading" });
 
-const figtree = Figtree({subsets:['latin'],variable:'--font-sans'});
+const figtree = Figtree({ subsets: ["latin"], variable: "--font-sans" });
 
 const bree = Bree_Serif({
   subsets: ["latin"],
@@ -33,9 +33,18 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={cn(bree.variable, albert.variable, matcha.variable, "font-sans", figtree.variable, loraHeading.variable)}
+      className={cn(
+        bree.variable,
+        albert.variable,
+        matcha.variable,
+        "font-sans",
+        figtree.variable,
+        loraHeading.variable,
+      )}
     >
-      <body className="flex min-h-screen flex-col font-sans antialiased">{children}</body>
+      <body className="flex min-h-screen flex-col font-sans antialiased">
+        {children}
+      </body>
     </html>
   );
 }

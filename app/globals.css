@@ -108,6 +108,32 @@ html {
   --sidebar-ring: var(--ring);
 }
 
+/* Light theme, matching the Home page: warm cream surfaces, mauve-950 ink and
+   the #ff7640 orange accent. Opt in per page with the `theme-light` class. */
+.theme-light {
+  color-scheme: light;
+
+  --background: #faf6ee;
+  --foreground: oklch(14.5% 0.008 326); /* mauve-950 */
+  --primary: oklch(14.5% 0.008 326);
+  --primary-foreground: #ffffff;
+  --secondary: #ff7640;
+  --secondary-foreground: oklch(14.5% 0.008 326);
+
+  --card: #fffef7;
+  --card-foreground: var(--foreground);
+  --popover: #fffef7;
+  --popover-foreground: var(--foreground);
+  --muted: #f3ecdc;
+  --muted-foreground: #6b6468;
+  --accent: #ffe3d6;
+  --accent-foreground: var(--foreground);
+  --destructive: #c62828;
+  --border: #ddd6ca;
+  --input: #c9c1b8;
+  --ring: #ff7640;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -115,7 +141,8 @@ html {
   body {
     @apply bg-background text-foreground;
   }
-  button:not(:disabled), [role="button"]:not(:disabled) {
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
     cursor: pointer;
   }
   html {

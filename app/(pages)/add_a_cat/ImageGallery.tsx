@@ -7,6 +7,13 @@ import { GripVertical, ImagePlus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { compressImage, ImageUploadError } from "@/lib/compress-image";
+import {
+  ACCEPTED_IMAGE_TYPES,
+  MAX_IMAGES,
+  MAX_INPUT_SIZE_BYTES,
+  MAX_INPUT_SIZE_MB,
+} from "@/lib/cat-limits";
 
 export type GalleryImage = {
   id: string;
@@ -15,9 +22,7 @@ export type GalleryImage = {
   caption: string;
 };
 
-const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
-const MAX_IMAGES = 15;
-const MAX_SIZE_MB = 5;
+const ACCEPTED_TYPES: string[] = [...ACCEPTED_IMAGE_TYPES];
 
 function moveItem<T>(list: T[], from: number, to: number): T[] {
   const next = [...list];
@@ -36,6 +41,7 @@ export default function ImageGallery({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [errors, setErrors] = useState<string[]>([]);
   const [isDropTarget, setIsDropTarget] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   // Reorder (drag) state
   const [armedId, setArmedId] = useState<string | null>(null);
@@ -54,30 +60,51 @@ export default function ImageGallery({
     };
   }, []);
 
-  function addFiles(fileList: FileList | File[]) {
+  async function addFiles(fileList: FileList | File[]) {
+    if (isProcessing) return;
     const incoming = Array.from(fileList);
     const nextErrors: string[] = [];
     const accepted: GalleryImage[] = [];
     let slotsLeft = MAX_IMAGES - images.length;
 
-    for (const file of incoming) {
-      if (!ACCEPTED_TYPES.includes(file.type)) {
-        nextErrors.push(
-          `${file.name}: only JPG, PNG, GIF or WebP files are allowed.`,
-        );
-      } else if (file.size > MAX_SIZE_MB * 1024 * 1024) {
-        nextErrors.push(`${file.name}: larger than ${MAX_SIZE_MB} MB.`);
-      } else if (slotsLeft <= 0) {
-        nextErrors.push(`${file.name}: the limit is ${MAX_IMAGES} images.`);
-      } else {
-        accepted.push({
-          id: crypto.randomUUID(),
-          file,
-          previewUrl: URL.createObjectURL(file),
-          caption: "",
-        });
-        slotsLeft -= 1;
+    setIsProcessing(true);
+    try {
+      for (const file of incoming) {
+        if (!ACCEPTED_TYPES.includes(file.type)) {
+          nextErrors.push(`${file.name}: this file isn't a photo we can use.`);
+        } else if (file.size > MAX_INPUT_SIZE_BYTES) {
+          nextErrors.push(
+            `${file.name}: this photo is too large (over ${MAX_INPUT_SIZE_MB} MB).`,
+          );
+        } else if (slotsLeft <= 0) {
+          nextErrors.push(
+            `${file.name}: you can add up to ${MAX_IMAGES} photos.`,
+          );
+        } else {
+          try {
+            // One at a time so a big batch doesn't freeze the page.
+            const compressed = await compressImage(file);
+            accepted.push({
+              id: crypto.randomUUID(),
+              file: compressed,
+              previewUrl: URL.createObjectURL(compressed),
+              caption: "",
+            });
+            slotsLeft -= 1;
+          } catch (err) {
+            // compressImage only throws ImageUploadError, whose message is
+            // user-friendly; anything else is unexpected.
+            if (err instanceof ImageUploadError) {
+              nextErrors.push(err.message);
+            } else {
+              console.error(err);
+              nextErrors.push(`${file.name}: upload failed.`);
+            }
+          }
+        }
       }
+    } finally {
+      setIsProcessing(false);
     }
 
     setErrors(nextErrors);
@@ -122,8 +149,8 @@ export default function ImageGallery({
           </span>
         </div>
         <p className="mt-1 text-sm text-muted-foreground">
-          JPG, PNG, GIF or WebP format, {MAX_SIZE_MB} MB max file size. For best
-          results, use a 3:2 ratio. The first image is the cover photo.
+          Add up to {MAX_IMAGES} photos. Wide (landscape) photos look best. The
+          first photo is the cover.
         </p>
       </div>
 
@@ -139,6 +166,7 @@ export default function ImageGallery({
           if (!e.dataTransfer.types.includes("Files")) return;
           e.preventDefault();
           setIsDropTarget(false);
+          if (isProcessing) return;
           addFiles(e.dataTransfer.files);
         }}
         className={cn(
@@ -163,14 +191,18 @@ export default function ImageGallery({
           type="button"
           variant="secondary"
           size="lg"
-          disabled={isFull}
+          disabled={isFull || isProcessing}
           onClick={() => fileInputRef.current?.click()}
         >
           <ImagePlus />
           Choose files
         </Button>
         <p className="text-sm text-muted-foreground">
-          {isFull ? "Image limit reached" : "or drag and drop"}
+          {isProcessing
+            ? "Processing…"
+            : isFull
+              ? "Image limit reached"
+              : "or drag and drop"}
         </p>
       </div>
 
