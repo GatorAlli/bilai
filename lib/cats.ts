@@ -134,7 +134,13 @@ export async function getCat(id: number) {
   const [cat] = await db
     .select({
       ...getTableColumns(cats),
-      owner: { id: user.id, name: user.name },
+      // Only whether a number exists: the number itself is sent by the
+      // contact action on tap, never rendered into the page.
+      owner: {
+        id: user.id,
+        name: user.name,
+        hasPhone: sql<boolean>`${user.phone} is not null`,
+      },
     })
     .from(cats)
     .innerJoin(user, eq(cats.userId, user.id))
