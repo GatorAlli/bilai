@@ -10,6 +10,7 @@ import { db } from "@/db";
 import { catImages, cats } from "@/db/schema";
 import { getSession } from "@/lib/auth";
 import {
+  CONTACT_METHODS,
   MAX_DESCRIPTION_LENGTH,
   MAX_IMAGES,
   MAX_REHOMING_REASON_LENGTH,
@@ -46,6 +47,7 @@ export async function submitForm(
   const temperament = optional("temperament", MAX_TEMPERAMENT_LENGTH);
   const description = optional("description", MAX_DESCRIPTION_LENGTH);
   const rehomingReason = optional("rehomingReason", MAX_REHOMING_REASON_LENGTH);
+  const contactMethods = formData.getAll("contactMethods").map(String);
   const years = Number(formData.get("ageYears"));
   const months = Number(formData.get("ageMonths"));
 
@@ -79,6 +81,17 @@ export async function submitForm(
   }
   if (years === 0 && months === 0) {
     return { ok: false, error: "Please enter the cat's age." };
+  }
+  if (
+    contactMethods.length === 0 ||
+    contactMethods.some(
+      (m) => !(CONTACT_METHODS as readonly string[]).includes(m),
+    )
+  ) {
+    return {
+      ok: false,
+      error: "Please choose how adopters can contact you.",
+    };
   }
 
   const files = formData
@@ -152,6 +165,8 @@ export async function submitForm(
         temperament,
         description,
         rehomingReason,
+        contactWhatsapp: contactMethods.includes("whatsapp"),
+        contactCall: contactMethods.includes("call"),
         // status defaults to 'available' in the database
         userId,
       })

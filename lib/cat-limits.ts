@@ -22,3 +22,5 @@ export const YES_NO_UNKNOWN = ["yes", "no", "unknown"] as const;
 export const MAX_DESCRIPTION_LENGTH = 1000;
 export const MAX_TEMPERAMENT_LENGTH = 200;
 export const MAX_REHOMING_REASON_LENGTH = 500;
+export const CONTACT_METHODS = ["whatsapp", "call"] as const;
+export type ContactMethod = (typeof CONTACT_METHODS)[number];

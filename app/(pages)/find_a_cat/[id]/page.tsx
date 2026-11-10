@@ -3,6 +3,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import Navbar from "@/components/view/navbar/Navbar";
+import ContactButtons from "@/components/view/cat/ContactButtons";
+import { getSession } from "@/lib/auth";
 import { formatCatAge, getCat } from "@/lib/cats";
 
 export default function CatPage({
@@ -33,7 +35,7 @@ export default function CatPage({
 
 async function CatDetails({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const cat = await getCat(Number(id));
+  const [cat, session] = await Promise.all([getCat(Number(id)), getSession()]);
   if (!cat) notFound();
 
   return (
@@ -45,6 +47,17 @@ async function CatDetails({ params }: { params: Promise<{ id: string }> }) {
         </span>
       </div>
       <p className="mt-2 text-muted-foreground">Parent: {cat.owner.name}</p>
+      {cat.status !== "adopted" ? (
+        <div className="mt-4">
+          <ContactButtons
+            catId={cat.id}
+            whatsapp={cat.contactWhatsapp}
+            call={cat.contactCall}
+            isLoggedIn={Boolean(session?.user)}
+            isOwner={session?.user.id === cat.owner.id}
+          />
+        </div>
+      ) : null}
       {cat.images.length > 0 ? (
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
           {cat.images.map((image, index) => (
