@@ -289,7 +289,7 @@ export default function PageBody() {
           {needsPhone && (
             <FormElement
               labelText="Your phone number"
-              inputPlaceholder="01712345678"
+              inputPlaceholder="01*********"
               inputType="tel"
               maxLength={20}
               value={phone}
