@@ -53,6 +53,7 @@ async function CatDetails({ params }: { params: Promise<{ id: string }> }) {
             catId={cat.id}
             whatsapp={cat.contactWhatsapp}
             call={cat.contactCall}
+            hasPhone={cat.owner.hasPhone}
             isLoggedIn={Boolean(session?.user)}
             isOwner={session?.user.id === cat.owner.id}
           />

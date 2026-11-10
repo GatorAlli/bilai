@@ -11,6 +11,7 @@ type Props = {
   catId: number;
   whatsapp: boolean;
   call: boolean;
+  hasPhone: boolean;
   isLoggedIn: boolean;
   isOwner: boolean;
 };
@@ -19,6 +20,7 @@ export default function ContactButtons({
   catId,
   whatsapp,
   call,
+  hasPhone,
   isLoggedIn,
   isOwner,
 }: Props) {
@@ -28,6 +30,15 @@ export default function ContactButtons({
 
   if (!whatsapp && !call) return null;
 
+  if (isOwner && !hasPhone) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        Adopters can&apos;t contact you yet because your account has no phone
+        number. You&apos;ll be asked for one when you list your next cat.
+      </p>
+    );
+  }
+
   if (isOwner) {
     return (
       <p className="text-sm text-muted-foreground">
@@ -36,6 +47,14 @@ export default function ContactButtons({
           .filter(Boolean)
           .join(" or ")}
         .
+      </p>
+    );
+  }
+
+  if (!hasPhone) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        The parent hasn&apos;t added a phone number yet.
       </p>
     );
   }
