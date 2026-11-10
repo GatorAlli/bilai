@@ -38,58 +38,6 @@
   align-items: center;
 }
 
-.bilai-nav-tabs {
-  position: absolute;
-  inset-block-start: 50%;
-  inset-inline-start: 50%;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: .25rem;
-  padding: .25rem;
-  translate: -50% -50%;
-}
-
-.bilai-nav-tabs::before {
-  position: absolute;
-  inset: .25rem auto .25rem .25rem;
-  width: calc((100% - .75rem) / 2);
-  border-radius: 999px;
-  background: var(--bilai-active);
-  opacity: 0;
-  content: "";
-  pointer-events: none;
-  transition: transform .28s cubic-bezier(.22, .8, .28, 1), opacity .16s ease;
-}
-
-.bilai-nav-tabs:is([data-active="find"], [data-active="home"])::before {
-  opacity: 1;
-}
-
-.bilai-nav-tabs[data-active="find"]::before {
-  transform: translateX(calc(100% + .25rem));
-}
-
-.bilai-nav-tab {
-  position: relative;
-  display: grid;
-  min-height: 2.75rem;
-  place-items: center;
-  padding-inline: 1rem;
-  border-radius: 999px;
-  font-size: .9375rem;
-  font-weight: 650;
-  white-space: nowrap;
-  transition: background-color .16s ease, color .16s ease;
-}
-
-.bilai-nav-tab[aria-current] {
-  color: var(--bilai-action);
-}
-
-.bilai-nav-tab:not([aria-current]):is(:hover, :active) {
-  background: var(--bilai-on-dark);
-}
-
 .bilai-nav-actions {
   display: flex;
   flex-wrap: wrap;
@@ -163,45 +111,15 @@
     display: flex;
   }
 
-  .bilai-nav-tabs {
-    position: static;
-    grid-template-columns: minmax(0, 1fr);
-    padding: 0;
-    translate: none;
-  }
-
-  .bilai-nav-tabs::before {
-    display: none;
-  }
-
-  .bilai-nav-tab {
-    justify-items: start;
-    padding-inline: .75rem;
-    border-radius: .65rem;
-  }
-
-  .bilai-nav-tab:is(:hover, :active, [aria-current]) {
-    background: var(--bilai-active);
-  }
-
   .bilai-nav-actions {
     padding-inline: .25rem;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .bilai-nav-tabs::before,
-  .bilai-nav-tab,
   .bilai-nav-login,
   .bilai-nav-list,
   .bilai-nav-menu-button {
     transition: none;
-  }
-}
-
-@media (forced-colors: active) {
-  .bilai-nav-tab[aria-current] {
-    outline: 1px solid Highlight;
-    outline-offset: -1px;
   }
 }

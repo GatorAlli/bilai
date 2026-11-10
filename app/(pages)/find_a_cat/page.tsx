@@ -3,7 +3,6 @@ import Link from "next/link";
 import { ChevronDown, SlidersHorizontal } from "lucide-react";
 import BilaiPage from "@/components/view/BilaiPage";
 import CatCard from "@/components/view/cat/CatCard";
-import Searchbar from "@/components/view/search/Searchbar";
 import { getCats, getCatBreeds } from "@/lib/cats";
 
 import CatFilters from "@/components/view/search/CatFilters";
@@ -24,11 +23,8 @@ export default function FindCatsPage({
     <BilaiPage currentPage="find" mainClassName="bilai-frame bilai-inner">
       <header className="bilai-page-heading">
         <h1>Find a cat</h1>
-        <p>Search by name, breed, or area to find cats in Bangladesh.</p>
+        <p>Browse cats for adoption in Bangladesh.</p>
       </header>
-      <Suspense fallback={<Searchbar />}>
-        <AppliedSearchbar searchParams={searchParams} />
-      </Suspense>
       <Suspense
         fallback={
           <p className="py-8" role="status">
@@ -39,17 +35,6 @@ export default function FindCatsPage({
         <CatResults searchParams={searchParams} />
       </Suspense>
     </BilaiPage>
-  );
-}
-
-async function AppliedSearchbar({
-  searchParams,
-}: {
-  searchParams: SearchParams;
-}) {
-  const filters = parseCatFilters(await searchParams);
-  return (
-    <Searchbar key={catFilterParams(filters).toString()} filters={filters} />
   );
 }
 

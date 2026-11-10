@@ -6,6 +6,9 @@ import { LogIn, Menu, Plus, X } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import "./navbar.css";
 
+const tabClassName =
+  "relative grid min-h-11 place-items-center bg-transparent px-4 text-[0.9375rem] font-semibold whitespace-nowrap text-[#505b6b] transition-colors hover:text-[#e66c35] aria-[current]:text-[#e66c35] after:pointer-events-none after:absolute after:inset-x-4 after:-bottom-px after:h-[3px] after:origin-left after:scale-x-0 after:bg-[#e66c35] after:transition-transform after:duration-200 after:content-[''] hover:after:scale-x-100 focus-visible:after:scale-x-100 aria-[current]:after:scale-x-100 motion-reduce:transition-none motion-reduce:after:transition-none max-[54rem]:justify-items-start max-[54rem]:px-3 max-[54rem]:after:inset-x-3";
+
 type Page = "home" | "find" | "profile" | "login" | "list";
 
 export default function Navbar({ currentPage }: { currentPage: Page }) {
@@ -71,10 +74,10 @@ export default function Navbar({ currentPage }: { currentPage: Page }) {
           className="bilai-nav-navigation"
           data-open={menuOpen}
         >
-          <div className="bilai-nav-tabs" data-active={findCurrent ? "find" : currentPage}>
+          <div className="absolute inset-y-0 left-1/2 grid -translate-x-1/2 grid-cols-2 items-stretch gap-4 max-[54rem]:static max-[54rem]:translate-x-0 max-[54rem]:grid-cols-1">
             <Link
               href="/"
-              className="bilai-nav-tab"
+              className={tabClassName}
               aria-current={currentPage === "home" ? "page" : undefined}
               onClick={closeMenu}
             >
@@ -82,7 +85,7 @@ export default function Navbar({ currentPage }: { currentPage: Page }) {
             </Link>
             <Link
               href="/find_a_cat"
-              className="bilai-nav-tab"
+              className={tabClassName}
               aria-current={findCurrent ? (currentPage === "find" ? "page" : "location") : undefined}
               onClick={closeMenu}
             >
