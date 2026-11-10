@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import localFont from "next/font/local";
 import { ArrowRight } from "lucide-react";
+import { Suspense } from "react";
 import FeaturedCats from "@/components/view/home/FeaturedCats";
 import Navbar from "@/components/view/navbar/Navbar";
 import heroPhoto from "@/public/bilai-hero.jpg";
@@ -28,7 +29,7 @@ export default function Home() {
               Browse cats for adoption in Bangladesh. See who’s nearby, get to
               know their story, and find a cat who’ll feel at home with you.
             </p>
-            <Link href="#meet-the-cats" className="bilai-home-cta">
+            <Link href="/find_a_cat" className="bilai-home-cta">
               Meet the cats
               <ArrowRight size={18} aria-hidden="true" />
             </Link>
@@ -47,7 +48,9 @@ export default function Home() {
             </figcaption>
           </figure>
         </section>
-        <FeaturedCats headingClassName={fraunces.className} />
+        <Suspense fallback={null}>
+          <FeaturedCats headingClassName={fraunces.className} />
+        </Suspense>
       </main>
     </div>
   );

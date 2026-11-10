@@ -19,6 +19,29 @@ import { catImages, cats, user } from "@/db/schema";
 import { MAX_FILTER_AGE, type CatFilters } from "@/lib/cat-filters";
 
 export const CATS_PER_PAGE = 20;
+
+export async function getFeaturedCats() {
+  return db
+    .select({
+      id: cats.id,
+      name: cats.name,
+      breed: cats.breed,
+      ageMonths: cats.ageMonths,
+      gender: cats.gender,
+      area: cats.area,
+      district: cats.district,
+      coverImageUrl: sql<string | null>`(
+        select ${catImages.url} from ${catImages}
+        where ${catImages.catId} = ${cats.id}
+        order by ${catImages.position} asc, ${catImages.id} asc limit 1
+      )`,
+    })
+    .from(cats)
+    .where(eq(cats.status, "available"))
+    .orderBy(sql`random()`)
+    .limit(3);
+}
+
 // Deliberately uncached: render these reads under Suspense with cacheComponents.
 // Each navigation queries just its requested page, so new listings stay fresh.
 export async function getCats({

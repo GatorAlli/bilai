@@ -221,12 +221,21 @@
   background: var(--bilai-on-dark);
 }
 
-.bilai-featured-card > img {
+.bilai-featured-card > img,
+.bilai-featured-placeholder {
   width: 100%;
   height: auto;
   max-height: 14rem;
   aspect-ratio: 1.68;
   object-fit: cover;
+}
+
+.bilai-featured-placeholder {
+  display: grid;
+  flex: none;
+  place-items: center;
+  background: var(--bilai-active);
+  color: var(--bilai-muted);
 }
 
 .bilai-featured-info {
@@ -277,57 +286,6 @@
 
 .bilai-featured-profile:is(:hover, :active) span {
   text-decoration-thickness: 2px;
-}
-
-.bilai-featured-dialog {
-  position: fixed;
-  inset: 0;
-  width: min(30rem, calc(100% - 2rem));
-  max-height: calc(100dvh - 2rem);
-  margin: auto;
-  overflow: auto;
-  overscroll-behavior: contain;
-  padding: 1.25rem;
-  border: 1px solid var(--bilai-line);
-  border-radius: .875rem;
-  background: var(--bilai-on-dark);
-  color: var(--bilai-ink);
-}
-
-.bilai-featured-dialog::backdrop {
-  background: rgb(32 28 20 / 64%);
-}
-
-.bilai-featured-dialog-title {
-  display: flex;
-  justify-content: space-between;
-  align-items: start;
-  gap: .75rem;
-}
-
-.bilai-featured-dialog-title button {
-  display: grid;
-  width: 2.75rem;
-  height: 2.75rem;
-  place-items: center;
-  border-radius: .65rem;
-}
-
-.bilai-featured-dialog-title button:hover {
-  background: var(--bilai-active);
-}
-
-.bilai-featured-dialog > img {
-  width: 100%;
-  height: auto;
-  aspect-ratio: 1.68;
-  margin-block-start: 1rem;
-  border-radius: .65rem;
-  object-fit: cover;
-}
-
-.bilai-featured-dialog .bilai-featured-explore {
-  margin-block-start: 1rem;
 }
 
 @media (max-width: 40rem) {

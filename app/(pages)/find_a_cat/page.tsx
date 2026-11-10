@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Cat, MapPin } from "lucide-react";
+import { ArrowRight, Cat } from "lucide-react";
 import Navbar from "@/components/view/navbar/Navbar";
 import Searchbar from "@/components/view/search/Searchbar";
 import { CATS_PER_PAGE, formatCatAge, getCats, getCatBreeds } from "@/lib/cats";
@@ -94,9 +94,10 @@ async function CatResults({ searchParams }: { searchParams: SearchParams }) {
                 key={cat.id}
                 href={`/find_a_cat/${cat.id}`}
                 prefetch={false}
-                className="overflow-hidden rounded-3xl border border-border bg-card p-2 shadow-sm transition-shadow hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-secondary"
+                aria-label={`View profile for ${cat.name}`}
+                className="group flex flex-col overflow-hidden rounded-[20px] border border-[var(--bilai-line)] bg-[var(--bilai-on-dark)] text-[var(--bilai-ink)] transition-colors hover:border-[var(--bilai-action)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--bilai-focus)]"
               >
-                <div className="relative aspect-[16/10] overflow-hidden rounded-2xl bg-muted">
+                <div className="relative aspect-[32/15] shrink-0 overflow-hidden bg-muted">
                   {cat.coverImageUrl ? (
                     <Image
                       src={cat.coverImageUrl}
@@ -115,36 +116,27 @@ async function CatResults({ searchParams }: { searchParams: SearchParams }) {
                     </div>
                   )}
                 </div>
-                <div className="space-y-3 p-3">
-                  <div className="flex flex-wrap items-baseline justify-between gap-2">
-                    <h2 className="text-xl font-bold">{cat.name}</h2>
-                    <span className="text-xs text-muted-foreground">
-                      Parent: {cat.owner.name}
-                    </span>
-                  </div>
-                  <p className="flex flex-wrap items-center gap-2 text-sm">
-                    <span className="rounded-full bg-accent px-2.5 py-1 font-medium">
-                      {cat.breed}
-                    </span>
-                    <span>
-                      {formatCatAge(cat.ageMonths)} ·{" "}
-                      <span className="capitalize">{cat.gender}</span>
-                    </span>
+                <div className="flex flex-1 flex-col p-4">
+                  <h2 className="text-xl leading-tight font-bold tracking-tight [overflow-wrap:anywhere]">
+                    {cat.name}
+                  </h2>
+                  <p className="mt-2 text-sm leading-relaxed text-[var(--bilai-muted)]">
+                    {cat.breed} · {formatCatAge(cat.ageMonths)} ·{" "}
+                    <span className="capitalize">{cat.gender}</span>
                   </p>
-                  <div className="flex items-center justify-between gap-2 text-sm">
-                    <p className="flex min-w-0 items-center gap-1 text-muted-foreground">
-                      <MapPin className="size-4 shrink-0" aria-hidden />
-                      <span className="truncate">
+                  <div className="mt-auto pt-4">
+                    <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border-t border-[var(--bilai-line)] pt-4 text-sm">
+                      <p className="min-w-0 text-[var(--bilai-muted)] [overflow-wrap:anywhere]">
                         {cat.area}, {cat.district}
+                      </p>
+                      <span className="inline-flex shrink-0 items-center gap-2 font-bold text-[var(--bilai-action)]">
+                        <span className="underline decoration-1 underline-offset-4 group-hover:decoration-2">
+                          View profile
+                        </span>
+                        <ArrowRight className="size-4" aria-hidden="true" />
                       </span>
-                    </p>
-                    <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-semibold capitalize">
-                      {cat.status}
-                    </span>
+                    </div>
                   </div>
-                  <span className="inline-flex rounded-lg bg-secondary px-3 py-2 text-sm font-bold text-secondary-foreground">
-                    Meet {cat.name}
-                  </span>
                 </div>
               </Link>
             ))}
