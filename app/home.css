@@ -1,156 +1,156 @@
+html:has(.bilai-home-page) {
+  --bilai-paper: #f2f4f3;
+  --bilai-ink: #0a0908;
+  --bilai-muted: #4e5752;
+  --bilai-action: #17612f;
+  --bilai-on-dark: #fff;
+  --bilai-line: #d3d9d6;
+  --bilai-focus: var(--bilai-action);
+  --bilai-active: #dff0e2;
+  --bilai-brand-ink: var(--bilai-ink);
+  --bilai-gutter: clamp(1rem, 3.25vw, 3rem);
+  --bilai-scroll-track: var(--bilai-paper);
+  --bilai-scroll-thumb: #737c76;
+  scroll-padding-top: 5.5rem;
+  scrollbar-color: var(--bilai-scroll-thumb) var(--bilai-scroll-track);
+}
+
+html:has(.bilai-home-page)[data-bilai-dark-edge] {
+  --bilai-scroll-track: var(--bilai-ink);
+}
+
+html:has(.bilai-home-page)::-webkit-scrollbar-track {
+  background: var(--bilai-scroll-track);
+}
+
+html:has(.bilai-home-page)::-webkit-scrollbar-thumb {
+  background: var(--bilai-scroll-thumb);
+}
+
 .bilai-home-page {
+  --bilai-green: #4dda51;
+  --bilai-section-space: clamp(2rem, 4vw, 3.5rem);
+  --bilai-control-line: #737c76;
   flex: 1;
   background: var(--bilai-paper);
   color: var(--bilai-ink);
   color-scheme: light;
 }
 
+.bilai-home-skip {
+  position: fixed;
+  z-index: 10;
+  inset: .5rem auto auto .75rem;
+  padding: .65rem 1rem;
+  border-radius: .65rem;
+  background: var(--bilai-paper);
+  transform: translateY(-200%);
+}
+
+.bilai-home-skip:focus {
+  transform: none;
+  outline: 2px solid var(--bilai-focus);
+  outline-offset: 4px;
+}
+
 .bilai-home-hero {
-  width: calc(100% - 2 * var(--bilai-gutter));
-  margin-inline: auto;
+  position: relative;
+  isolation: isolate;
   display: grid;
-  grid-template-columns: minmax(0, .88fr) minmax(0, 1.12fr);
   align-items: center;
-  gap: clamp(1.35rem, 4vw, 3.5rem);
-  padding-block: clamp(1.15rem, 2vw, 1.85rem) clamp(1.35rem, 2.5vw, 2.25rem);
+  min-height: clamp(30rem, min(54vw, calc(81svh - 4.25rem)), 42rem);
+  padding-block: clamp(3rem, 7vw, 6rem) clamp(2rem, 4vw, 3.5rem);
+  background: var(--bilai-ink);
+  color: var(--bilai-paper);
+}
+
+.bilai-home-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 39% 50%;
+}
+
+.bilai-home-hero::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgb(10 9 8 / 88%), rgb(10 9 8 / 70%) 34%, rgb(10 9 8 / 38%) 68%, rgb(10 9 8 / 12%)),
+    linear-gradient(0deg, rgb(10 9 8 / 72%), transparent 48%);
+  content: "";
+  pointer-events: none;
 }
 
 .bilai-home-copy {
-  container-type: inline-size;
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  padding-inline: var(--bilai-gutter);
 }
 
 .bilai-home-copy h1 {
-  font-size: clamp(2rem, 4.3vw, 4rem);
-  font-size: clamp(2rem, 13.3cqi, 4rem);
-  font-weight: 660;
-  line-height: 1.02;
-  letter-spacing: -.042em;
-}
-
-.bilai-home-copy h1 span {
-  display: block;
-}
-
-.bilai-home-accent {
-  color: var(--bilai-action);
+  font: 760 clamp(3.35rem, 8vw, 8rem)/.94 var(--bilai-display), Georgia, serif;
+  letter-spacing: -.035em;
+  word-spacing: .065em;
+  text-transform: uppercase;
 }
 
 .bilai-home-copy p {
-  max-width: 28rem;
-  margin-block-start: .75rem;
-  color: var(--bilai-muted);
-  font-size: .9375rem;
+  max-width: 37ch;
+  margin-block-start: 1.5rem;
+  font-size: clamp(1rem, 1.55vw, 1.25rem);
   line-height: 1.6;
 }
 
-.bilai-home-cta {
+.bilai-home-cta,
+.bilai-featured-explore,
+.bilai-featured-profile {
   display: inline-flex;
   min-height: 2.75rem;
   align-items: center;
   justify-content: center;
   gap: .55rem;
-  margin-block-start: 1rem;
   padding: .65rem 1rem;
+  border: 1px solid transparent;
   border-radius: .65rem;
-  background: var(--bilai-action);
-  color: var(--bilai-on-dark);
   font-size: .9375rem;
   font-weight: 700;
   line-height: 1.3;
-  transition: background-color .16s ease;
 }
 
-.bilai-home-cta:hover,
-.bilai-home-cta:active {
-  background: var(--bilai-action-hover);
+.bilai-home-page :is(.bilai-home-cta, .bilai-featured-explore, .bilai-featured-profile, .bilai-home-back) svg {
+  flex: none;
 }
 
-.bilai-home-cta:focus-visible {
-  outline: 2px solid var(--bilai-focus);
+.bilai-home-cta {
+  margin-block-start: 1rem;
+  background: var(--bilai-green);
+  color: var(--bilai-ink);
+}
+
+.bilai-home-copy .bilai-home-cta {
+  min-height: 3rem;
+  margin-block-start: 1.5rem;
+  padding-inline: 1.25rem;
+}
+
+.bilai-home-cta:is(:hover, :active) {
+  background: #40ca45;
+}
+
+.bilai-home-page :is(.bilai-home-cta, .bilai-home-footer a):focus-visible {
+  outline: 2px solid var(--bilai-paper);
   outline-offset: 4px;
 }
 
-.bilai-home-photo {
-  overflow: hidden;
-  border-radius: .875rem;
-  background: var(--bilai-forest);
-  color: var(--bilai-on-dark);
-}
-
-.bilai-home-photo img {
-  width: 100%;
-  height: auto;
-  aspect-ratio: 1.67;
-  max-height: clamp(19rem, 24vw, 25rem);
-  object-fit: cover;
-  object-position: 59% 43%;
-}
-
-.bilai-home-photo figcaption {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: .15rem 1rem;
-  padding: .6rem .95rem;
-  font-size: .9375rem;
-  line-height: 1.4;
-}
-
-.bilai-home-photo figcaption span {
-  color: var(--bilai-forest-muted);
-  font-size: .75rem;
-}
-
-@media (max-width: 54rem) {
-  .bilai-home-hero {
-    grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
-    gap: 1.75rem;
-  }
-}
-
-@media (max-width: 40rem) {
-  .bilai-home-hero {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 1.25rem;
-  }
-
-  .bilai-home-photo img {
-    aspect-ratio: 1.55;
-  }
-
-  .bilai-home-photo figcaption {
-    padding-inline: .75rem;
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .bilai-home-copy h1 span {
-    animation: bilai-title-arrive .42s cubic-bezier(.2, .68, .26, 1) both;
-  }
-
-  .bilai-home-copy h1 .bilai-home-accent {
-    animation-delay: .075s;
-  }
-
-  @keyframes bilai-title-arrive {
-    from { opacity: .7; transform: translateY(.3rem); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .bilai-home-cta {
-    transition: none;
-  }
-}
-
 .bilai-featured {
-  padding-block: clamp(2rem, 4vw, 3.5rem);
-  background: #fffdf7;
+  padding-block: var(--bilai-section-space);
+  background: var(--bilai-on-dark);
 }
 
-.bilai-featured-inner {
+.bilai-featured-inner,
+.bilai-home-footer-inner {
   width: calc(100% - 2 * var(--bilai-gutter));
   margin-inline: auto;
 }
@@ -163,15 +163,12 @@
   margin-block-end: 1rem;
 }
 
-.bilai-featured h2 {
-  font-size: clamp(1.8rem, 3.1vw, 2.75rem);
-  font-weight: 660;
-  line-height: 1.08;
+.bilai-home-page h2 {
+  font: 660 clamp(1.8rem, 3.1vw, 2.75rem)/1.08 var(--bilai-display), Georgia, serif;
   letter-spacing: -.038em;
 }
 
-.bilai-featured-heading p,
-.bilai-featured-dialog p {
+.bilai-featured-heading p {
   margin-block-start: .5rem;
   color: var(--bilai-muted);
   font-size: .9375rem;
@@ -180,24 +177,12 @@
 
 .bilai-featured-explore,
 .bilai-featured-profile {
-  display: inline-flex;
-  min-height: 2.75rem;
-  align-items: center;
-  gap: .55rem;
-  font-size: .9375rem;
-  font-weight: 700;
-  line-height: 1.3;
-}
-
-.bilai-featured-explore {
   flex: none;
-  padding: .65rem 1rem;
-  border: 1px solid #83775e;
-  border-radius: .65rem;
+  border-color: var(--bilai-control-line);
 }
 
-.bilai-featured-explore:is(:hover, :active) {
-  background: var(--bilai-on-dark);
+.bilai-featured :is(.bilai-featured-explore, .bilai-featured-profile):is(:hover, :active) {
+  background: var(--bilai-active);
 }
 
 .bilai-featured :is(a, button):focus-visible {
@@ -228,13 +213,14 @@
   max-height: 14rem;
   aspect-ratio: 1.68;
   object-fit: cover;
+  object-position: 50% 38%;
+  background: var(--bilai-line);
 }
 
 .bilai-featured-placeholder {
   display: grid;
   flex: none;
   place-items: center;
-  background: var(--bilai-active);
   color: var(--bilai-muted);
 }
 
@@ -242,65 +228,199 @@
   display: flex;
   flex: 1;
   flex-direction: column;
-  padding: .8rem .9rem .55rem;
+  padding: clamp(1rem, 1.4vw, 1.25rem);
   overflow-wrap: anywhere;
 }
 
 .bilai-featured-info h3 {
-  font-size: 1.2rem;
-  font-weight: 750;
-  line-height: 1.2;
-  letter-spacing: -.022em;
+  font: 660 clamp(1.25rem, 2vw, 1.6rem)/1.12 var(--bilai-display), Georgia, serif;
+  letter-spacing: -.025em;
 }
 
-.bilai-featured-info p,
-.bilai-featured-meta > span {
+.bilai-featured-location {
+  margin-block-start: .25rem;
+  font-size: .875rem;
+  font-weight: 650;
+}
+
+.bilai-featured-details {
+  margin-block: .5rem 1rem;
   color: var(--bilai-muted);
-  font-size: .8125rem;
-  line-height: 1.5;
+  font-size: .9375rem;
+  line-height: 1.45;
 }
 
-.bilai-featured-info p {
-  margin-block: .26rem .72rem;
+.bilai-featured-profile {
+  align-self: flex-start;
+  margin-block-start: auto;
+  cursor: pointer;
 }
 
-.bilai-featured-meta {
+.bilai-home-end {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  align-items: start;
+  gap: var(--bilai-section-space) clamp(2rem, 5vw, 4rem);
+  padding: var(--bilai-section-space) var(--bilai-gutter);
+  background: var(--bilai-ink);
+  color: var(--bilai-paper);
+}
+
+.bilai-home-end h2 {
+  text-wrap: balance;
+}
+
+.bilai-home-end p {
+  max-width: 46ch;
+  margin-block-start: .75rem;
+  font-size: .9375rem;
+  line-height: 1.6;
+}
+
+.bilai-home-end #our-story p {
+  max-width: 67ch;
+}
+
+.bilai-home-footer {
+  border-block-start: 1px solid #393836;
+  background: var(--bilai-ink);
+  color: var(--bilai-paper);
+}
+
+.bilai-home-footer-inner {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: .15rem .75rem;
-  margin-block-start: auto;
-  padding-block-start: .3rem;
-  border-block-start: 1px solid var(--bilai-line);
+  gap: .25rem 1rem;
+  padding-block: .5rem;
 }
 
-.bilai-featured-profile {
-  color: var(--bilai-action);
+.bilai-home-footer .bilai-nav-brand {
+  gap: .4rem;
+  min-height: 2.75rem;
+  font-size: 1.5rem;
 }
 
-.bilai-featured-profile span {
+.bilai-home-footer .bilai-nav-brand img {
+  width: 2.45rem;
+  height: 2.45rem;
+  mix-blend-mode: normal;
+  clip-path: circle(38.4%);
+}
+
+.bilai-home-back {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: .35rem;
+  font-size: .875rem;
+  font-weight: 700;
+}
+
+.bilai-home-back:is(:hover, :active) {
   text-decoration: underline;
   text-underline-offset: .24em;
 }
 
-.bilai-featured-profile:is(:hover, :active) span {
-  text-decoration-thickness: 2px;
-}
-
 @media (max-width: 40rem) {
+  .bilai-home-hero {
+    align-items: end;
+    min-height: 33.75rem;
+    padding-block: 16rem 1.25rem;
+  }
+
+  .bilai-home-copy {
+    container-type: inline-size;
+  }
+
+  .bilai-home-copy h1 {
+    font-size: clamp(1.65rem, 11.8cqi, 4.25rem);
+  }
+
+  .bilai-home-copy p,
+  .bilai-home-copy .bilai-home-cta {
+    margin-block-start: 1rem;
+  }
+
+  .bilai-home-photo {
+    height: 65%;
+    object-position: 54% 50%;
+  }
+
+  .bilai-home-hero::after {
+    background: linear-gradient(0deg, var(--bilai-ink) 35%, rgb(10 9 8 / 84%) 46%, transparent 70%);
+  }
+
   .bilai-featured-heading {
     flex-direction: column;
     align-items: start;
   }
 
-  .bilai-featured-grid {
+  .bilai-featured-grid,
+  .bilai-home-end {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .bilai-featured-card > img {
+    aspect-ratio: 1.78;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .bilai-home-copy h1,
+  .bilai-home-page [data-bilai-revealed] {
+    animation: bilai-title-arrive .42s cubic-bezier(.2, .68, .26, 1) both;
+  }
+
+  @keyframes bilai-title-arrive {
+    from { opacity: .7; transform: translateY(.3rem); }
+    to { opacity: 1; transform: translateY(0); }
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   html:has(.bilai-home-page) {
     scroll-behavior: auto;
+  }
+}
+
+@media (forced-colors: active) {
+  html:has(.bilai-home-page) {
+    scrollbar-color: auto;
+  }
+
+  .bilai-home-photo,
+  .bilai-home-hero::after {
+    display: none;
+  }
+
+  .bilai-home-cta {
+    border-color: ButtonText;
+  }
+}
+
+@media print {
+  .bilai-home-hero,
+  .bilai-home-end,
+  .bilai-home-footer {
+    background: transparent;
+    color: #000;
+  }
+
+  .bilai-home-hero {
+    display: block;
+    min-height: 0;
+    padding-block: 1rem;
+  }
+
+  .bilai-home-photo,
+  .bilai-home-hero::after,
+  .bilai-home-page .bilai-nav-header,
+  .bilai-home-cta,
+  .bilai-featured-explore,
+  .bilai-featured-profile,
+  .bilai-home-back {
+    display: none;
   }
 }

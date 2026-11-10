@@ -3,11 +3,7 @@ import Link from "next/link";
 import { ArrowRight, Cat } from "lucide-react";
 import { formatCatAge, getFeaturedCats } from "@/lib/cats";
 
-export default async function FeaturedCats({
-  headingClassName,
-}: {
-  headingClassName: string;
-}) {
+export default async function FeaturedCats() {
   const featuredCats = await getFeaturedCats();
   if (featuredCats.length < 3) return null;
 
@@ -20,9 +16,7 @@ export default async function FeaturedCats({
       <div className="bilai-featured-inner">
         <div className="bilai-featured-heading">
           <div>
-            <h2 id="featured-title" className={headingClassName}>
-              Meet the cats
-            </h2>
+            <h2 id="featured-title">Meet the cats</h2>
             <p>Get to know a few cats looking for a home.</p>
           </div>
           <Link href="/find_a_cat" className="bilai-featured-explore">
@@ -54,24 +48,21 @@ export default async function FeaturedCats({
               )}
               <div className="bilai-featured-info">
                 <h3>{cat.name}</h3>
-                <p>
-                  {cat.breed} · {formatCatAge(cat.ageMonths)} ·{" "}
-                  <span className="capitalize">{cat.gender}</span>
+                <p className="bilai-featured-location">
+                  {[cat.area, cat.district].filter(Boolean).join(", ")}
                 </p>
-                <div className="bilai-featured-meta">
-                  <span>
-                    {cat.area}, {cat.district}
-                  </span>
-                  <Link
-                    href={`/find_a_cat/${cat.id}`}
-                    prefetch={false}
-                    className="bilai-featured-profile"
-                    aria-label={`View profile for ${cat.name}`}
-                  >
-                    <span>View profile</span>
-                    <ArrowRight size={17} aria-hidden="true" />
-                  </Link>
-                </div>
+                <p className="bilai-featured-details">
+                  {cat.breed}, {cat.gender.toLowerCase()}, {formatCatAge(cat.ageMonths)}
+                </p>
+                <Link
+                  href={`/find_a_cat/${cat.id}`}
+                  prefetch={false}
+                  className="bilai-featured-profile"
+                  aria-label={`View profile for ${cat.name}`}
+                >
+                  View profile
+                  <ArrowRight size={17} aria-hidden="true" />
+                </Link>
               </div>
             </article>
           ))}
