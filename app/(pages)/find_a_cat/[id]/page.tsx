@@ -82,7 +82,7 @@ async function CatDetails({ params }: { params: Promise<{ id: string }> }) {
           ["Breed", cat.breed],
           ["Age", formatCatAge(cat.ageMonths)],
           ["Gender", cat.gender],
-          ["Location", `${cat.locality}, ${cat.city}`],
+          ["Location", `${cat.area}, ${cat.district}`],
           ["Vaccinated", cat.vaccinated],
           ["Spayed / neutered", cat.neutered],
         ].map(([label, value]) => (

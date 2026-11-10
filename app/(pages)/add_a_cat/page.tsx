@@ -5,7 +5,9 @@ import Navbar from "@/components/view/navbar/Navbar";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useId, useState, useTransition } from "react";
+import { SearchSelect } from "@/components/ui/search-select";
+import { useId, useMemo, useState, useTransition } from "react";
+import { DISTRICT_NAMES, getAreaGroups } from "@/lib/locations";
 import ImageGallery, { type GalleryImage } from "./ImageGallery";
 import { submitForm } from "./actions";
 import {
@@ -55,8 +57,8 @@ export default function PageBody() {
   const [breed, setBreed] = useState("");
   const [ageYears, setAgeYears] = useState("0");
   const [ageMonths, setAgeMonths] = useState("0");
-  const [locality, setLocality] = useState("");
-  const [city, setCity] = useState("");
+  const [district, setDistrict] = useState("");
+  const [area, setArea] = useState("");
   const [gender, setGender] = useState<Gender | "">("");
   const [vaccinated, setVaccinated] = useState<YesNoUnknown | "">("");
   const [neutered, setNeutered] = useState<YesNoUnknown | "">("");
@@ -71,6 +73,14 @@ export default function PageBody() {
     e.preventDefault();
     setError(null);
 
+    if (!district) {
+      setError("Please choose a district.");
+      return;
+    }
+    if (!area) {
+      setError("Please choose an area.");
+      return;
+    }
     if (!gender) {
       setError("Please choose a gender.");
       return;
@@ -97,8 +107,8 @@ export default function PageBody() {
         formData.set("breed", breed);
         formData.set("ageYears", ageYears || "0");
         formData.set("ageMonths", ageMonths || "0");
-        formData.set("locality", locality);
-        formData.set("city", city);
+        formData.set("district", district);
+        formData.set("area", area);
         formData.set("gender", gender);
         formData.set("vaccinated", vaccinated);
         formData.set("neutered", neutered);
@@ -150,24 +160,16 @@ export default function PageBody() {
             }}
           />
 
-          <div className="grid gap-6 sm:grid-cols-2 sm:gap-4">
-            <FormElement
-              labelText="Locality"
-              inputPlaceholder="e.g. Mirpur"
-              value={locality}
-              onChange={(e) => {
-                setLocality(e.target.value);
-              }}
-            />
-            <FormElement
-              labelText="City"
-              inputPlaceholder="e.g. Dhaka"
-              value={city}
-              onChange={(e) => {
-                setCity(e.target.value);
-              }}
-            />
-          </div>
+          <LocationFields
+            district={district}
+            area={area}
+            onDistrictChange={(next) => {
+              setDistrict(next);
+              // Areas belong to a district, so a new district clears the area.
+              if (next !== district) setArea("");
+            }}
+            onAreaChange={setArea}
+          />
 
           <fieldset className="flex flex-col gap-2">
             <legend className="mb-2 text-sm font-bold">Age</legend>
@@ -320,6 +322,62 @@ function FormElement({
           ))}
         </datalist>
       )}
+    </div>
+  );
+}
+
+/* District -> Area, the way Bangladeshi listing sites do it. Not every place
+   is a city: an area is a city neighbourhood or an upazila. */
+function LocationFields({
+  district,
+  area,
+  onDistrictChange,
+  onAreaChange,
+}: {
+  district: string;
+  area: string;
+  onDistrictChange: (value: string) => void;
+  onAreaChange: (value: string) => void;
+}) {
+  const districtId = useId();
+  const areaId = useId();
+  const areaGroups = useMemo(() => getAreaGroups(district), [district]);
+
+  return (
+    <div className="grid gap-6 sm:grid-cols-2 sm:gap-4">
+      <div className="flex flex-col gap-2">
+        <Label htmlFor={districtId} className="font-bold">
+          District
+        </Label>
+        <SearchSelect
+          id={districtId}
+          items={DISTRICT_NAMES}
+          value={district}
+          onChange={onDistrictChange}
+          placeholder="e.g. Dhaka"
+          emptyText="No district found."
+          popupClassName="theme-light"
+        />
+      </div>
+      <div className="flex flex-col gap-2">
+        <Label htmlFor={areaId} className="font-bold">
+          Area
+        </Label>
+        <SearchSelect
+          // Remount per district so the typed filter and highlight reset too.
+          key={district}
+          id={areaId}
+          items={areaGroups}
+          value={area}
+          onChange={onAreaChange}
+          placeholder={
+            district ? "Neighbourhood or upazila" : "Choose a district first"
+          }
+          emptyText="No area found."
+          popupClassName="theme-light"
+          disabled={!district}
+        />
+      </div>
     </div>
   );
 }

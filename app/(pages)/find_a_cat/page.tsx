@@ -104,7 +104,7 @@ async function CatResults({ searchParams }: { searchParams: SearchParams }) {
                   <p className="flex min-w-0 items-center gap-1 text-muted-foreground">
                     <MapPin className="size-4 shrink-0" aria-hidden />
                     <span className="truncate">
-                      {cat.locality}, {cat.city}
+                      {cat.area}, {cat.district}
                     </span>
                   </p>
                   <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-semibold capitalize">

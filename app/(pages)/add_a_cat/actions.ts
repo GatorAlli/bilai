@@ -17,6 +17,7 @@ import {
   MAX_TEMPERAMENT_LENGTH,
   YES_NO_UNKNOWN,
 } from "@/lib/cat-limits";
+import { isValidLocation } from "@/lib/locations";
 import { UPLOAD_ROOT, isWebp } from "@/lib/uploads";
 
 const GENDERS = ["male", "female", "unknown"] as const;
@@ -32,8 +33,8 @@ export async function submitForm(
 
   const name = String(formData.get("name") ?? "").trim();
   const breed = String(formData.get("breed") ?? "").trim();
-  const locality = String(formData.get("locality") ?? "").trim();
-  const city = String(formData.get("city") ?? "").trim();
+  const district = String(formData.get("district") ?? "").trim();
+  const area = String(formData.get("area") ?? "").trim();
   const gender = String(formData.get("gender") ?? "");
   const vaccinated = String(formData.get("vaccinated") ?? "");
   const neutered = String(formData.get("neutered") ?? "");
@@ -50,8 +51,11 @@ export async function submitForm(
 
   if (!name) return { ok: false, error: "Name is required." };
   if (!breed) return { ok: false, error: "Breed is required." };
-  if (!locality) return { ok: false, error: "Locality is required." };
-  if (!city) return { ok: false, error: "City is required." };
+  if (!district) return { ok: false, error: "Please choose a district." };
+  if (!area) return { ok: false, error: "Please choose an area." };
+  if (!isValidLocation(district, area)) {
+    return { ok: false, error: "Please pick a district and area from the lists." };
+  }
   if (!(GENDERS as readonly string[]).includes(gender)) {
     return { ok: false, error: "Please choose a gender." };
   }
@@ -137,8 +141,8 @@ export async function submitForm(
         name,
         breed,
         ageMonths: years * 12 + months,
-        locality,
-        city,
+        area,
+        district,
         gender,
         vaccinated,
         neutered,

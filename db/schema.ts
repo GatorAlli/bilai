@@ -108,8 +108,10 @@ export const cats = pgTable(
     name: text().notNull(),
     breed: text().notNull(),
     ageMonths: integer().notNull(), // Age is to be inserted in months here
-    locality: text().notNull(),
-    city: text().notNull(),
+    // Values come from lib/locations.ts. An area is a city neighbourhood or
+    // an upazila inside the district.
+    area: text().notNull(),
+    district: text().notNull(),
     gender: text().notNull(),
     description: text(),
     // 'available' | 'pending' | 'adopted'
@@ -132,7 +134,7 @@ export const cats = pgTable(
   },
   (table) => [
     index("cats_status_idx").on(table.status),
-    index("cats_city_idx").on(table.city),
+    index("cats_district_idx").on(table.district),
     index("cats_breed_idx").on(table.breed),
   ],
 );

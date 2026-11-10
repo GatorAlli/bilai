@@ -22,8 +22,8 @@ export async function getCats({
         breed: cats.breed,
         ageMonths: cats.ageMonths,
         gender: cats.gender,
-        locality: cats.locality,
-        city: cats.city,
+        area: cats.area,
+        district: cats.district,
         status: cats.status,
         owner: { id: user.id, name: user.name },
         coverImageUrl: sql<string | null>`(
