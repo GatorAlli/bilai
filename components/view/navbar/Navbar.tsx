@@ -2,14 +2,18 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { LogIn, Menu, Plus, X } from "lucide-react";
+import { LogIn, Menu, Plus, User, X } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
+import { authClient } from "@/lib/auth-client";
 import "./navbar.css";
 
-type Page = "home" | "find" | "profile" | "login" | "list";
+// "profile" is a cat's page; "account" is the signed-in person's own page.
+type Page = "home" | "find" | "profile" | "account" | "login" | "list";
 
 export default function Navbar({ currentPage }: { currentPage: Page }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const { data: session, isPending } = authClient.useSession();
+  const userName = session?.user.name;
   const menuId = useId();
   const headerRef = useRef<HTMLElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
@@ -90,15 +94,32 @@ export default function Navbar({ currentPage }: { currentPage: Page }) {
             </Link>
           </div>
           <div className="bilai-nav-actions">
-            <Link
-              href="/auth"
-              className="bilai-nav-login"
-              aria-current={currentPage === "login" ? "page" : undefined}
-              onClick={closeMenu}
-            >
-              <LogIn size={16} aria-hidden="true" />
-              Login
-            </Link>
+            {userName ? (
+              <Link
+                href="/profile"
+                className="bilai-nav-login bilai-nav-user"
+                aria-current={currentPage === "account" ? "page" : undefined}
+                aria-label={`Your profile, ${userName}`}
+                onClick={closeMenu}
+              >
+                <User size={16} aria-hidden="true" />
+                <span>{userName}</span>
+              </Link>
+            ) : isPending ? (
+              // Keep the spot while we find out who is signed in, so the
+              // button doesn't flash "Login" for people who are.
+              <span className="bilai-nav-login bilai-nav-pending" aria-hidden="true" />
+            ) : (
+              <Link
+                href="/auth"
+                className="bilai-nav-login"
+                aria-current={currentPage === "login" ? "page" : undefined}
+                onClick={closeMenu}
+              >
+                <LogIn size={16} aria-hidden="true" />
+                Login
+              </Link>
+            )}
             <Link
               href="/add_a_cat"
               className="bilai-nav-list"

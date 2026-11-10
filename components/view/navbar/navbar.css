@@ -124,6 +124,24 @@
   background: #332a32;
 }
 
+/* Signed in: the button shows the person's name, cut short if it is long. */
+.bilai-nav-user span {
+  max-width: 10rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bilai-nav-user[aria-current] {
+  background: #332a32;
+}
+
+/* Same size as the Login button, but empty. */
+.bilai-nav-pending {
+  min-width: 6.5rem;
+  visibility: hidden;
+}
+
 .bilai-nav-list:is(:hover, :active, [aria-current]),
 .bilai-nav-menu-button:is(:hover, :active) {
   background: var(--bilai-active);
