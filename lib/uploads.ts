@@ -1,6 +1,6 @@
 import path from "node:path";
 
-// <project root>/uploads: outside public/, so new files are served immediately.
+// Legacy local uploads and GitHub photo exports. New uploads live in PostgreSQL.
 export const UPLOAD_ROOT = path.join(process.cwd(), "uploads");
 
 export function isWebp(buf: Buffer) {
