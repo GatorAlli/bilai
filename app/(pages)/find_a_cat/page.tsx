@@ -23,7 +23,9 @@ export default function FindCatsPage({
   return (
     <div className="theme-light flex flex-1 flex-col bg-background text-foreground">
       <Navbar />
-      <Searchbar />
+      <Suspense fallback={<Searchbar />}>
+        <AppliedSearchbar searchParams={searchParams} />
+      </Suspense>
       <main className="wrap py-8">
         <h1 className="font-heading text-3xl font-bold">Find a cat</h1>
         <p className="mt-2 text-muted-foreground">
@@ -40,6 +42,17 @@ export default function FindCatsPage({
         </Suspense>
       </main>
     </div>
+  );
+}
+
+async function AppliedSearchbar({
+  searchParams,
+}: {
+  searchParams: SearchParams;
+}) {
+  const filters = parseCatFilters(await searchParams);
+  return (
+    <Searchbar key={catFilterParams(filters).toString()} filters={filters} />
   );
 }
 

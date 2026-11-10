@@ -9,6 +9,8 @@ import {
   getTableColumns,
   gte,
   inArray,
+  ilike,
+  or,
   lte,
   sql,
 } from "drizzle-orm";
@@ -29,6 +31,17 @@ export async function getCats({
   const requestedPage = Number.isSafeInteger(page) && page > 0 ? page : 1;
   const filter = filters
     ? and(
+        ...filters.q
+          .split(/\s+/)
+          .filter(Boolean)
+          .map((word) => {
+            const pattern = `%${word.replace(/[\\%_]/g, "\\$&")}%`;
+            return or(
+              ...[cats.name, cats.breed, cats.area, cats.district].map(
+                (column) => ilike(column, pattern),
+              ),
+            );
+          }),
         filters.minAge > 0 ? gte(cats.ageMonths, filters.minAge) : undefined,
         filters.maxAge < MAX_FILTER_AGE
           ? lte(cats.ageMonths, filters.maxAge)

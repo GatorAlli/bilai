@@ -240,7 +240,7 @@ export default function CatFilters({
         </button>
         <button
           type="button"
-          onClick={() => setFilters(parseCatFilters({}))}
+          onClick={() => setFilters(parseCatFilters({ q: initialFilters.q }))}
           className="h-10 w-full rounded-lg border border-border text-sm font-semibold hover:bg-muted"
         >
           Clear selections

@@ -3,6 +3,7 @@ import { DISTRICT_NAMES, isValidLocation } from "@/lib/locations";
 // The last slider stop means any age, including cats older than 20 years.
 export const MAX_FILTER_AGE = 240;
 export type CatFilters = {
+  q: string;
   minAge: number;
   maxAge: number;
   breeds: string[];
@@ -46,6 +47,7 @@ export function parseCatFilters(params: CatSearchParams): CatFilters {
   const district = first("district") ?? "";
   const area = first("area") ?? "";
   return {
+    q: (first("q") ?? "").trim(),
     minAge: Math.min(minAge, maxAge),
     maxAge: Math.max(minAge, maxAge),
     breeds: list("breed"),
@@ -59,6 +61,7 @@ export function parseCatFilters(params: CatSearchParams): CatFilters {
 
 export function catFilterParams(filters: CatFilters): URLSearchParams {
   const params = new URLSearchParams();
+  if (filters.q) params.set("q", filters.q);
   if (filters.minAge > 0) params.set("minAge", String(filters.minAge));
   if (filters.maxAge < MAX_FILTER_AGE)
     params.set("maxAge", String(filters.maxAge));
