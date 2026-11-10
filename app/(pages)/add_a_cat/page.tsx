@@ -11,6 +11,7 @@ import { DISTRICT_NAMES, getAreaGroups } from "@/lib/locations";
 import ImageGallery, { type GalleryImage } from "./ImageGallery";
 import { submitForm } from "./actions";
 import {
+  type ContactMethod,
   MAX_DESCRIPTION_LENGTH,
   MAX_REHOMING_REASON_LENGTH,
   MAX_TEMPERAMENT_LENGTH,
@@ -45,6 +46,11 @@ const YES_NO_UNKNOWN_OPTIONS: { value: YesNoUnknown; label: string }[] = [
   { value: "unknown", label: "Unknown" },
 ];
 
+const CONTACT_OPTIONS: { value: ContactMethod; label: string }[] = [
+  { value: "whatsapp", label: "WhatsApp" },
+  { value: "call", label: "Phone call" },
+];
+
 function clamp(value: string, min: number, max: number) {
   if (value === "") return "";
   const n = Math.floor(Number(value));
@@ -65,6 +71,7 @@ export default function PageBody() {
   const [temperament, setTemperament] = useState("");
   const [description, setDescription] = useState("");
   const [rehomingReason, setRehomingReason] = useState("");
+  const [contactMethods, setContactMethods] = useState<ContactMethod[]>([]);
   const [images, setImages] = useState<GalleryImage[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -93,6 +100,10 @@ export default function PageBody() {
       setError("Please say whether the cat is spayed/neutered.");
       return;
     }
+    if (contactMethods.length === 0) {
+      setError("Please choose how adopters can contact you.");
+      return;
+    }
     if (images.length === 0) {
       setError("Please add at least one photo.");
       return;
@@ -115,6 +126,9 @@ export default function PageBody() {
         formData.set("temperament", temperament);
         formData.set("description", description);
         formData.set("rehomingReason", rehomingReason);
+        for (const method of contactMethods) {
+          formData.append("contactMethods", method);
+        }
         // Same order as the gallery: the first image is the cover.
         for (const img of images) {
           formData.append("images", img.file);
@@ -250,6 +264,15 @@ export default function PageBody() {
           />
 
           <ImageGallery images={images} onChange={setImages} />
+
+          <CheckboxGroup
+            legend="How can adopters contact you?"
+            hint="Pick one or both. We use the phone number on your profile."
+            name="contactMethods"
+            options={CONTACT_OPTIONS}
+            value={contactMethods}
+            onChange={setContactMethods}
+          />
 
           {error && (
             <p role="alert" className="text-sm text-destructive">
@@ -445,6 +468,64 @@ function RadioGroup<T extends string>({
               value={option.value}
               checked={value === option.value}
               onChange={() => onChange(option.value)}
+              className="size-4 accent-secondary outline-none"
+            />
+            {option.label}
+          </label>
+        ))}
+      </div>
+    </fieldset>
+  );
+}
+
+function CheckboxGroup<T extends string>({
+  legend,
+  hint,
+  name,
+  options,
+  value,
+  onChange,
+}: {
+  legend: string;
+  hint?: string;
+  name: string;
+  options: { value: T; label: string }[];
+  value: T[];
+  onChange: (value: T[]) => void;
+}) {
+  const hintId = useId();
+  return (
+    <fieldset
+      className="flex flex-col gap-2"
+      aria-describedby={hint ? hintId : undefined}
+    >
+      <legend className="mb-1 text-sm font-bold">{legend}</legend>
+      {hint && (
+        <p id={hintId} className="mb-1 text-sm text-muted-foreground">
+          {hint}
+        </p>
+      )}
+      <div className="flex flex-wrap gap-3">
+        {options.map((option) => (
+          <label
+            key={option.value}
+            className="flex h-10 cursor-pointer items-center gap-2 rounded-lg border border-input bg-background px-4 text-sm font-medium transition-colors hover:bg-muted has-checked:border-secondary has-checked:bg-secondary/20 has-focus-visible:ring-3 has-focus-visible:ring-ring/50"
+          >
+            <input
+              type="checkbox"
+              name={name}
+              value={option.value}
+              checked={value.includes(option.value)}
+              onChange={(e) =>
+                onChange(
+                  e.target.checked
+                    ? // Keep the options' order so the payload is predictable.
+                      options
+                        .map((o) => o.value)
+                        .filter((v) => v === option.value || value.includes(v))
+                    : value.filter((v) => v !== option.value),
+                )
+              }
               className="size-4 accent-secondary outline-none"
             />
             {option.label}

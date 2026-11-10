@@ -1,5 +1,7 @@
+import { sql } from "drizzle-orm";
 import {
   boolean,
+  check,
   index,
   pgTable,
   text,
@@ -122,6 +124,9 @@ export const cats = pgTable(
     neutered: text().notNull().default("unknown"), // spayed or neutered
     temperament: text(),
     rehomingReason: text("rehoming_reason"),
+    // How adopters may reach the lister. The number comes from their profile.
+    contactWhatsapp: boolean("contact_whatsapp").notNull().default(false),
+    contactCall: boolean("contact_call").notNull().default(false),
     userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
@@ -137,6 +142,10 @@ export const cats = pgTable(
     index("cats_status_idx").on(table.status),
     index("cats_district_idx").on(table.district),
     index("cats_breed_idx").on(table.breed),
+    check(
+      "cats_contact_method_check",
+      sql`${table.contactWhatsapp} or ${table.contactCall}`,
+    ),
   ],
 );
 
