@@ -175,7 +175,7 @@ export default function AuthForm() {
             autoComplete="tel"
             required
             maxLength={20}
-            placeholder="01712345678"
+            placeholder="01*********"
             value={phone}
             onChange={(event) => setPhone(event.target.value)}
             disabled={isPending}
