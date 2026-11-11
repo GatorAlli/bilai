@@ -104,22 +104,40 @@ html:has(.bilai-site)[data-bilai-dark-edge] {
   color: var(--bilai-paper);
 }
 
-.bilai-footer::before {
+.bilai-home-page :is(.bilai-featured, .bilai-home-end) {
+  position: relative;
+}
+
+.bilai-footer::before,
+.bilai-home-page :is(.bilai-featured, .bilai-home-end)::before {
   position: absolute;
-  inset: 0 0 auto;
-  height: 10px;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 10'%3E%3Cpath d='M0 5C40 1 80 1 120 5S200 9 240 5' fill='none' stroke='%2379847b'/%3E%3C/svg%3E") 0 0 / 240px 10px repeat-x;
+  inset: auto 0 100%;
+  z-index: 1;
+  height: 14px;
+  background: var(--bilai-wave-color, var(--bilai-ink));
+  mask: var(--bilai-wave-shape, url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 260 14'%3E%3Cpath d='M0 7C43 0 87 0 130 7S217 14 260 7V14H0Z'/%3E%3C/svg%3E")) 0 0 / 260px 14px repeat-x;
   content: "";
   pointer-events: none;
 }
 
+.bilai-home-page .bilai-featured {
+  --bilai-wave-color: var(--bilai-on-dark);
+}
+
+.bilai-home-page .bilai-footer::before {
+  inset-block: 0 auto;
+  --bilai-wave-color: #a1aca3;
+  --bilai-wave-shape: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 260 14'%3E%3Cpath d='M0 7C43 0 87 0 130 7S217 14 260 7' fill='none' stroke='black' stroke-width='1.5'/%3E%3C/svg%3E");
+}
+
 @media (prefers-reduced-motion: no-preference) {
-  .bilai-footer::before {
-    animation: bilai-footer-wave 10s linear infinite;
+  .bilai-footer::before,
+  .bilai-home-page :is(.bilai-featured, .bilai-home-end)::before {
+    animation: bilai-section-wave 10s linear infinite;
   }
 
-  @keyframes bilai-footer-wave {
-    to { background-position-x: 240px; }
+  @keyframes bilai-section-wave {
+    to { mask-position: 260px 0; }
   }
 }
 
@@ -442,6 +460,7 @@ html:has(.bilai-site)[data-bilai-dark-edge] {
   }
 
   .bilai-site .bilai-nav-header, .bilai-skip, .bilai-footer-top, .bilai-footer::before,
+  .bilai-home-page :is(.bilai-featured, .bilai-home-end)::before,
   .bilai-cat-profile, .bilai-filter-panel, .bilai-search {
     display: none;
   }
