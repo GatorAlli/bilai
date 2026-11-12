@@ -105,7 +105,7 @@
 
 .bilai-featured-heading p {
   margin-block-start: .5rem;
-  color: var(--bilai-muted);
+  color: var(--bilai-ink);
   font-size: .9375rem;
   line-height: 1.55;
 }
@@ -123,7 +123,8 @@
   grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
   align-items: start;
   gap: var(--bilai-section-space) clamp(2rem, 5vw, 4rem);
-  padding: var(--bilai-section-space) var(--bilai-gutter);
+  padding-block: calc(var(--bilai-section-space) + .5rem) calc(var(--bilai-section-space) - .5rem);
+  padding-inline: var(--bilai-gutter);
   background: var(--bilai-ink);
   color: var(--bilai-paper);
 }
@@ -137,6 +138,27 @@
   margin-block-start: .75rem;
   font-size: .9375rem;
   line-height: 1.6;
+}
+
+#our-story .bilai-home-recognition {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: .25rem 1rem;
+  margin-block-start: 1rem;
+}
+
+.bilai-home-award {
+  color: var(--bilai-green);
+  font-weight: 750;
+}
+
+.bilai-home-award-event {
+  font-family: var(--bilai-display), Georgia, serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -.015em;
+  white-space: nowrap;
 }
 
 .bilai-home-end #our-story p {

@@ -2,7 +2,7 @@ import type { ComponentProps, ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import localFont from "next/font/local";
-import { ArrowUp } from "lucide-react";
+import PawIcon from "./PawIcon";
 import Navbar from "./navbar/Navbar";
 import "./bilai.css";
 
@@ -41,9 +41,8 @@ export default function BilaiPage({
             <Image src="/logo.png" width={40} height={40} alt="" />
             <span>bilai.</span>
           </Link>
-          <a href={`#${top}`} className="bilai-footer-top">
-            Back to top
-            <ArrowUp size={18} aria-hidden="true" />
+          <a href={`#${top}`} className="bilai-footer-top" aria-label="Back to top" title="Back to top">
+            <PawIcon size={20} />
           </a>
         </div>
       </footer>

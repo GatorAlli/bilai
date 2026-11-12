@@ -2,13 +2,11 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { LogIn, Menu, Plus, User, X } from "lucide-react";
+import { ChevronRight, LogIn, Menu, User, X } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import { authClient } from "@/lib/auth-client";
+import PawIcon from "../PawIcon";
 import "./navbar.css";
-
-const tabClassName =
-  "relative grid min-h-11 place-items-center bg-transparent px-4 text-[0.9375rem] font-semibold whitespace-nowrap text-[#505b6b] transition-colors hover:text-[#e66c35] aria-[current]:text-[#e66c35] after:pointer-events-none after:absolute after:inset-x-4 after:-bottom-px after:h-[3px] after:origin-left after:scale-x-0 after:bg-[#e66c35] after:transition-transform after:duration-200 after:content-[''] hover:after:scale-x-100 focus-visible:after:scale-x-100 aria-[current]:after:scale-x-100 motion-reduce:transition-none motion-reduce:after:transition-none max-[54rem]:justify-items-start max-[54rem]:px-3 max-[54rem]:after:inset-x-3";
 
 // "profile" is a cat's page; "account" is the signed-in person's own page.
 type Page = "home" | "find" | "profile" | "account" | "login" | "list";
@@ -58,7 +56,7 @@ export default function Navbar({ currentPage }: { currentPage: Page }) {
     <header ref={headerRef} className="bilai-nav-header">
       <div className="bilai-nav-bar">
         <Link href="/" className="bilai-nav-brand" aria-label="Bilai home" onClick={closeMenu}>
-          <Image src="/logo.png" alt="" width={48} height={48} loading="eager" />
+          <Image src="/logo.png" alt="" width={40} height={40} loading="eager" />
           <span>bilai.</span>
         </Link>
         <button
@@ -78,22 +76,28 @@ export default function Navbar({ currentPage }: { currentPage: Page }) {
           className="bilai-nav-navigation"
           data-open={menuOpen}
         >
-          <div className="absolute inset-y-0 left-1/2 grid -translate-x-1/2 grid-cols-2 items-stretch gap-4 max-[54rem]:static max-[54rem]:translate-x-0 max-[54rem]:grid-cols-1">
+          <div className="bilai-nav-tabs">
             <Link
               href="/"
-              className={tabClassName}
+              className="bilai-nav-tab"
               aria-current={currentPage === "home" ? "page" : undefined}
               onClick={closeMenu}
             >
-              Homepage
+              <span className="bilai-nav-label">Homepage</span>
+              <span className="bilai-nav-arrow" aria-hidden="true">
+                <ChevronRight size={12} />
+              </span>
             </Link>
             <Link
               href="/find_a_cat"
-              className={tabClassName}
+              className="bilai-nav-tab"
               aria-current={findCurrent ? (currentPage === "find" ? "page" : "location") : undefined}
               onClick={closeMenu}
             >
-              Find a cat
+              <span className="bilai-nav-label">Find a cat</span>
+              <span className="bilai-nav-arrow" aria-hidden="true">
+                <ChevronRight size={12} />
+              </span>
             </Link>
           </div>
           <div className="bilai-nav-actions">
@@ -129,7 +133,7 @@ export default function Navbar({ currentPage }: { currentPage: Page }) {
               aria-current={currentPage === "list" ? "page" : undefined}
               onClick={closeMenu}
             >
-              <Plus size={16} aria-hidden="true" />
+              <PawIcon />
               List a cat
             </Link>
           </div>

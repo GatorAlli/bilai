@@ -1,0 +1,73 @@
+.bilai-auth-main {
+  position: relative;
+  isolation: isolate;
+}
+
+.bilai-auth-art {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  display: grid;
+  grid-template:
+    "rest . walk" minmax(0, 1fr)
+    "peek . play" minmax(0, 1fr)
+    "yarn . fish" minmax(0, 1fr)
+    / minmax(0, 1fr) minmax(29rem, 42%) minmax(0, 1fr);
+  padding: clamp(.75rem, 2vw, 1.75rem) var(--bilai-gutter);
+  pointer-events: none;
+}
+
+.bilai-auth-doodle {
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  color: var(--bilai-action);
+  opacity: .48;
+}
+
+.bilai-auth-doodle svg {
+  width: clamp(3.5rem, 7.5vw, 6.5rem);
+  height: auto;
+}
+
+.bilai-auth-doodle--rest { grid-area: rest; }
+.bilai-auth-doodle--walk { grid-area: walk; }
+.bilai-auth-doodle--peek { grid-area: peek; }
+.bilai-auth-doodle--play { grid-area: play; }
+.bilai-auth-doodle--yarn { grid-area: yarn; }
+.bilai-auth-doodle--fish { grid-area: fish; }
+
+.bilai-auth-doodle:is(.bilai-auth-doodle--yarn, .bilai-auth-doodle--fish) {
+  color: #b64e20;
+}
+
+.bilai-auth-doodle:is(.bilai-auth-doodle--yarn, .bilai-auth-doodle--fish) svg {
+  width: clamp(2.5rem, 5.8vw, 4.75rem);
+}
+
+@media (max-width: 44rem) {
+  .bilai-auth-main.bilai-inner {
+    padding-block: 5rem;
+  }
+
+  .bilai-auth-art {
+    grid-template:
+      "rest walk" 4.75rem
+      ". ." minmax(0, 1fr)
+      "yarn fish" 4.75rem
+      / minmax(0, 1fr) minmax(0, 1fr);
+    padding: 0;
+  }
+
+  .bilai-auth-doodle:is(.bilai-auth-doodle--peek, .bilai-auth-doodle--play) {
+    display: none;
+  }
+
+  .bilai-auth-doodle svg {
+    width: 3.1rem;
+  }
+}
+
+@media print {
+  .bilai-auth-art { display: none; }
+}
