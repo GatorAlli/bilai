@@ -34,3 +34,21 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Listing photos
+
+Photo bytes are saved in the shared PostgreSQL database with their listing.
+Every checkout and deployment using the same database can serve the existing
+`/uploads/...` URLs; no writable server disk is needed for new uploads.
+Apply `drizzle/20261111020000_shared_photo_storage/migration.sql` before running
+this version against an older database.
+
+Run `npm run photos:sync` to import older local files into shared storage and
+export shared photos into the Git-tracked `uploads/` directory. Run it on each
+computer that previously accepted uploads to recover files missing elsewhere.
+Then commit and push `uploads/` to include a snapshot on GitHub. Runtime uploads
+do not automatically create GitHub commits. Do not put GitHub credentials in the
+client or rely on Git pulls for live photo delivery.
+
+Database photo storage is intended for this small prototype; base64 adds roughly
+33% storage overhead. Move image bytes to shared object storage as the catalog grows.

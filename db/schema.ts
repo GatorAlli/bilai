@@ -160,6 +160,8 @@ export const catImages = pgTable(
     key: text().notNull(),
     url: text().notNull(),
     caption: text(),
+    // Shared image bytes; base64 keeps the Neon HTTP transport simple.
+    data: text(),
     // 0 = cover photo
     position: integer().notNull(),
   },

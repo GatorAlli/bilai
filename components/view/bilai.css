@@ -260,6 +260,11 @@ html:has(.bilai-site)[data-bilai-dark-edge] {
   font-size: .875rem;
 }
 
+.bilai-cat-identity .bilai-cat-note {
+  color: var(--bilai-action);
+  font-weight: 650;
+}
+
 .bilai-cat-facts {
   display: grid;
   grid-area: facts;
@@ -387,15 +392,22 @@ html:has(.bilai-site)[data-bilai-dark-edge] {
   gap: 1rem;
 }
 
-.bilai-directory-grid .bilai-cat-profile::after {
+:is(.bilai-directory-grid, .bilai-owner-grid) .bilai-cat-profile::after {
   position: absolute;
   inset: 0;
   content: "";
 }
 
-.bilai-directory-grid .bilai-cat-card:focus-within {
+:is(.bilai-directory-grid, .bilai-owner-grid) .bilai-cat-card:focus-within {
   outline: 2px solid var(--bilai-focus);
   outline-offset: 3px;
+}
+
+/* Profile page: the owner's own listings, in a narrower column. */
+.bilai-owner-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
 }
 
 .bilai-list-layout {
@@ -443,6 +455,10 @@ html:has(.bilai-site)[data-bilai-dark-edge] {
 @media (max-width: 40rem) {
   .bilai-directory-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .bilai-filter-fields, .bilai-form-pair { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 36rem) {
+  .bilai-owner-grid { grid-template-columns: minmax(0, 1fr); }
 }
 
 @media (max-width: 24rem) {

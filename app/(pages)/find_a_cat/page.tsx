@@ -1,9 +1,11 @@
 import { Suspense } from "react";
 import Link from "next/link";
+import { after } from "next/server";
 import { ChevronDown, SlidersHorizontal } from "lucide-react";
 import BilaiPage from "@/components/view/BilaiPage";
 import CatCard from "@/components/view/cat/CatCard";
 import { getCats, getCatBreeds } from "@/lib/cats";
+import { purgeExpiredListings } from "@/lib/listing-expiry";
 
 import CatFilters from "@/components/view/search/CatFilters";
 import {
@@ -40,6 +42,7 @@ export default function FindCatsPage({
 
 async function CatResults({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
+  after(purgeExpiredListings);
   const filters = parseCatFilters(params);
   const [results, breeds] = await Promise.all([
     getCats({ page: Number(params.page ?? 1), filters }),

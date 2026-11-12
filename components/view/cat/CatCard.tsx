@@ -18,10 +18,13 @@ export default function CatCard({
   cat,
   sizes,
   nameAs: Name = "h3",
+  note,
 }: {
   cat: CatSummary;
   sizes: string;
   nameAs?: "h2" | "h3";
+  // Extra line under the location, e.g. when a listing expires.
+  note?: string;
 }) {
   const age = formatCatAge(cat.ageMonths)
     .replace(/ (\d+) (?=months?\b)/, ", $1 ")
@@ -53,6 +56,7 @@ export default function CatCard({
         <div className="bilai-cat-identity">
           <Name className="bilai-cat-name">{cat.name}</Name>
           <p>{[cat.area, cat.district].filter(Boolean).join(", ")}</p>
+          {note ? <p className="bilai-cat-note">{note}</p> : null}
         </div>
         <dl className="bilai-cat-facts">
           {facts.map(([label, value]) => (

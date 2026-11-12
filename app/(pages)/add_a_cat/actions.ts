@@ -1,10 +1,9 @@
 "use server";
 
 import { randomUUID } from "node:crypto";
-import { mkdir, rm, writeFile } from "node:fs/promises";
-import path from "node:path";
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 
 import { db } from "@/db";
 import { catImages, cats } from "@/db/schema";
@@ -19,9 +18,10 @@ import {
   YES_NO_UNKNOWN,
 } from "@/lib/cat-limits";
 import { getUserPhone, saveUserPhone } from "@/lib/contact";
+import { purgeExpiredListings } from "@/lib/listing-expiry";
 import { isValidLocation } from "@/lib/locations";
 import { normalizeBdPhone, PHONE_ERROR } from "@/lib/phone";
-import { UPLOAD_ROOT, isWebp } from "@/lib/uploads";
+import { isWebp } from "@/lib/uploads";
 
 const GENDERS = ["male", "female", "unknown"] as const;
 
@@ -139,23 +139,20 @@ export async function submitForm(
     if (!saved.ok) return saved;
   }
 
-  const writtenKeys: string[] = [];
   let catId: number | null = null;
   try {
-    await mkdir(path.join(UPLOAD_ROOT, userId), { recursive: true });
-
     const rows: {
       key: string;
+      data: string;
       url: string;
       caption: string | null;
       position: number;
     }[] = [];
     for (const [position, buf] of buffers.entries()) {
       const key = `${userId}/${randomUUID()}.webp`;
-      await writeFile(path.join(UPLOAD_ROOT, key), buf);
-      writtenKeys.push(key);
       rows.push({
         key,
+        data: buf.toString("base64"),
         url: `/uploads/${key}`,
         caption: captions[position].trim().slice(0, 200) || null,
         position,
@@ -188,15 +185,13 @@ export async function submitForm(
       .insert(catImages)
       .values(rows.map((row) => ({ ...row, catId: cat.id })));
   } catch (err) {
-    // Clean up so we don't leave orphan files or a cat with no images.
-    await Promise.all(
-      writtenKeys.map((k) => rm(path.join(UPLOAD_ROOT, k), { force: true })),
-    );
+    // Remove a partially created listing if saving its images failed.
     if (catId !== null) await db.delete(cats).where(eq(cats.id, catId));
     console.error(err);
     return { ok: false, error: "Couldn't save the cat. Please try again." };
   }
 
+  after(purgeExpiredListings);
   // Must stay outside the try/catch: redirect() works by throwing.
   redirect("/");
 }
