@@ -54,9 +54,13 @@ export default function Home() {
           </p>
           <p>
             We built Bilai to give cat parents and adopters one place to start
-            a conversation. Bilai’s first version won the{" "}
-            <strong>Excellence in Social Impact Award</strong> at AnimalHack
-            2026.
+            a conversation.
+          </p>
+          <p className="bilai-home-recognition">
+            <span className="sr-only">Bilai’s first version won the </span>
+            <strong className="bilai-home-award">Excellence in Social Impact Award</strong>
+            <span className="sr-only"> at </span>
+            <span className="bilai-home-award-event">AnimalHack 2026</span>
           </p>
         </section>
         <section aria-labelledby="rehome-title">

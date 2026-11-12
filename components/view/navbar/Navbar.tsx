@@ -2,9 +2,10 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronRight, LogIn, Menu, Plus, User, X } from "lucide-react";
+import { ChevronRight, LogIn, Menu, User, X } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import { authClient } from "@/lib/auth-client";
+import PawIcon from "../PawIcon";
 import "./navbar.css";
 
 // "profile" is a cat's page; "account" is the signed-in person's own page.
@@ -55,7 +56,7 @@ export default function Navbar({ currentPage }: { currentPage: Page }) {
     <header ref={headerRef} className="bilai-nav-header">
       <div className="bilai-nav-bar">
         <Link href="/" className="bilai-nav-brand" aria-label="Bilai home" onClick={closeMenu}>
-          <Image src="/logo.png" alt="" width={48} height={48} loading="eager" />
+          <Image src="/logo.png" alt="" width={40} height={40} loading="eager" />
           <span>bilai.</span>
         </Link>
         <button
@@ -75,7 +76,7 @@ export default function Navbar({ currentPage }: { currentPage: Page }) {
           className="bilai-nav-navigation"
           data-open={menuOpen}
         >
-          <div className="absolute inset-y-0 left-1/2 grid -translate-x-1/2 grid-cols-2 items-stretch gap-4 max-[54rem]:static max-[54rem]:translate-x-0 max-[54rem]:grid-cols-1">
+          <div className="bilai-nav-tabs">
             <Link
               href="/"
               className="bilai-nav-tab"
@@ -132,7 +133,7 @@ export default function Navbar({ currentPage }: { currentPage: Page }) {
               aria-current={currentPage === "list" ? "page" : undefined}
               onClick={closeMenu}
             >
-              <Plus size={16} aria-hidden="true" />
+              <PawIcon />
               List a cat
             </Link>
           </div>
