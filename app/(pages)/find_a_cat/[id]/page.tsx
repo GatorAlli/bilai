@@ -8,6 +8,7 @@ import DeleteListingButton from "@/components/view/cat/DeleteListingButton";
 import ContactButtons from "@/components/view/cat/ContactButtons";
 import { getSession } from "@/lib/auth";
 import { formatCatAge, getCat } from "@/lib/cats";
+import { headingTitle, outlineButton } from "@/components/view/styles";
 
 export default function CatPage({
   params,
@@ -15,8 +16,8 @@ export default function CatPage({
   params: Promise<{ id: string }>;
 }) {
   return (
-    <BilaiPage currentPage="profile" mainClassName="bilai-frame bilai-inner">
-      <Link href="/find_a_cat" className="bilai-outline">
+    <BilaiPage currentPage="profile" mainClassName="frame py-section">
+      <Link href="/find_a_cat" className={outlineButton}>
         <ArrowLeft size={17} aria-hidden="true" />
         Find a cat
       </Link>
@@ -40,8 +41,8 @@ async function CatDetails({ params }: { params: Promise<{ id: string }> }) {
 
   return (
     <article className="mt-6">
-      <div className="bilai-page-heading flex flex-wrap items-center gap-3">
-        <h1>{cat.name}</h1>
+      <div className="flex flex-wrap items-center gap-3">
+        <h1 className={headingTitle}>{cat.name}</h1>
         <span className="rounded-full bg-accent px-3 py-1 text-sm font-bold capitalize">
           {cat.status}
         </span>
@@ -91,7 +92,7 @@ async function CatDetails({ params }: { params: Promise<{ id: string }> }) {
               ["Spayed / neutered", cat.neutered],
             ].map(([label, value]) => (
               <div key={label}>
-                <dt className="text-sm font-bold text-[var(--bilai-action)]">
+                <dt className="text-sm font-bold text-action">
                   {label}
                 </dt>
                 <dd className="mt-1 capitalize [overflow-wrap:anywhere]">{value}</dd>

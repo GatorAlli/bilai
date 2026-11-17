@@ -1,10 +1,20 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { cn } from "@/lib/utils";
+
+// The pencilled cats behind the login card. Each one is placed by hand in the
+// 3x3 grid so the middle column stays clear for the form.
+const doodle =
+  "grid place-items-center overflow-hidden text-action opacity-[.48]";
+const bigDoodle = "h-auto w-[clamp(3.5rem,7.5vw,6.5rem)] max-[44rem]:w-[3.1rem]";
+const smallDoodle = "h-auto w-[clamp(2.5rem,5.8vw,4.75rem)] max-[44rem]:w-[3.1rem]";
 
 const doodles = [
   {
     name: "rest",
+    className: "col-start-1 row-start-1",
+    iconClassName: bigDoodle,
     lines: (
       <>
         <path d="M19 38c0-9 2-18 5-24l8 6a38 38 0 0 1 19 0l8-6c4 8 6 17 6 25 0 15-11 24-24 24S19 54 19 38Z" />
@@ -15,6 +25,8 @@ const doodles = [
   },
   {
     name: "walk",
+    className: "col-start-3 row-start-1 max-[44rem]:col-start-2",
+    iconClassName: bigDoodle,
     lines: (
       <>
         <path d="M9 42c0-9 3-18 7-25l7 7h18l7-7c5 8 7 17 7 26 0 13-10 21-23 21S9 56 9 42Z" />
@@ -25,6 +37,8 @@ const doodles = [
   },
   {
     name: "peek",
+    className: "col-start-1 row-start-2 max-[44rem]:hidden",
+    iconClassName: bigDoodle,
     lines: (
       <>
         <path d="M20 46c0-12 2-23 7-32l10 10a45 45 0 0 1 25 0l10-10c5 9 7 20 7 32 0 17-12 26-29 26S20 63 20 46Z" />
@@ -34,6 +48,8 @@ const doodles = [
   },
   {
     name: "play",
+    className: "col-start-3 row-start-2 max-[44rem]:hidden",
+    iconClassName: bigDoodle,
     lines: (
       <>
         <circle cx="22" cy="22" r="9" />
@@ -43,6 +59,8 @@ const doodles = [
   },
   {
     name: "yarn",
+    className: "col-start-1 row-start-3 text-clay",
+    iconClassName: smallDoodle,
     lines: (
       <>
         <circle cx="46" cy="47" r="30" />
@@ -52,6 +70,8 @@ const doodles = [
   },
   {
     name: "fish",
+    className: "col-start-3 row-start-3 max-[44rem]:col-start-2 text-clay",
+    iconClassName: smallDoodle,
     lines: (
       <>
         <path d="M21 49c4-10 15-16 30-16 10 0 19 3 25 9l12-7v20l-12-7c-6 6-15 10-25 10-15 0-26-5-30-9Z" />
@@ -104,7 +124,7 @@ export default function LoginBackdrop() {
     if (!art) return;
 
     const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const zones = [...art.querySelectorAll<HTMLSpanElement>(".bilai-auth-doodle")];
+    const zones = [...art.querySelectorAll<HTMLSpanElement>("[data-doodle]")];
     let stopAnimations: Array<ReturnType<typeof startDrift>> = [];
     const stop = () => stopAnimations.forEach((stopAnimation) => stopAnimation?.());
 
@@ -122,10 +142,23 @@ export default function LoginBackdrop() {
   }, []);
 
   return (
-    <div ref={artRef} className="bilai-auth-art" aria-hidden="true">
-      {doodles.map(({ name, lines }) => (
-        <span key={name} className={`bilai-auth-doodle bilai-auth-doodle--${name}`}>
-          <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" focusable="false">
+    <div
+      ref={artRef}
+      className="pointer-events-none absolute inset-0 -z-1 grid grid-cols-[minmax(0,1fr)_minmax(29rem,42%)_minmax(0,1fr)] grid-rows-3 px-gutter py-[clamp(.75rem,2vw,1.75rem)] max-[44rem]:grid-cols-2 max-[44rem]:grid-rows-[4.75rem_minmax(0,1fr)_4.75rem] max-[44rem]:p-0 print:hidden"
+      aria-hidden="true"
+    >
+      {doodles.map(({ name, className, iconClassName, lines }) => (
+        <span key={name} data-doodle className={cn(doodle, className)}>
+          <svg
+            viewBox="0 0 100 100"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            focusable="false"
+            className={iconClassName}
+          >
             {lines}
           </svg>
         </span>

@@ -20,6 +20,8 @@ type SearchSelectProps = {
   /** Added to the popup. It is portalled to <body>, so page theme classes
    *  (e.g. `theme-light`) have to be passed again here. */
   popupClassName?: string;
+  /** Added to the closed control, for forms that want a taller field. */
+  fieldClassName?: string;
 };
 
 /**
@@ -37,6 +39,7 @@ export function SearchSelect({
   disabled,
   required,
   popupClassName,
+  fieldClassName,
 }: SearchSelectProps) {
   const grouped = items.length > 0 && typeof items[0] !== "string";
 
@@ -54,6 +57,7 @@ export function SearchSelect({
           "relative flex h-10 w-full items-center rounded-lg border border-input bg-background transition-colors",
           "focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50",
           "data-disabled:cursor-not-allowed data-disabled:opacity-50",
+          fieldClassName,
         )}
       >
         <Combobox.Input

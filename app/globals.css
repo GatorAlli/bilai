@@ -4,19 +4,82 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Literal design tokens. Colours are named here and used through utilities
+   (bg-paper, text-moss, …) so no hex value is ever written into a class. */
+@theme {
+  /* Accents with no light/dark counterpart. */
+  --color-moss: #369339;
+  --color-brand-ink-hover: #332a32;
+  --color-green-hover: #40ca45;
+  --color-clay: #b64e20;
+
+  /* Where the mobile nav collapses and the wide layouts stack. */
+  --breakpoint-nav: 54rem;
+
+  --animate-arrive: bilai-arrive 0.42s cubic-bezier(0.2, 0.68, 0.26, 1) both;
+  --animate-wave: bilai-wave 27s linear infinite,
+    bilai-wave-swell 8.3s ease-in-out infinite;
+
+  @keyframes bilai-arrive {
+    from {
+      opacity: 0.7;
+      transform: translateY(0.3rem);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes bilai-wave {
+    to {
+      mask-position: 820px 0;
+    }
+  }
+
+  @keyframes bilai-wave-swell {
+    0%,
+    100% {
+      transform: scaleY(0.76);
+    }
+    22% {
+      transform: scaleY(0.96);
+    }
+    41% {
+      transform: scaleY(0.68);
+    }
+    66% {
+      transform: scaleY(1.16);
+    }
+    84% {
+      transform: scaleY(0.88);
+    }
+  }
+}
+
+/* Tokens that read a runtime variable, so the same utility follows whichever
+   theme block below is in scope. `inline` resolves the var() at the use site. */
 @theme inline {
-  --color-cream: var(--background);
-  --color-paper: var(--card);
-  --color-forest: var(--foreground);
-  --color-leaf: var(--accent);
-  --color-line: var(--border);
-  --color-muted: var(--muted);
-  --color-brand: var(--primary);
-  --color-brand-dark: #bc4422;
-  --color-rust: #f18a6c;
+  --color-paper: var(--bilai-paper);
+  --color-ink: var(--bilai-ink);
+  --color-action: var(--bilai-action);
+  --color-on-dark: var(--bilai-on-dark);
+  --color-line: var(--bilai-line);
+  --color-focus: var(--bilai-focus);
+  --color-active: var(--bilai-active);
+  --color-brand-ink: var(--bilai-brand-ink);
+  --color-green: var(--bilai-green);
+  --color-control-line: var(--bilai-control-line);
+
   --font-heading: var(--font-heading);
   --font-sans: var(--font-sans);
   --font-brand: var(--font-matcha), sans-serif;
+  --font-display: var(--bilai-display), Georgia, serif;
+
+  /* px-gutter / py-section track the theme the same way colours do. */
+  --spacing-gutter: var(--bilai-gutter);
+  --spacing-section: var(--bilai-section-space);
+
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -37,6 +100,7 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-secondary: var(--secondary);
   --color-primary-foreground: var(--primary-foreground);
@@ -61,6 +125,13 @@
   margin-inline: auto;
 }
 
+/* The page gutter, as a width rather than padding, so a section can paint
+   edge to edge while its contents stay in the column. */
+@utility frame {
+  width: calc(100% - 2 * var(--bilai-gutter));
+  margin-inline: auto;
+}
+
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 110px;
@@ -69,7 +140,7 @@ html {
 :root {
   color-scheme: dark;
 
-  /* Oat and olive palette for the homepage and shared navigation. */
+  /* Oat and olive palette, used by the navigation outside a bilai page. */
   --bilai-paper: #faf3e6;
   --bilai-ink: #2d3624;
   --bilai-muted: #505140;
@@ -82,7 +153,33 @@ html {
   --bilai-brand-ink: #140f14;
   --bilai-forest: #3b4a31;
   --bilai-forest-muted: #ece8d5;
-  --bilai-gutter: clamp(.85rem, 1.7vw, 1.5rem);
+  --bilai-gutter: clamp(0.85rem, 1.7vw, 1.5rem);
+  --bilai-section-space: clamp(2rem, 4vw, 3.5rem);
+
+  /* Painted over the hero photo, through bg-(image:--bilai-hero-veil). */
+  --bilai-hero-veil: linear-gradient(
+      90deg,
+      rgb(10 9 8 / 88%),
+      rgb(10 9 8 / 70%) 34%,
+      rgb(10 9 8 / 38%) 68%,
+      rgb(10 9 8 / 12%)
+    ),
+    linear-gradient(0deg, rgb(10 9 8 / 72%), transparent 48%);
+  --bilai-hero-veil-narrow: linear-gradient(
+    0deg,
+    var(--bilai-ink) 35%,
+    rgb(10 9 8 / 84%) 46%,
+    transparent 70%
+  );
+
+  /* Scalloped edge between two sections: a band of --bilai-wave-color cut to
+     shape by the mask, scrolled sideways and swelled by animate-wave. */
+  /* Lifts the active nav label off the paper background. */
+  --bilai-label-shadow: 0 1px 0 rgb(0 0 0 / 12%);
+
+  --bilai-wave-color: var(--bilai-ink);
+  --bilai-wave-mask: var(--bilai-wave-shape) 0 0 / 820px 28px repeat-x;
+  --bilai-wave-shape: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 820 28'%3E%3Cpath d='M0 18C19 17 31 9 54 11C73 13 84 21 106 22C129 23 150 20 173 16C194 12 214 21 238 20C263 19 275 3 300 3C328 3 339 20 366 23C393 26 416 13 444 14C467 15 479 20 505 21C526 22 543 12 563 12C593 12 620 26 646 24C669 22 676 7 700 8C724 9 746 18 770 19C793 20 801 19 820 18V28H0Z'/%3E%3C/svg%3E");
 
   /* Reference palette: Spicy Paprika, Jungle Teal, Alabaster Grey, Carbon Black. */
   --background: #252627;
@@ -146,6 +243,70 @@ html {
   --border: #ddd6ca;
   --input: #c9c1b8;
   --ring: #ff7640;
+}
+
+/* The bilai pages: a paper-and-moss light theme that also feeds the shadcn
+   variables, so ui/ components inherit it without extra classes. */
+.bilai-theme {
+  color-scheme: light;
+
+  --bilai-paper: #f2f4f3;
+  --bilai-ink: #0a0908;
+  --bilai-muted: #4e5752;
+  --bilai-action: #17612f;
+  --bilai-on-dark: #fff;
+  --bilai-line: #d3d9d6;
+  --bilai-focus: var(--bilai-action);
+  --bilai-active: #dff0e2;
+  --bilai-brand-ink: var(--bilai-ink);
+  --bilai-gutter: clamp(1rem, 3.25vw, 3rem);
+  --bilai-section-space: clamp(2rem, 4vw, 3.5rem);
+  --bilai-control-line: #737c76;
+  --bilai-green: #4dda51;
+
+  --background: var(--bilai-paper);
+  --foreground: var(--bilai-ink);
+  --card: var(--bilai-on-dark);
+  --card-foreground: var(--foreground);
+  --popover: var(--card);
+  --popover-foreground: var(--foreground);
+  --muted: var(--background);
+  --muted-foreground: var(--bilai-muted);
+  --border: var(--bilai-line);
+  --input: var(--bilai-control-line);
+  --primary: var(--bilai-ink);
+  --primary-foreground: var(--bilai-paper);
+  --secondary: var(--bilai-green);
+  --secondary-foreground: var(--bilai-ink);
+  --accent: var(--bilai-active);
+  --accent-foreground: var(--foreground);
+  --ring: var(--bilai-focus);
+  --destructive: #9b2f21;
+}
+
+/* Document-level rules a utility can't reach: the scrollbar and the offset
+   the sticky header needs. `.bilai-site` marks a page built from BilaiPage;
+   HomeEffects sets data-bilai-dark-edge while a dark section is on screen. */
+html:has(.bilai-site) {
+  --bilai-scroll-track: var(--bilai-paper);
+  scroll-padding-top: 4.25rem;
+  scrollbar-color: var(--bilai-control-line) var(--bilai-scroll-track);
+}
+
+html:has(.bilai-site)[data-bilai-dark-edge] {
+  --bilai-scroll-track: var(--bilai-ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html:has(.bilai-site) {
+    scroll-behavior: auto;
+  }
+}
+
+@media (forced-colors: active) {
+  html:has(.bilai-site) {
+    scrollbar-color: auto;
+  }
 }
 
 @layer base {

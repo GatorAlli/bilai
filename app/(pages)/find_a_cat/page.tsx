@@ -5,6 +5,7 @@ import { ChevronDown, SlidersHorizontal } from "lucide-react";
 import BilaiPage from "@/components/view/BilaiPage";
 import CatCard from "@/components/view/cat/CatCard";
 import { getCats, getCatBreeds } from "@/lib/cats";
+import { headingText, headingTitle } from "@/components/view/styles";
 import { purgeExpiredListings } from "@/lib/listing-expiry";
 
 import CatFilters from "@/components/view/search/CatFilters";
@@ -22,10 +23,10 @@ export default function FindCatsPage({
   searchParams: SearchParams;
 }) {
   return (
-    <BilaiPage currentPage="find" mainClassName="bilai-frame bilai-inner">
-      <header className="bilai-page-heading">
-        <h1>Find a cat</h1>
-        <p>Browse cats for adoption in Bangladesh.</p>
+    <BilaiPage currentPage="find" mainClassName="frame py-section">
+      <header>
+        <h1 className={headingTitle}>Find a cat</h1>
+        <p className={headingText}>Browse cats for adoption in Bangladesh.</p>
       </header>
       <Suspense
         fallback={
@@ -64,11 +65,15 @@ async function CatResults({ searchParams }: { searchParams: SearchParams }) {
 
   return (
     <>
-      <details className="bilai-filter-panel">
-        <summary>
+      <details className="group mb-6 rounded-[.65rem] border border-line bg-card print:hidden">
+        <summary className="flex min-h-11 cursor-pointer list-none items-center gap-3 px-4 py-2 text-[.9375rem] font-bold [&::-webkit-details-marker]:hidden focus-visible:rounded-[.65rem] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus">
           <SlidersHorizontal size={17} aria-hidden="true" />
           Filters{filterCount > 0 ? " (" + filterCount + " applied)" : ""}
-          <ChevronDown size={17} aria-hidden="true" />
+          <ChevronDown
+            size={17}
+            aria-hidden="true"
+            className="ml-auto group-open:rotate-180"
+          />
         </summary>
         <CatFilters
           key={appliedParams.toString()}
@@ -81,12 +86,13 @@ async function CatResults({ searchParams }: { searchParams: SearchParams }) {
           Showing {items.length} of {total} cats
         </p>
         {items.length > 0 ? (
-          <div className="bilai-directory-grid">
+          <div className="grid grid-cols-1 gap-4 min-[24rem]:grid-cols-2 sm:grid-cols-3 min-[66rem]:grid-cols-4">
             {items.map((cat) => (
               <CatCard
                 key={cat.id}
                 cat={cat}
                 nameAs="h2"
+                wholeCardLink
                 sizes="(max-width: 384px) 100vw, (max-width: 640px) 50vw, (max-width: 1056px) 33vw, 25vw"
               />
             ))}

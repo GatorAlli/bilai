@@ -17,7 +17,7 @@ import { SignOutButton } from "@/components/auth/signOut";
 
 export default function ProfilePage() {
   return (
-    <BilaiPage currentPage="account" mainClassName="bilai-frame bilai-inner">
+    <BilaiPage currentPage="account" mainClassName="frame py-section">
       <div className="mx-auto w-full max-w-2xl">
         <Suspense
           fallback={
@@ -134,11 +134,12 @@ async function YourProfile() {
           {LISTING_LIFETIME_DAYS} days after you post them.
         </p>
         {listings.length > 0 ? (
-          <div className="bilai-owner-grid mt-5">
+          <div className="mt-5 grid grid-cols-1 gap-4 min-[36rem]:grid-cols-2">
             {listings.map((cat) => (
               <CatCard
                 key={cat.id}
                 cat={cat}
+                wholeCardLink
                 sizes="(max-width: 36rem) 100vw, 21rem"
                 note={`${cat.status[0].toUpperCase()}${cat.status.slice(1)} · removed ${formatTimeLeft(cat.secondsLeft)}`}
               />

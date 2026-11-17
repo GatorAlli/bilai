@@ -11,6 +11,7 @@ import { DISTRICT_NAMES, getAreaGroups } from "@/lib/locations";
 import ImageGallery, { type GalleryImage } from "./ImageGallery";
 import { submitForm } from "./actions";
 import { authClient } from "@/lib/auth-client";
+import { outlineButton } from "@/components/view/styles";
 import { normalizeBdPhone, PHONE_ERROR } from "@/lib/phone";
 import {
   type ContactMethod,
@@ -52,6 +53,12 @@ const CONTACT_OPTIONS: { value: ContactMethod; label: string }[] = [
   { value: "whatsapp", label: "WhatsApp" },
   { value: "call", label: "Phone call" },
 ];
+
+// Two fields side by side, stacking on a narrow screen.
+const formPair = "grid grid-cols-1 items-start gap-4 sm:grid-cols-2";
+
+// Form fields sit a little taller than the ui/ defaults and on the card colour.
+const formField = "h-11 bg-card";
 
 function clamp(value: string, min: number, max: number) {
   if (value === "") return "";
@@ -158,12 +165,12 @@ export default function ListACat() {
   }
 
   return (
-    <form className="bilai-form" onSubmit={handleSubmit} aria-labelledby="list-title">
+    <form className="grid min-w-0 gap-7" onSubmit={handleSubmit} aria-labelledby="list-title">
       <ImageGallery images={images} onChange={setImages} />
 
       <section className="grid gap-4" aria-labelledby="cat-details-title">
         <h2 id="cat-details-title" className="text-lg font-extrabold">Cat details</h2>
-        <div className="bilai-form-pair">
+        <div className={formPair}>
           <FormElement
             labelText="Name"
             inputPlaceholder="Name"
@@ -189,7 +196,7 @@ export default function ListACat() {
           onAreaChange={setArea}
         />
 
-        <div className="bilai-form-pair">
+        <div className={formPair}>
           <fieldset className="min-w-0">
             <legend className="mb-2 text-sm font-bold">Age</legend>
             <div className="grid max-w-xs grid-cols-2 gap-2">
@@ -197,6 +204,7 @@ export default function ListACat() {
                 <Label htmlFor="age-years">Years</Label>
                 <Input
                   id="age-years"
+                  className={formField}
                   type="number"
                   min={0}
                   max={30}
@@ -208,6 +216,7 @@ export default function ListACat() {
                 <Label htmlFor="age-months">Months</Label>
                 <Input
                   id="age-months"
+                  className={formField}
                   type="number"
                   min={0}
                   max={11}
@@ -226,7 +235,7 @@ export default function ListACat() {
           />
         </div>
 
-        <div className="bilai-form-pair">
+        <div className={formPair}>
           <RadioGroup
             legend="Vaccinated"
             name="vaccinated"
@@ -295,7 +304,7 @@ export default function ListACat() {
           <Button type="submit" variant="secondary" size="lg" disabled={isPending} className="h-11 font-bold">
             {isPending ? "Saving…" : "Save cat profile"}
           </Button>
-          <Link href="/find_a_cat" className="bilai-outline">Back to Find a Cat</Link>
+          <Link href="/find_a_cat" className={outlineButton}>Back to Find a Cat</Link>
         </div>
       </div>
     </form>
@@ -343,7 +352,7 @@ function FormElement({
         max={max}
         maxLength={maxLength}
         list={suggestions ? listId : undefined}
-        className="h-10 bg-background"
+        className={formField}
         onChange={(e) => onChange(e)}
       />
       {suggestions && (
@@ -375,7 +384,7 @@ function LocationFields({
   const areaGroups = useMemo(() => getAreaGroups(district), [district]);
 
   return (
-    <div className="bilai-form-pair">
+    <div className={formPair}>
       <div className="flex flex-col gap-2">
         <Label htmlFor={districtId} className="font-bold">
           District
@@ -388,6 +397,7 @@ function LocationFields({
           placeholder="e.g. Dhaka"
           emptyText="No district found."
           popupClassName="bilai-theme"
+          fieldClassName={formField}
         />
       </div>
       <div className="flex flex-col gap-2">
@@ -406,6 +416,7 @@ function LocationFields({
           }
           emptyText="No area found."
           popupClassName="bilai-theme"
+          fieldClassName={formField}
           disabled={!district}
         />
       </div>
@@ -439,7 +450,7 @@ function TextAreaElement({
         maxLength={maxLength}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full resize-y rounded-lg border border-input bg-background px-2.5 py-2 text-base transition-colors outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:text-sm"
+        className="w-full resize-y rounded-lg border border-input bg-card px-2.5 py-2 text-base transition-colors outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:text-sm"
       />
       <span className="self-end text-xs text-muted-foreground">
         {value.length} / {maxLength}
@@ -476,7 +487,7 @@ function RadioGroup<T extends string>({
               value={option.value}
               checked={value === option.value}
               onChange={() => onChange(option.value)}
-              className="size-4 accent-[var(--bilai-action)] outline-none"
+              className="size-4 accent-action outline-none"
             />
             {option.label}
           </label>
@@ -534,7 +545,7 @@ function CheckboxGroup<T extends string>({
                     : value.filter((v) => v !== option.value),
                 )
               }
-              className="size-4 accent-[var(--bilai-action)] outline-none"
+              className="size-4 accent-action outline-none"
             />
             {option.label}
           </label>

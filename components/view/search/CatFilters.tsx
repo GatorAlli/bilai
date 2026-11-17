@@ -71,7 +71,7 @@ function CheckOptions({
                   : selected.filter((item) => item !== value),
               )
             }
-            className="size-4 shrink-0 accent-[var(--bilai-action)]"
+            className="size-4 shrink-0 accent-action"
           />
           {text}
         </label>
@@ -109,7 +109,11 @@ export default function CatFilters({
 
   return (
     <aside aria-label="Filter cats" className="min-w-0">
-      <form action="/find_a_cat" method="get" className="space-y-3">
+      <form
+        action="/find_a_cat"
+        method="get"
+        className="space-y-3 border-t border-line p-4"
+      >
         {entries.map(([name, value], index) => (
           <input
             key={`${name}-${index}`}
@@ -118,7 +122,7 @@ export default function CatFilters({
             value={value}
           />
         ))}
-        <div className="bilai-filter-fields">
+        <div className="grid grid-cols-3 items-start gap-3 max-nav:grid-cols-2 max-sm:grid-cols-1">
           <FilterSection title="Age">
             <Slider.Root
               min={0}
@@ -135,7 +139,7 @@ export default function CatFilters({
             >
               <Slider.Control className="flex h-10 w-full touch-none items-center">
                 <Slider.Track className="relative h-2 w-full rounded-full bg-muted">
-                  <Slider.Indicator className="rounded-full bg-[var(--bilai-action)]" />
+                  <Slider.Indicator className="rounded-full bg-action" />
                   {[0, 1].map((index) => (
                     <Slider.Thumb
                       key={index}
@@ -144,7 +148,7 @@ export default function CatFilters({
                         index === 0 ? "Minimum age" : "Maximum age"
                       }
                       getAriaValueText={(_, value) => ageLabel(value)}
-                      className="size-5 rounded-full border-2 border-[var(--bilai-action)] bg-card outline-offset-4 focus-visible:outline-2"
+                      className="size-5 rounded-full border-2 border-action bg-card outline-offset-4 focus-visible:outline-2"
                     />
                   ))}
                 </Slider.Track>
@@ -197,6 +201,7 @@ export default function CatFilters({
               }
               placeholder="All districts"
               popupClassName="bilai-theme"
+              fieldClassName="h-11 bg-card"
             />
           </FilterSection>
           {filters.district && (
@@ -211,6 +216,7 @@ export default function CatFilters({
                 onChange={(value) => set("area", value)}
                 placeholder="All areas"
                 popupClassName="bilai-theme"
+                fieldClassName="h-11 bg-card"
               />
             </FilterSection>
           )}

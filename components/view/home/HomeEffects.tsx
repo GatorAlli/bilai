@@ -6,7 +6,7 @@ export default function HomeEffects() {
   useEffect(() => {
     if (!("IntersectionObserver" in window)) return;
 
-    const home = document.querySelector(".bilai-home-page");
+    const home = document.querySelector("[data-bilai-home]");
     if (!home) return;
 
     const root = document.documentElement;
