@@ -24,7 +24,7 @@ export default function FindCatsPage({
   searchParams: SearchParams;
 }) {
   return (
-    <BilaiPage currentPage="find" mainClassName="frame py-section">
+    <BilaiPage currentPage="find" mainClassName="frame pt-6 pb-section">
       <Suspense fallback={null}>
         <CatSearch searchParams={searchParams} />
       </Suspense>
