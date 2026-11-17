@@ -9,6 +9,7 @@ import { headingText, headingTitle } from "@/components/view/styles";
 import { purgeExpiredListings } from "@/lib/listing-expiry";
 
 import CatFilters from "@/components/view/search/CatFilters";
+import Searchbar from "@/components/view/search/Searchbar";
 import {
   catFilterParams,
   parseCatFilters,
@@ -24,6 +25,9 @@ export default function FindCatsPage({
 }) {
   return (
     <BilaiPage currentPage="find" mainClassName="frame py-section">
+      <Suspense fallback={null}>
+        <CatSearch searchParams={searchParams} />
+      </Suspense>
       <header>
         <h1 className={headingTitle}>Find a cat</h1>
         <p className={headingText}>Browse cats for adoption in Bangladesh.</p>
@@ -39,6 +43,11 @@ export default function FindCatsPage({
       </Suspense>
     </BilaiPage>
   );
+}
+
+async function CatSearch({ searchParams }: { searchParams: SearchParams }) {
+  const filters = parseCatFilters(await searchParams);
+  return <Searchbar key={catFilterParams(filters).toString()} filters={filters} />;
 }
 
 async function CatResults({ searchParams }: { searchParams: SearchParams }) {
