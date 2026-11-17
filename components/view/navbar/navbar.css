@@ -64,11 +64,12 @@
 }
 
 .bilai-nav-tab:is([aria-current], :hover, :focus-visible) {
-  color: var(--bilai-action);
+  color: #369339;
 }
 
 .bilai-nav-label {
   position: relative;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 12%);
 }
 
 .bilai-nav-label::after {
