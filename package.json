@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "vitest run",
+    "test": "vitest run --exclude 'tests/**' && node --test tests/*.test.mjs",
     "photos:sync": "tsx scripts/sync-photos.ts"
   },
   "dependencies": {
@@ -19,7 +19,7 @@
     "dotenv": "^18.0.9",
     "drizzle-orm": "^1.0.0-rc.5-ab785fc",
     "lucide-react": "^1.70.0",
-    "next": "16.4.3",
+    "next": "16.4.6",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "shadcn": "^4.23.0",
@@ -32,7 +32,7 @@
     "@types/react-dom": "^19",
     "drizzle-kit": "^1.0.0-rc.5-ab785fc",
     "eslint": "^9",
-    "eslint-config-next": "16.4.3",
+    "eslint-config-next": "16.4.6",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
     "typescript": "^5",
