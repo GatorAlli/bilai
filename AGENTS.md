@@ -174,7 +174,8 @@ Update this whenever the structure changes (working agreement 2). Generated or i
 ├── scripts/
 │   └── sync-photos.ts             # Reconciles DB-stored photos with `uploads/` on disk
 ├── tests/
-│   └── delete-listing.test.mjs    # node:test with vm-isolated mocks for the delete action
+│   ├── delete-listing.test.mjs    # node:test with vm-isolated mocks for the delete action
+│   └── chat.test.mjs              # node:test: openThread checks/rate limit, webhook signature + payload forms
 ├── uploads/                       # Legacy/local photo export (git-tracked snapshot, not source of truth)
 └── public/                        # Static assets (hero/featured photos, logo, default Next SVGs)
 ```
