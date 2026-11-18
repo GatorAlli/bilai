@@ -1,6 +1,6 @@
 ---
 title: Chat on Bilai
-status: in-progress
+status: implemented
 created: 2026-11-19
 updated: 2026-11-19
 tags:
@@ -9,6 +9,7 @@ tags:
   - plan
 related:
   - "[[ably_setup]]"
+  - "[[chat_implementation_report]]"
 ---
 
 # Chat on Bilai
@@ -21,6 +22,14 @@ related:
 > - Messages travel over Ably Chat and are **mirrored into Postgres** through an Ably webhook.
 
 Builds on [[ably_setup]], which already set up the token route, the server Ably client and `ChatProviders`.
+
+> [!done] Implemented 2026-11-19 on branch `feat/chat`
+> All nine phases are built, with one commit per phase. Read [[chat_implementation_report]] for what changed compared with this plan, what was verified, and what's left. The code is now the source of truth: where the snippets below differ from it, the code wins. The main differences:
+>
+> - Conversations use our own `useConversationMessages` hook, because the UI kit doesn't export `useMessageWindow`.
+> - The kit's CSS loads into an `ably-chat` cascade layer.
+> - `chat_threads` gained a `started_by` column.
+> - The webhook writes to the database before replying, rather than using `after()`, so a failed write makes Ably retry.
 
 ## Decisions
 

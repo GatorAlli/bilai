@@ -150,7 +150,8 @@ Update this whenever the structure changes (working agreement 2). Generated or i
 │   └── schema.ts                  # App tables: cats, cat_images, chat_threads/messages/reads (+ auth tables)
 ├── docs/                          # Design notes and plans (Obsidian-formatted Markdown)
 │   ├── ably_setup.md              # Ably Chat scaffolding + webhook dashboard setup
-│   └── chat_button_plan.md        # Chat feature plan (Chat button, dock, webhook mirror), by phase
+│   ├── chat_button_plan.md        # Chat feature plan (Chat button, dock, webhook mirror), by phase
+│   └── chat_implementation_report.md # What was built, changes from the plan, verification, what's left
 ├── drizzle/                       # SQL migrations (timestamped folders; only the first has a snapshot)
 ├── lib/
 │   ├── auth.ts                    # better-auth server config, `getSession()`, sign-up phone hook
@@ -182,11 +183,11 @@ Update this whenever the structure changes (working agreement 2). Generated or i
 
 ## Architecture
 
-**Route structure**: Pages live under `app/(pages)/*` (route group, no URL segment) — `add_a_cat`, `auth`, `find_a_cat`, `find_a_cat/[id]`, `profile`, `profile/edit`. API routes are thin: `app/api/auth/[...all]/route.ts` delegates entirely to better-auth; `app/uploads/[...path]/route.ts` serves photo bytes.
+**Route structure**: Pages live under `app/(pages)/*` (route group, no URL segment) — `add_a_cat`, `auth`, `find_a_cat`, `find_a_cat/[id]`, `profile`, `profile/edit`. API routes are thin and exist only where something external needs a real URL: `app/api/auth/[...all]/route.ts` delegates entirely to better-auth; `app/uploads/[...path]/route.ts` serves photo bytes; `app/api/ably-token/route.ts` is Ably's `authUrl`; `app/api/ably-webhook/route.ts` receives Ably's signed webhook (no session, the HMAC signature is the auth).
 
 **Server actions, not API routes**: Mutations (`add_a_cat/actions.ts`, `find_a_cat/[id]/delete-actions.ts`, `profile/edit/actions.ts`) are `"use server"` functions colocated with their page, returning `{ ok: true } | { ok: false; error: string }` rather than throwing for expected validation failures. Every action re-derives the session user server-side via `getSession()` (`lib/auth.ts`) and re-validates everything the client already checked — never trust client-side validation alone.
 
-**Data access layer**: `lib/cats.ts` and `lib/contact.ts` are the only places that query `cats`/`catImages`/`user` for reads; both are `import "server-only"`. Keep read logic there rather than inlining queries in pages/actions, and never select the phone number into anything rendered on a page — `getCatContact`/contact actions fetch it separately and only hand it to the client on an explicit tap (see comments in `lib/contact.ts`).
+**Data access layer**: `lib/cats.ts`, `lib/contact.ts` and `lib/chat.ts` (chat tables) are the only places that query `cats`/`catImages`/`user` for reads; both are `import "server-only"`. Keep read logic there rather than inlining queries in pages/actions, and never select the phone number into anything rendered on a page — `getCatContact`/contact actions fetch it separately and only hand it to the client on an explicit tap (see comments in `lib/contact.ts`).
 
 **Listing lifecycle**: Listings self-expire 3 months after creation (`lib/listing-expiry.ts`, `LISTING_LIFETIME_MONTHS`). `isLiveListing`/`isExpiredListing`/`listingSecondsLeft` are raw SQL computed against the DB's `now()` so every server instance agrees; all reads in `lib/cats.ts` filter by `isLiveListing`. Expired listings are purged lazily: `purgeExpiredListings()` is invoked via `after()` on busy mutation paths (e.g. end of `submitForm`), throttled per server instance to once every 10 minutes (`PURGE_EVERY_MS`), not run on every request or via a cron job.
 
@@ -195,6 +196,8 @@ Update this whenever the structure changes (working agreement 2). Generated or i
 **Phone numbers**: Stored normalized (`8801712345678`, no `+`) via `normalizeBdPhone()` (`lib/phone.ts`), handed to the UI as `+8801712345678` (`getUserPhone` in `lib/contact.ts`), and stripped back to bare digits for `wa.me` links (`buildContactUrl`). Phone is required at email sign-up (enforced in a better-auth `databaseHooks.user.create.before` hook in `lib/auth.ts`) but optional at Google sign-up — Google users are prompted for it the first time they list a cat (`add_a_cat/actions.ts`). Uniqueness is enforced both at the DB level (`user.phone` is `unique()`) and defensively in application code before writes.
 
 **Filters**: `lib/cat-filters.ts` defines the `CatFilters` shape shared between the search UI (`components/view/search/CatFilters.tsx`) and `getCats()` in `lib/cats.ts`, which builds the Drizzle `and()/or()` query dynamically from whichever filters are set.
+
+**Chat**: Adopters message a cat's parent through Ably Chat (plan and decisions: `docs/chat_button_plan.md`; Ably setup and webhook dashboard steps: `docs/ably_setup.md`). One conversation per pair of users, room `dm:<userA>:<userB>` with ids sorted by JS `<` (`pairFor` in `lib/chat-rooms.ts`; `chat_threads` has a matching `COLLATE "C"` check). Threads are created only by `openThread` (`find_a_cat/[id]/chat-actions.ts`) from a live, non-adopted listing you don't own, rate-limited by `chat_threads.started_by`. **Access control is the Ably token capability** (`app/api/ably-token/route.ts` lists only the user's own rooms; no reactions or presence) — the UI is display only. Messages go browser → Ably directly; Postgres gets a copy via the webhook (`recordChatMessages`, idempotent by serial, newest `version_serial` wins), which powers unread counts (`chat_reads`). The dock (`components/chat/`) is mounted in the root layout on every page, but the Ably SDK, UI kit and its CSS load via `next/dynamic` only on first open — keep it that way. The kit's CSS must stay in the `ably-chat` cascade layer (`components/chat/ably-chat-kit.css`, order declared at the top of `app/globals.css`): it contains an unlayered Tailwind v3 preflight that would otherwise override every utility class on the site. Its `ThemeProvider` is pinned to light because it toggles `dark` on `<html>`.
 
 **Rendering model**: `cacheComponents` + `partialPrefetching` are on (`next.config.ts`). Per the comment in `lib/cats.ts`, catalog reads are deliberately left uncached and rendered under `Suspense` so each navigation gets fresh data — don't wrap these reads in `"use cache"` without checking whether staleness is acceptable for that view.
 
