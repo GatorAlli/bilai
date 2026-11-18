@@ -46,7 +46,10 @@ export async function updateProfile(input: {
         .where(eq(user.id, current.id));
     } catch (err) {
       console.error(err);
-      return { ok: false, error: "Couldn't save your changes. Please try again." };
+      return {
+        ok: false,
+        error: "Couldn't save your changes. Please try again.",
+      };
     }
   }
 

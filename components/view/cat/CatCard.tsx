@@ -54,7 +54,7 @@ export default function CatCard({
   return (
     <article
       className={cn(
-        "relative flex min-w-0 flex-col overflow-hidden rounded-[.875rem] border border-line bg-card @container/cat",
+        "@container/cat relative flex min-w-0 flex-col overflow-hidden rounded-[.875rem] border border-line bg-card",
         wholeCardLink &&
           "focus-within:outline-2 focus-within:outline-offset-3 focus-within:outline-focus",
       )}
@@ -101,7 +101,11 @@ export default function CatCard({
               className="grid grid-cols-[2.3rem_minmax(0,1fr)] items-baseline gap-2"
             >
               <dt className="text-[.8125rem] font-bold text-action">{label}</dt>
-              <dd className={label === "Sex" ? "font-[550] capitalize" : "font-[550]"}>
+              <dd
+                className={
+                  label === "Sex" ? "font-[550] capitalize" : "font-[550]"
+                }
+              >
                 {value}
               </dd>
             </div>

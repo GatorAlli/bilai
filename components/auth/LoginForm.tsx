@@ -98,7 +98,7 @@ export function LoginForm() {
         Continue with Google
       </button>
 
-      <div className="my-6 flex items-center gap-3 text-xs font-medium uppercase tracking-wider text-mauve-950/60">
+      <div className="my-6 flex items-center gap-3 text-xs font-medium tracking-wider text-mauve-950/60 uppercase">
         <span className="h-px flex-1 bg-mauve-950/15" />
         or
         <span className="h-px flex-1 bg-mauve-950/15" />
@@ -107,7 +107,10 @@ export function LoginForm() {
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
         {isSignup && (
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="name" className="text-sm font-medium text-mauve-950">
+            <label
+              htmlFor="name"
+              className="text-sm font-medium text-mauve-950"
+            >
               Name
             </label>
             <input

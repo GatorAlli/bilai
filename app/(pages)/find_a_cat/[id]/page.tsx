@@ -92,10 +92,10 @@ async function CatDetails({ params }: { params: Promise<{ id: string }> }) {
               ["Spayed / neutered", cat.neutered],
             ].map(([label, value]) => (
               <div key={label}>
-                <dt className="text-sm font-bold text-action">
-                  {label}
-                </dt>
-                <dd className="mt-1 capitalize [overflow-wrap:anywhere]">{value}</dd>
+                <dt className="text-sm font-bold text-action">{label}</dt>
+                <dd className="mt-1 [overflow-wrap:anywhere] capitalize">
+                  {value}
+                </dd>
               </div>
             ))}
           </dl>

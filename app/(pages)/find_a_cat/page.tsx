@@ -47,7 +47,9 @@ export default function FindCatsPage({
 
 async function CatSearch({ searchParams }: { searchParams: SearchParams }) {
   const filters = parseCatFilters(await searchParams);
-  return <Searchbar key={catFilterParams(filters).toString()} filters={filters} />;
+  return (
+    <Searchbar key={catFilterParams(filters).toString()} filters={filters} />
+  );
 }
 
 async function CatResults({ searchParams }: { searchParams: SearchParams }) {
@@ -60,7 +62,9 @@ async function CatResults({ searchParams }: { searchParams: SearchParams }) {
   ]);
   const { items, total, page, totalPages } = results;
   const appliedParams = catFilterParams(filters);
-  const filterCount = new Set([...appliedParams.keys()].filter((key) => key !== "q")).size;
+  const filterCount = new Set(
+    [...appliedParams.keys()].filter((key) => key !== "q"),
+  ).size;
   const href = (target: number) => {
     const query = new URLSearchParams(appliedParams);
     query.set("page", String(target));
@@ -75,7 +79,7 @@ async function CatResults({ searchParams }: { searchParams: SearchParams }) {
   return (
     <>
       <details className="group mb-6 rounded-[.65rem] border border-line bg-card print:hidden">
-        <summary className="flex min-h-11 cursor-pointer list-none items-center gap-3 px-4 py-2 text-[.9375rem] font-bold [&::-webkit-details-marker]:hidden focus-visible:rounded-[.65rem] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus">
+        <summary className="flex min-h-11 cursor-pointer list-none items-center gap-3 px-4 py-2 text-[.9375rem] font-bold focus-visible:rounded-[.65rem] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus [&::-webkit-details-marker]:hidden">
           <SlidersHorizontal size={17} aria-hidden="true" />
           Filters{filterCount > 0 ? " (" + filterCount + " applied)" : ""}
           <ChevronDown

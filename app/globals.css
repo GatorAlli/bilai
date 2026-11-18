@@ -17,8 +17,8 @@
   --breakpoint-nav: 54rem;
 
   --animate-arrive: bilai-arrive 0.42s cubic-bezier(0.2, 0.68, 0.26, 1) both;
-  --animate-wave: bilai-wave 27s linear infinite,
-    bilai-wave-swell 8.3s ease-in-out infinite;
+  --animate-wave:
+    bilai-wave 27s linear infinite, bilai-wave-swell 8.3s ease-in-out infinite;
 
   @keyframes bilai-arrive {
     from {
@@ -157,7 +157,8 @@ html {
   --bilai-section-space: clamp(2rem, 4vw, 3.5rem);
 
   /* Painted over the hero photo, through bg-(image:--bilai-hero-veil). */
-  --bilai-hero-veil: linear-gradient(
+  --bilai-hero-veil:
+    linear-gradient(
       90deg,
       rgb(10 9 8 / 88%),
       rgb(10 9 8 / 70%) 34%,

@@ -22,12 +22,12 @@ export default function Home() {
   return (
     <BilaiPage currentPage="home">
       <section
-        className="relative isolate grid min-h-[clamp(30rem,min(54vw,calc(81svh-4.25rem)),42rem)] items-center bg-ink pt-[clamp(3rem,7vw,6rem)] pb-[clamp(2rem,4vw,3.5rem)] text-paper after:pointer-events-none after:absolute after:inset-0 after:bg-(image:--bilai-hero-veil) after:content-[''] max-sm:min-h-[33.75rem] max-sm:items-end max-sm:pt-64 max-sm:pb-5 max-sm:after:bg-(image:--bilai-hero-veil-narrow) forced-colors:after:hidden print:block print:min-h-0 print:bg-transparent print:py-4 print:text-black print:after:hidden"
+        className="relative isolate grid min-h-[clamp(30rem,min(54vw,calc(81svh-4.25rem)),42rem)] items-center bg-ink pt-[clamp(3rem,7vw,6rem)] pb-[clamp(2rem,4vw,3.5rem)] text-paper after:pointer-events-none after:absolute after:inset-0 after:bg-(image:--bilai-hero-veil) after:content-[''] max-sm:min-h-[33.75rem] max-sm:items-end max-sm:pt-64 max-sm:pb-5 max-sm:after:bg-(image:--bilai-hero-veil-narrow) print:block print:min-h-0 print:bg-transparent print:py-4 print:text-black print:after:hidden forced-colors:after:hidden"
         data-bilai-dark
         aria-labelledby="home-title"
       >
         <Image
-          className="absolute inset-0 size-full object-cover object-[39%_50%] max-sm:h-[65%] max-sm:object-[54%_50%] forced-colors:hidden print:hidden"
+          className="absolute inset-0 size-full object-cover object-[39%_50%] max-sm:h-[65%] max-sm:object-[54%_50%] print:hidden forced-colors:hidden"
           src={heroPhoto}
           alt="A black-and-white cat resting in a sunlit doorway"
           sizes="100vw"
@@ -38,14 +38,15 @@ export default function Home() {
         <div className="relative z-1 w-full px-gutter max-sm:@container">
           <h1
             id="home-title"
-            className="font-display text-[clamp(3.35rem,8vw,8rem)] leading-[.94] font-[760] tracking-[-.035em] uppercase [word-spacing:.065em] max-sm:text-[clamp(1.65rem,11.8cqi,4.25rem)] motion-safe:animate-arrive"
+            className="font-display text-[clamp(3.35rem,8vw,8rem)] leading-[.94] font-[760] tracking-[-.035em] uppercase [word-spacing:.065em] motion-safe:animate-arrive max-sm:text-[clamp(1.65rem,11.8cqi,4.25rem)]"
           >
-            A cat to<br />
+            A cat to
+            <br />
             come home to
           </h1>
           <p className="mt-6 max-w-[37ch] text-[clamp(1rem,1.55vw,1.25rem)] leading-[1.6] max-sm:mt-4">
-            Browse cats for adoption in Bangladesh and get to know the ones
-            near you.
+            Browse cats for adoption in Bangladesh and get to know the ones near
+            you.
           </p>
           <Link
             href="/find_a_cat"
@@ -71,19 +72,21 @@ export default function Home() {
           </h2>
           <p className={`${endCopy} max-w-[67ch]`}>
             One of us needed to find homes for a litter of kittens. In
-            Bangladesh, that meant sorting through busy Facebook groups,
-            where a cat’s listing could get buried as new posts came in.
+            Bangladesh, that meant sorting through busy Facebook groups, where a
+            cat’s listing could get buried as new posts came in.
           </p>
           <p className={`${endCopy} max-w-[67ch]`}>
-            We built Bilai to give cat parents and adopters one place to start
-            a conversation.
+            We built Bilai to give cat parents and adopters one place to start a
+            conversation.
           </p>
           <p className="mt-4 flex max-w-[67ch] flex-wrap items-baseline gap-x-4 gap-y-1 text-[.9375rem] leading-[1.6]">
             <span className="sr-only">Bilai’s first version won the </span>
-            <strong className="font-[750] text-green">Excellence in Social Impact Award</strong>
+            <strong className="font-[750] text-green">
+              Excellence in Social Impact Award
+            </strong>
             <span className="sr-only"> at </span>
             <span className="font-display text-xl font-bold tracking-[-.015em] whitespace-nowrap">
-              AnimalHack 2026
+              Animal Hack 2026
             </span>
           </p>
         </section>
@@ -92,8 +95,8 @@ export default function Home() {
             Finding a home for your cat?
           </h2>
           <p className={`${endCopy} max-w-[46ch]`}>
-            Share a recent photo and a few details about life with your cat
-            so adopters can get to know them.
+            Share a recent photo and a few details about life with your cat so
+            adopters can get to know them.
           </p>
           <Link href="/add_a_cat" className={`${homeCta} mt-4 min-h-11 px-4`}>
             List a cat

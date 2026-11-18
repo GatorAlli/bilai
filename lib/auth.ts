@@ -27,7 +27,8 @@ export const auth = betterAuth({
           if (!raw && context?.path !== "/sign-up/email") return;
 
           const phone = normalizeBdPhone(raw);
-          if (!phone) throw new APIError("BAD_REQUEST", { message: PHONE_ERROR });
+          if (!phone)
+            throw new APIError("BAD_REQUEST", { message: PHONE_ERROR });
 
           const taken = await db
             .select({ id: schema.user.id })

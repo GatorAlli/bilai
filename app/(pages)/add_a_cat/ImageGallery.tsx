@@ -149,7 +149,8 @@ export default function ImageGallery({
           </span>
         </div>
         <p className="mt-1 text-sm text-muted-foreground">
-          Add up to {MAX_IMAGES} photos, {MAX_INPUT_SIZE_MB} MB each. The first photo is the cover.
+          Add up to {MAX_IMAGES} photos, {MAX_INPUT_SIZE_MB} MB each. The first
+          photo is the cover.
         </p>
       </div>
 

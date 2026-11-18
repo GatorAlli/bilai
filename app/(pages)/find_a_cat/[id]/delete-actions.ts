@@ -18,7 +18,10 @@ export async function deleteCatListing(catId: number): Promise<DeleteResult> {
     return { ok: false, error: "Invalid listing." };
   }
 
-  const ownedListing = and(eq(cats.id, catId), eq(cats.userId, session.user.id));
+  const ownedListing = and(
+    eq(cats.id, catId),
+    eq(cats.userId, session.user.id),
+  );
   let images: { key: string }[];
   try {
     images = await db
@@ -37,7 +40,10 @@ export async function deleteCatListing(catId: number): Promise<DeleteResult> {
     }
   } catch (error) {
     console.error("Couldn't delete listing", error);
-    return { ok: false, error: "Couldn't delete the listing. Please try again." };
+    return {
+      ok: false,
+      error: "Couldn't delete the listing. Please try again.",
+    };
   }
 
   const ownerRoot = path.resolve(UPLOAD_ROOT, session.user.id);
@@ -45,7 +51,8 @@ export async function deleteCatListing(catId: number): Promise<DeleteResult> {
     images.map(async ({ key }) => {
       const file = path.resolve(UPLOAD_ROOT, key);
       // Only remove this owner's uploaded files; never directories or other paths.
-      if (!file.startsWith(ownerRoot + path.sep) || !file.endsWith(".webp")) return;
+      if (!file.startsWith(ownerRoot + path.sep) || !file.endsWith(".webp"))
+        return;
       try {
         await unlink(file);
       } catch (error) {

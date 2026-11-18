@@ -7,8 +7,10 @@ import { cn } from "@/lib/utils";
 // 3x3 grid so the middle column stays clear for the form.
 const doodle =
   "grid place-items-center overflow-hidden text-action opacity-[.48]";
-const bigDoodle = "h-auto w-[clamp(3.5rem,7.5vw,6.5rem)] max-[44rem]:w-[3.1rem]";
-const smallDoodle = "h-auto w-[clamp(2.5rem,5.8vw,4.75rem)] max-[44rem]:w-[3.1rem]";
+const bigDoodle =
+  "h-auto w-[clamp(3.5rem,7.5vw,6.5rem)] max-[44rem]:w-[3.1rem]";
+const smallDoodle =
+  "h-auto w-[clamp(2.5rem,5.8vw,4.75rem)] max-[44rem]:w-[3.1rem]";
 
 const doodles = [
   {
@@ -87,11 +89,18 @@ function startDrift(zone: HTMLSpanElement) {
 
   let position = { x: 0, y: 0, tilt: 0 };
   let animation: Animation;
-  const between = (min: number, max: number) => min + Math.random() * (max - min);
+  const between = (min: number, max: number) =>
+    min + Math.random() * (max - min);
 
   const next = () => {
-    const horizontalRoom = Math.max(0, (zone.clientWidth - icon.clientWidth) / 2 - 10);
-    const verticalRoom = Math.max(0, (zone.clientHeight - icon.clientHeight) / 2 - 10);
+    const horizontalRoom = Math.max(
+      0,
+      (zone.clientWidth - icon.clientWidth) / 2 - 10,
+    );
+    const verticalRoom = Math.max(
+      0,
+      (zone.clientHeight - icon.clientHeight) / 2 - 10,
+    );
     const destination = {
       x: between(-horizontalRoom, horizontalRoom),
       y: between(-verticalRoom, verticalRoom),
@@ -103,7 +112,11 @@ function startDrift(zone: HTMLSpanElement) {
       [position, destination].map(({ x, y, tilt }) => ({
         transform: `translate(${x}px, ${y}px) rotate(${tilt}deg)`,
       })),
-      { duration: between(7600, 15400), easing: "ease-in-out", fill: "forwards" },
+      {
+        duration: between(7600, 15400),
+        easing: "ease-in-out",
+        fill: "forwards",
+      },
     );
     position = destination;
     animation.onfinish = next;
@@ -126,7 +139,8 @@ export default function LoginBackdrop() {
     const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
     const zones = [...art.querySelectorAll<HTMLSpanElement>("[data-doodle]")];
     let stopAnimations: Array<ReturnType<typeof startDrift>> = [];
-    const stop = () => stopAnimations.forEach((stopAnimation) => stopAnimation?.());
+    const stop = () =>
+      stopAnimations.forEach((stopAnimation) => stopAnimation?.());
 
     const syncMotion = () => {
       stop();

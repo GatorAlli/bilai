@@ -183,8 +183,8 @@ export default function AuthForm() {
             className="h-11 bg-background text-mauve-950"
           />
           <p id="phone-hint" className="text-xs text-muted-foreground">
-            A Bangladesh mobile number. Adopters use it to reach you about
-            your cats.
+            A Bangladesh mobile number. Adopters use it to reach you about your
+            cats.
           </p>
         </div>
       ) : null}
@@ -242,7 +242,7 @@ export default function AuthForm() {
             ? "Sign up"
             : "Sign in"}
       </Button>
-      <div className="flex items-center gap-3 text-xs uppercase text-muted-foreground">
+      <div className="flex items-center gap-3 text-xs text-muted-foreground uppercase">
         <span className="h-px flex-1 bg-border" />
         or
         <span className="h-px flex-1 bg-border" />

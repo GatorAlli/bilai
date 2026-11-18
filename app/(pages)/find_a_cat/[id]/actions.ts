@@ -4,7 +4,8 @@ import { getSession } from "@/lib/auth";
 import { CONTACT_METHODS, type ContactMethod } from "@/lib/cat-limits";
 import { buildContactUrl, getCatContact, getUserPhone } from "@/lib/contact";
 
-export type ContactResult = { ok: true; url: string } | { ok: false; error: string };
+export type ContactResult =
+  { ok: true; url: string } | { ok: false; error: string };
 
 // Returns the WhatsApp or tel: link for one cat. The number is only sent
 // when a logged-in user asks for it, so it never sits in the page HTML.
@@ -27,7 +28,10 @@ export async function getContactUrl(
   }
   const allowed = method === "whatsapp" ? cat.contactWhatsapp : cat.contactCall;
   if (!allowed) {
-    return { ok: false, error: "The parent doesn't accept this contact method." };
+    return {
+      ok: false,
+      error: "The parent doesn't accept this contact method.",
+    };
   }
 
   const phone = await getUserPhone(cat.userId);

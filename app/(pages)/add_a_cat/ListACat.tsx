@@ -165,11 +165,17 @@ export default function ListACat() {
   }
 
   return (
-    <form className="grid min-w-0 gap-7" onSubmit={handleSubmit} aria-labelledby="list-title">
+    <form
+      className="grid min-w-0 gap-7"
+      onSubmit={handleSubmit}
+      aria-labelledby="list-title"
+    >
       <ImageGallery images={images} onChange={setImages} />
 
       <section className="grid gap-4" aria-labelledby="cat-details-title">
-        <h2 id="cat-details-title" className="text-lg font-extrabold">Cat details</h2>
+        <h2 id="cat-details-title" className="text-lg font-extrabold">
+          Cat details
+        </h2>
         <div className={formPair}>
           <FormElement
             labelText="Name"
@@ -254,7 +260,9 @@ export default function ListACat() {
       </section>
 
       <section className="grid gap-4" aria-labelledby="cat-story-title">
-        <h2 id="cat-story-title" className="text-lg font-extrabold">Their story</h2>
+        <h2 id="cat-story-title" className="text-lg font-extrabold">
+          Their story
+        </h2>
         <FormElement
           labelText="Temperament"
           inputPlaceholder="e.g. Playful, shy, calm"
@@ -299,12 +307,24 @@ export default function ListACat() {
       )}
 
       <div className="grid justify-items-start gap-2">
-        {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
+        {error && (
+          <p role="alert" className="text-sm text-destructive">
+            {error}
+          </p>
+        )}
         <div className="flex flex-wrap items-center gap-3">
-          <Button type="submit" variant="secondary" size="lg" disabled={isPending} className="h-11 font-bold">
+          <Button
+            type="submit"
+            variant="secondary"
+            size="lg"
+            disabled={isPending}
+            className="h-11 font-bold"
+          >
             {isPending ? "Saving…" : "Save cat profile"}
           </Button>
-          <Link href="/find_a_cat" className={outlineButton}>Back to Find a Cat</Link>
+          <Link href="/find_a_cat" className={outlineButton}>
+            Back to Find a Cat
+          </Link>
         </div>
       </div>
     </form>

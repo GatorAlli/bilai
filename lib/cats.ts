@@ -72,7 +72,9 @@ export async function getCats({
           filters.maxAge < MAX_FILTER_AGE
             ? lte(cats.ageMonths, filters.maxAge)
             : undefined,
-          filters.breeds.length ? inArray(cats.breed, filters.breeds) : undefined,
+          filters.breeds.length
+            ? inArray(cats.breed, filters.breeds)
+            : undefined,
           filters.genders.length
             ? inArray(cats.gender, filters.genders)
             : undefined,

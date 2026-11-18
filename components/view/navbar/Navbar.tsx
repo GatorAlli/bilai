@@ -40,7 +40,10 @@ export default function Navbar({ currentPage }: { currentPage: Page }) {
     const closeMenu = () => setMenuOpen(false);
 
     function handlePointerDown(event: PointerEvent) {
-      if (event.target instanceof Node && !headerRef.current?.contains(event.target)) {
+      if (
+        event.target instanceof Node &&
+        !headerRef.current?.contains(event.target)
+      ) {
         closeMenu();
       }
     }
@@ -71,7 +74,7 @@ export default function Navbar({ currentPage }: { currentPage: Page }) {
       ref={headerRef}
       className="sticky top-0 z-5 border-b border-line bg-paper text-brand-ink scheme-light print:hidden"
     >
-      <div className="frame relative flex min-h-14 items-center justify-between">
+      <div className="relative frame flex min-h-14 items-center justify-between">
         <Link
           href="/"
           className={`inline-flex min-h-11 items-center gap-2.5 font-brand text-[1.625rem] leading-none ${navFocus}`}
@@ -117,7 +120,13 @@ export default function Navbar({ currentPage }: { currentPage: Page }) {
             <Link
               href="/find_a_cat"
               className={navTab}
-              aria-current={findCurrent ? (currentPage === "find" ? "page" : "location") : undefined}
+              aria-current={
+                findCurrent
+                  ? currentPage === "find"
+                    ? "page"
+                    : "location"
+                  : undefined
+              }
               onClick={closeMenu}
             >
               <span className={navLabel}>Find a cat</span>

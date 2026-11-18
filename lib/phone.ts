@@ -11,7 +11,10 @@ export const PHONE_TAKEN_ERROR =
  * valid Bangladesh mobile number (01[3-9] + 8 digits).
  */
 export function normalizeBdPhone(input: string): string | null {
-  const digits = input.trim().replace(/[\s\-()]/g, "").replace(/^\+/, "");
+  const digits = input
+    .trim()
+    .replace(/[\s\-()]/g, "")
+    .replace(/^\+/, "");
 
   let national: string;
   if (digits.startsWith("880")) national = digits.slice(3);

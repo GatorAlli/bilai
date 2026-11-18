@@ -13,7 +13,11 @@ export default function DeleteListingButton({ catId }: { catId: number }) {
 
   function removeListing() {
     if (pending) return;
-    if (!window.confirm("Delete this listing and its photos? This cannot be undone.")) {
+    if (
+      !window.confirm(
+        "Delete this listing and its photos? This cannot be undone.",
+      )
+    ) {
       return;
     }
     setError(null);
@@ -45,7 +49,9 @@ export default function DeleteListingButton({ catId }: { catId: number }) {
         {pending ? "Deleting…" : "Delete listing"}
       </Button>
       {error && (
-        <p role="alert" className="mt-2 text-sm text-destructive">{error}</p>
+        <p role="alert" className="mt-2 text-sm text-destructive">
+          {error}
+        </p>
       )}
     </div>
   );

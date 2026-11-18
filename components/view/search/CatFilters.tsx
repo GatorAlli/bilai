@@ -20,10 +20,7 @@ function FilterSection({
   children: ReactNode;
 }) {
   return (
-    <details
-      open
-      className="group rounded-lg border border-border"
-    >
+    <details open className="group rounded-lg border border-border">
       <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-3 text-sm font-bold [&::-webkit-details-marker]:hidden">
         {title}
         <ChevronDown

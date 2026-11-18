@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { normalizeBdPhone } from "./phone";
 
-
 describe("normalizeBdPhone: accepts", () => {
   it.each([
     ["01712345678", "8801712345678"],
