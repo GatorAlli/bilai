@@ -80,7 +80,8 @@ Update this whenever the structure changes (working agreement 2). Generated or i
 │   ├── icon.svg                   # Favicon
 │   ├── fonts/                     # Self-hosted fonts (Fraunces + licence, MatchaMint)
 │   ├── api/auth/[...all]/route.ts # better-auth catch-all handler
-│   ├── api/ably-token/route.ts    # Signs Ably token requests scoped to the session user's id
+│   ├── api/ably-token/route.ts    # Signs Ably token requests; capability = the user's own chat rooms
+│   ├── api/ably-webhook/route.ts  # Signed Ably webhook: mirrors chat messages/edits/deletes into Postgres
 │   ├── uploads/[...path]/route.ts # Serves listing photo bytes; contains the path-traversal guard
 │   └── (pages)/                   # Route group (no URL segment) for all feature pages
 │       ├── auth/
@@ -134,7 +135,7 @@ Update this whenever the structure changes (working agreement 2). Generated or i
 │   ├── index.ts                   # Drizzle client (Neon HTTP driver)
 │   └── schema.ts                  # App tables: cats, cat_images, chat_threads/messages/reads (+ auth tables)
 ├── docs/                          # Design notes and plans (Obsidian-formatted Markdown)
-│   ├── ably_setup.md              # How the Ably Chat client/auth/provider scaffolding was set up
+│   ├── ably_setup.md              # Ably Chat scaffolding + webhook dashboard setup
 │   └── chat_button_plan.md        # Chat feature plan (Chat button, dock, webhook mirror), by phase
 ├── drizzle/                       # SQL migrations (timestamped folders; only the first has a snapshot)
 ├── lib/
