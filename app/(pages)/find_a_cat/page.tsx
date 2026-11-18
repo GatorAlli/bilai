@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { after } from "next/server";
-import { ChevronDown, SlidersHorizontal } from "lucide-react";
+import { ChevronDown, LoaderCircle, SlidersHorizontal } from "lucide-react";
 import BilaiPage from "@/components/view/BilaiPage";
 import CatCard from "@/components/view/cat/CatCard";
 import { getCats, getCatBreeds } from "@/lib/cats";
@@ -34,7 +34,14 @@ export default function FindCatsPage({
       </header>
       <Suspense
         fallback={
-          <p className="py-8" role="status">
+          <p
+            className="flex items-center justify-center gap-2 py-8 text-muted-foreground"
+            role="status"
+          >
+            <LoaderCircle
+              className="size-4 motion-safe:animate-spin"
+              aria-hidden="true"
+            />
             Loading cats…
           </p>
         }
