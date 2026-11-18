@@ -10,7 +10,7 @@ import { getSession } from "@/lib/auth";
 import { getUserCats } from "@/lib/cats";
 import {
   formatTimeLeft,
-  LISTING_LIFETIME_DAYS,
+  LISTING_LIFETIME_MONTHS,
   purgeExpiredListings,
 } from "@/lib/listing-expiry";
 import { SignOutButton } from "@/components/auth/signOut";
@@ -131,7 +131,7 @@ async function YourProfile() {
         </h2>
         <p className="mt-1 text-muted-foreground">
           Listings and their photos are removed automatically{" "}
-          {LISTING_LIFETIME_DAYS} days after you post them.
+          {LISTING_LIFETIME_MONTHS} months after you post them.
         </p>
         {listings.length > 0 ? (
           <div className="mt-5 grid grid-cols-1 gap-4 min-[36rem]:grid-cols-2">

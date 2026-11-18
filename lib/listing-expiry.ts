@@ -6,10 +6,10 @@ import { catImages, cats } from "@/db/schema";
 import { removeLocalPhotos } from "@/lib/uploads";
 
 // Every listing, with its photos, is deleted this long after it was posted.
-export const LISTING_LIFETIME_DAYS = 7;
+export const LISTING_LIFETIME_MONTHS = 3;
 
 // Worked out in the database so every server agrees on "now".
-const lifetime = sql`make_interval(days => ${LISTING_LIFETIME_DAYS})`;
+const lifetime = sql`make_interval(months => ${LISTING_LIFETIME_MONTHS})`;
 const cutoff = sql`now() - ${lifetime}`;
 export const isLiveListing = gt(cats.createdAt, cutoff);
 const isExpiredListing = lte(cats.createdAt, cutoff);

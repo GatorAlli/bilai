@@ -144,7 +144,7 @@ Update this whenever the structure changes (working agreement 2). Generated or i
 │   ├── cat-limits.ts              # Upload/listing limits (photo count, size, dimensions)
 │   ├── compress-image.ts          # Server-side image normalisation to WebP (<=1600px)
 │   ├── uploads.ts                 # Photo file helpers: `isWebp`, `removeLocalPhotos`, UPLOAD_ROOT
-│   ├── listing-expiry.ts          # 7-day expiry SQL helpers and `purgeExpiredListings()`
+│   ├── listing-expiry.ts          # 3-month expiry SQL helpers and `purgeExpiredListings()`
 │   ├── locations.ts               # Bangladesh district -> area data for location pickers
 │   ├── phone.ts                   # BD phone normalisation/validation
 │   ├── phone.test.ts              # vitest tests for phone.ts
@@ -165,7 +165,7 @@ Update this whenever the structure changes (working agreement 2). Generated or i
 
 **Data access layer**: `lib/cats.ts` and `lib/contact.ts` are the only places that query `cats`/`catImages`/`user` for reads; both are `import "server-only"`. Keep read logic there rather than inlining queries in pages/actions, and never select the phone number into anything rendered on a page — `getCatContact`/contact actions fetch it separately and only hand it to the client on an explicit tap (see comments in `lib/contact.ts`).
 
-**Listing lifecycle**: Listings self-expire 7 days after creation (`lib/listing-expiry.ts`, `LISTING_LIFETIME_DAYS`). `isLiveListing`/`isExpiredListing`/`listingSecondsLeft` are raw SQL computed against the DB's `now()` so every server instance agrees; all reads in `lib/cats.ts` filter by `isLiveListing`. Expired listings are purged lazily: `purgeExpiredListings()` is invoked via `after()` on busy mutation paths (e.g. end of `submitForm`), throttled per server instance to once every 10 minutes (`PURGE_EVERY_MS`), not run on every request or via a cron job.
+**Listing lifecycle**: Listings self-expire 3 months after creation (`lib/listing-expiry.ts`, `LISTING_LIFETIME_MONTHS`). `isLiveListing`/`isExpiredListing`/`listingSecondsLeft` are raw SQL computed against the DB's `now()` so every server instance agrees; all reads in `lib/cats.ts` filter by `isLiveListing`. Expired listings are purged lazily: `purgeExpiredListings()` is invoked via `after()` on busy mutation paths (e.g. end of `submitForm`), throttled per server instance to once every 10 minutes (`PURGE_EVERY_MS`), not run on every request or via a cron job.
 
 **Photo storage**: Image bytes are stored as base64 in the `cat_images.data` column (Neon HTTP driver, so no separate blob store) — see the "Listing photos" section of `README.md`. `uploads/` on disk is a legacy/local fallback and a git-tracked export, not the source of truth for new uploads. `scripts/sync-photos.ts` reconciles the two directions (imports old local files into the DB; exports DB photos back to `uploads/` for a GitHub snapshot) and must be run on each machine that previously accepted local uploads. `app/uploads/[...path]/route.ts` and `lib/uploads.ts`'s `removeLocalPhotos` both resolve the requested path and verify it stays inside `UPLOAD_ROOT` and ends in `.webp` before touching the filesystem — preserve that check in any code that touches upload paths, it's the path-traversal guard. Uploaded images are always normalized server-side to WebP, long edge ≤1600px (`lib/compress-image.ts`, limits in `lib/cat-limits.ts`); `isWebp()` (`lib/uploads.ts`) magic-byte-checks every buffer before it's trusted as an image.
 
