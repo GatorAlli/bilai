@@ -74,9 +74,9 @@ Update this whenever the structure changes (working agreement 2). Generated or i
 │   ├── hooks/format.mjs           # Hook script: formats the file Claude just wrote/edited
 │   └── skills/                    # Symlinks to ../.agents/skills/* for Claude Code
 ├── app/
-│   ├── layout.tsx                 # Root layout: fonts, navbar, global wrapper
+│   ├── layout.tsx                 # Root layout: fonts, global wrapper, chat dock (provider + Suspense slot)
 │   ├── page.tsx                   # Home page: hero, featured cats, call to action
-│   ├── globals.css                # Tailwind v4 entry, theme tokens, global styles
+│   ├── globals.css                # Tailwind v4 entry, cascade-layer order, theme tokens, global styles
 │   ├── icon.svg                   # Favicon
 │   ├── fonts/                     # Self-hosted fonts (Fraunces + licence, MatchaMint)
 │   ├── api/auth/[...all]/route.ts # better-auth catch-all handler
@@ -105,12 +105,23 @@ Update this whenever the structure changes (working agreement 2). Generated or i
 │               ├── EditProfileForm.tsx # Edit-profile form (client)
 │               └── actions.ts     # Server action to update name/phone
 ├── components/
+│   ├── chat/                      # Chat dock (on every page; Ably loads on first open)
+│   │   ├── ChatDockProvider.tsx   # Client context: dock mode (hidden/open/extended) + open-thread requests
+│   │   ├── ChatDockSlot.tsx       # Server half rendered by the root layout: reads session, renders ChatDock
+│   │   ├── ChatDock.tsx           # Tab + panel shell; lazy-loads ChatPanel; signed-out "Sign in" state
+│   │   ├── ChatPanel.tsx          # Ably providers, thread list, re-authorize on new threads
+│   │   ├── Conversation.tsx       # One conversation from UI kit pieces (message list, header, footer)
+│   │   ├── Composer.tsx           # Prefillable message box with length/cooldown limits and typing
+│   │   ├── useConversationMessages.ts # History + live messages/edits/deletes for the current room
+│   │   ├── ChatAvatar.tsx         # Profile image or initials
+│   │   ├── actions.ts             # Dock server actions (list threads)
+│   │   └── ably-chat-kit.css      # Loads the UI kit CSS into the `ably-chat` cascade layer
 │   ├── auth/
 │   │   ├── AuthForm.tsx           # Email/password sign-in and sign-up form
 │   │   ├── LoginForm.tsx          # Login-card wrapper (form + Google button)
 │   │   └── signOut.tsx            # Sign-out button
 │   ├── providers/
-│   │   └── ChatProviders.tsx      # Ably Chat client + UI kit provider wrapper for chat pages
+│   │   └── ChatProviders.tsx      # Ably clients + UI kit providers (light theme, feature flags) for ChatPanel
 │   ├── ui/                        # shadcn / Base UI primitives
 │   │   ├── button.tsx             # Button + variants
 │   │   ├── input.tsx              # Text input
