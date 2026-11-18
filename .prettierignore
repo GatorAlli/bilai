@@ -1,0 +1,14 @@
+node_modules
+.next
+out
+build
+coverage
+uploads
+public
+drizzle
+package-lock.json
+skills-lock.json
+.agents
+.claude/skills
+next-env.d.ts
+*.tsbuildinfo

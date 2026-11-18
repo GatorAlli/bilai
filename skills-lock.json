@@ -1,6 +1,34 @@
 {
   "version": 2,
   "skills": {
+    "conventional-commit": {
+      "source": "github/awesome-copilot",
+      "commit": "a255a193d1318e5a9ca3e9e575897f9a7845c099",
+      "sourceType": "github",
+      "skillPath": "skills/conventional-commit/SKILL.md",
+      "computedHash": "03c0c972e8d881f8d369f3bd4205761109feba7b770523c50bcba6f3c83e685f"
+    },
+    "create-readme": {
+      "source": "github/awesome-copilot",
+      "commit": "a255a193d1318e5a9ca3e9e575897f9a7845c099",
+      "sourceType": "github",
+      "skillPath": "skills/create-readme/SKILL.md",
+      "computedHash": "59e7a20cc6e183f31c0161a619b66f96d05656378c1cef886522b6845d33c953"
+    },
+    "frontend-design": {
+      "source": "vercel-labs/agent-eval",
+      "commit": "9ff2ea3e9f14c14e5123b215c3f695d3b4f9955d",
+      "sourceType": "github",
+      "skillPath": "packages/playground/.agents/skills/frontend-design/SKILL.md",
+      "computedHash": "a7c81a25c7ea1972f7049cd0282545c72ae92237c1b45ba7b1370fab498f5f9b"
+    },
+    "tailwind-4-docs": {
+      "source": "lombiq/tailwind-agent-skills",
+      "commit": "634ec184c36e495fae1d8cf7975df7e6969e3a89",
+      "sourceType": "github",
+      "skillPath": "skills/tailwind-4-docs/SKILL.md",
+      "computedHash": "263961b82698e3defdb26dd6a1b7328044517e67a3bbe91c1b33bb2a4273f4ee"
+    },
     "tailwind-v4": {
       "source": "mastra-ai/mastra",
       "commit": "9a4f20d55d772b38705383fe6f20508c1402ae79",

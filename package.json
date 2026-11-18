@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "test": "vitest run --exclude 'tests/**' && node --test tests/*.test.mjs",
     "photos:sync": "tsx scripts/sync-photos.ts"
   },
@@ -33,6 +35,8 @@
     "drizzle-kit": "^1.0.0-rc.5-ab785fc",
     "eslint": "^9",
     "eslint-config-next": "16.4.6",
+    "prettier": "^3.10.1",
+    "prettier-plugin-tailwindcss": "^0.8.1",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
     "typescript": "^5",
