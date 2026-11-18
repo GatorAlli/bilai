@@ -79,7 +79,8 @@ Update this whenever the structure changes (working agreement 2). Generated or i
 │   ├── globals.css                # Tailwind v4 entry, theme tokens, global styles
 │   ├── icon.svg                   # Favicon
 │   ├── fonts/                     # Self-hosted fonts (Fraunces + licence, MatchaMint)
-│   ├── api/auth/[...all]/route.ts # better-auth catch-all handler (the only API route besides uploads)
+│   ├── api/auth/[...all]/route.ts # better-auth catch-all handler
+│   ├── api/ably-token/route.ts    # Signs Ably token requests scoped to the session user's id
 │   ├── uploads/[...path]/route.ts # Serves listing photo bytes; contains the path-traversal guard
 │   └── (pages)/                   # Route group (no URL segment) for all feature pages
 │       ├── auth/
@@ -107,6 +108,8 @@ Update this whenever the structure changes (working agreement 2). Generated or i
 │   │   ├── AuthForm.tsx           # Email/password sign-in and sign-up form
 │   │   ├── LoginForm.tsx          # Login-card wrapper (form + Google button)
 │   │   └── signOut.tsx            # Sign-out button
+│   ├── providers/
+│   │   └── ChatProviders.tsx      # Ably Chat client + UI kit provider wrapper for chat pages
 │   ├── ui/                        # shadcn / Base UI primitives
 │   │   ├── button.tsx             # Button + variants
 │   │   ├── input.tsx              # Text input
@@ -134,6 +137,7 @@ Update this whenever the structure changes (working agreement 2). Generated or i
 ├── lib/
 │   ├── auth.ts                    # better-auth server config, `getSession()`, sign-up phone hook
 │   ├── auth-client.ts             # better-auth browser client
+│   ├── ably.ts                    # Server-only Ably HTTP client (`@ably/pubsub-server`) for token signing
 │   ├── cats.ts                    # Server-only read queries for listings (live-only filtering)
 │   ├── contact.ts                 # Server-only contact/phone lookups; never rendered into pages
 │   ├── cat-filters.ts             # `CatFilters` type shared by the search UI and `getCats()`

@@ -14,7 +14,9 @@
   },
   "dependencies": {
     "@ably/chat": "^2.0.0",
+    "@ably/chat-react-ui-kit": "^0.4.0",
     "@ably/pubsub-device": "^3.1.0",
+    "@ably/pubsub-server": "^3.1.0",
     "@base-ui/react": "^1.9.0",
     "@neondatabase/serverless": "^1.2.0",
     "better-auth": "^1.7.14",
