@@ -1,4 +1,5 @@
 import { getSession } from "@/lib/auth";
+import { getUnreadCount } from "@/lib/chat";
 import ChatDock from "@/components/chat/ChatDock";
 
 // Server half of the chat dock, rendered by the root layout inside its own
@@ -8,5 +9,12 @@ export default async function ChatDockSlot() {
   if (!session?.user) return <ChatDock signedIn={false} />;
 
   const { id, name, image } = session.user;
-  return <ChatDock signedIn me={{ id, name, image: image ?? null }} />;
+  const unread = await getUnreadCount(id);
+  return (
+    <ChatDock
+      signedIn
+      me={{ id, name, image: image ?? null }}
+      initialUnread={unread}
+    />
+  );
 }

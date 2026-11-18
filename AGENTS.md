@@ -115,7 +115,7 @@ Update this whenever the structure changes (working agreement 2). Generated or i
 │   │   ├── Composer.tsx           # Prefillable message box with length/cooldown limits and typing
 │   │   ├── useConversationMessages.ts # History + live messages/edits/deletes for the current room
 │   │   ├── ChatAvatar.tsx         # Profile image or initials
-│   │   ├── actions.ts             # Dock server actions (list threads)
+│   │   ├── actions.ts             # Dock server actions (list threads, unread count, mark read)
 │   │   └── ably-chat-kit.css      # Loads the UI kit CSS into the `ably-chat` cascade layer
 │   ├── auth/
 │   │   ├── AuthForm.tsx           # Email/password sign-in and sign-up form
@@ -129,13 +129,14 @@ Update this whenever the structure changes (working agreement 2). Generated or i
 │   │   ├── label.tsx              # Form label
 │   │   └── search-select.tsx      # Type-to-filter dropdown restricted to a list of values
 │   └── view/                      # App-specific presentation components
-│       ├── BilaiPage.tsx          # Standard page shell (title, spacing)
+│       ├── BilaiPage.tsx          # Standard page shell (title, spacing, Footer, ScrollEffects)
+│       ├── Footer.tsx             # Full site footer (story/rehome blurbs, logo, back-to-top); same on every page
+│       ├── ScrollEffects.tsx      # Scroll-reveal + dark-footer-in-view effects, run on every page
 │       ├── PawIcon.tsx            # Paw SVG icon
-│       ├── styles.ts              # Shared Tailwind class strings (buttons, headings, wave edge)
+│       ├── styles.ts              # Shared Tailwind class strings (buttons, headings, wave edge, CTA)
 │       ├── navbar/Navbar.tsx      # Top navigation bar
 │       ├── home/
-│       │   ├── FeaturedCats.tsx   # Featured cats strip on the home page
-│       │   └── HomeEffects.tsx    # Scroll-reveal effects for the home page
+│       │   └── FeaturedCats.tsx   # Featured cats strip on the home page
 │       ├── cat/
 │       │   ├── CatCard.tsx        # Listing card used in grids
 │       │   ├── ChatButton.tsx     # Chat button: opens the dock on the parent's thread, prefilled

@@ -9,7 +9,7 @@ import {
   useChatRealtime,
 } from "@/components/providers/ChatProviders";
 import { useChatDock, type DockMode } from "@/components/chat/ChatDockProvider";
-import { listMyThreads } from "@/components/chat/actions";
+import { listMyThreads, markRead } from "@/components/chat/actions";
 import ChatAvatar from "@/components/chat/ChatAvatar";
 import Conversation from "@/components/chat/Conversation";
 import type { ChatUser, ThreadSummary } from "@/lib/chat";
@@ -69,10 +69,9 @@ function Panel({ me, mode, onUnreadChange }: Props) {
         setUserAvatar(row.other.id, avatar);
       }
       setThreads(rows);
-      onUnreadChange(rows.reduce((sum, row) => sum + row.unread, 0));
       return rows;
     },
-    [me, realtime, setRoomAvatar, setUserAvatar, onUnreadChange],
+    [me, realtime, setRoomAvatar, setUserAvatar],
   );
 
   // First load, and again whenever the dock is reopened, to pick up threads
@@ -113,6 +112,24 @@ function Panel({ me, mode, onUnreadChange }: Props) {
       cancelled = true;
     };
   }, [request, realtime, refresh, clearRequest]);
+
+  // Called by the open conversation while it's on screen.
+  const onRead = useCallback((roomName: string) => {
+    markRead(roomName).catch(() => {});
+    setThreads((current) => {
+      const thread = current?.find((t) => t.roomName === roomName);
+      if (!current || !thread || thread.unread === 0) return current;
+      const next = current.map((thread) =>
+        thread.roomName === roomName ? { ...thread, unread: 0 } : thread,
+      );
+      return next;
+    });
+  }, []);
+
+  // Keep the dock tab's badge in step with the thread list.
+  useEffect(() => {
+    if (threads) onUnreadChange(threads.reduce((sum, t) => sum + t.unread, 0));
+  }, [threads, onUnreadChange]);
 
   const extended = mode === "extended";
   const activeThread = threads?.find((thread) => thread.roomName === active);
@@ -161,6 +178,8 @@ function Panel({ me, mode, onUnreadChange }: Props) {
               prefill?.room === activeThread.roomName ? prefill.text : undefined
             }
             onBack={() => setActive(null)}
+            visible={mode !== "hidden"}
+            onRead={onRead}
             backOnPhonesOnly={extended}
           />
         </ChatRoomProvider>

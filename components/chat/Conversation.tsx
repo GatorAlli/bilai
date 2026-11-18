@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
 import type { Message } from "@ably/chat";
 import {
@@ -23,11 +23,15 @@ export default function Conversation({
   prefill,
   onBack,
   backOnPhonesOnly,
+  visible,
+  onRead,
 }: {
   thread: ThreadSummary;
   prefill?: string;
   onBack: () => void;
   backOnPhonesOnly: boolean;
+  visible: boolean;
+  onRead: (roomName: string) => void;
 }) {
   const {
     messages,
@@ -39,6 +43,13 @@ export default function Conversation({
     updateMessage,
     deleteMessage,
   } = useConversationMessages();
+
+  // Mark read when the conversation is on screen: on open, and whenever a
+  // message arrives while it's showing.
+  const latest = messages.at(-1)?.serial;
+  useEffect(() => {
+    if (visible) onRead(thread.roomName);
+  }, [visible, latest, thread.roomName, onRead]);
 
   const replace = useCallback((message: Message) => merge([message]), [merge]);
 

@@ -3,9 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Maximize2, MessagesSquare, Minimize2, X } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { useChatDock } from "@/components/chat/ChatDockProvider";
+import { getMyUnreadCount } from "@/components/chat/actions";
 import type { ChatUser } from "@/lib/chat";
 import { cn } from "@/lib/utils";
 
@@ -41,6 +43,28 @@ export default function ChatDock({ signedIn, me, initialUnread = 0 }: Props) {
   // Keep the panel (and its Ably connection) mounted once it has been opened,
   // so hiding and reopening the dock doesn't reconnect.
   if (isOpen && !panelLoaded) setPanelLoaded(true);
+
+  // The root layout (and so ChatDockSlot) doesn't re-render on client-side
+  // navigation, so refresh the badge when the route changes or the dock is
+  // hidden. Skipped on first render: the server already sent the count.
+  const pathname = usePathname();
+  const firstRender = useRef(true);
+  useEffect(() => {
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
+    if (!signedIn || isOpen) return;
+    let cancelled = false;
+    getMyUnreadCount()
+      .then((count) => {
+        if (!cancelled) setUnread(count);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [pathname, signedIn, isOpen]);
 
   // Move focus into the dock when it opens and back to the tab when it hides.
   useEffect(() => {
