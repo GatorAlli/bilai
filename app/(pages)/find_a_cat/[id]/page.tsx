@@ -38,6 +38,7 @@ async function CatDetails({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const [cat, session] = await Promise.all([getCat(Number(id)), getSession()]);
   if (!cat) notFound();
+  const isOwner = session?.user.id === cat.owner.id;
 
   return (
     <article className="mt-6">
@@ -103,17 +104,17 @@ async function CatDetails({ params }: { params: Promise<{ id: string }> }) {
             <div className="mt-5">
               <ContactButtons
                 catId={cat.id}
+                catName={cat.name}
+                canChat={Boolean(session?.user) && !isOwner}
                 whatsapp={cat.contactWhatsapp}
                 call={cat.contactCall}
                 hasPhone={cat.owner.hasPhone}
                 isLoggedIn={Boolean(session?.user)}
-                isOwner={session?.user.id === cat.owner.id}
+                isOwner={isOwner}
               />
             </div>
           ) : null}
-          {session?.user.id === cat.owner.id ? (
-            <DeleteListingButton catId={cat.id} />
-          ) : null}
+          {isOwner ? <DeleteListingButton catId={cat.id} /> : null}
         </div>
       </div>
       {[

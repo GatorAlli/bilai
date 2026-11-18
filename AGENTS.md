@@ -97,6 +97,7 @@ Update this whenever the structure changes (working agreement 2). Generated or i
 │       │   └── [id]/
 │       │       ├── page.tsx       # Single listing detail page
 │       │       ├── actions.ts     # `getContactUrl`: returns WhatsApp/tel link only on explicit tap
+│       │       ├── chat-actions.ts # `openThread`: creates/reuses the chat thread with a cat's parent (rate-limited)
 │       │       └── delete-actions.ts # Server action to delete the owner's own listing
 │       └── profile/
 │           ├── page.tsx           # Current user's profile and their listings
@@ -137,7 +138,8 @@ Update this whenever the structure changes (working agreement 2). Generated or i
 │       │   └── HomeEffects.tsx    # Scroll-reveal effects for the home page
 │       ├── cat/
 │       │   ├── CatCard.tsx        # Listing card used in grids
-│       │   ├── ContactButtons.tsx # Tap-to-reveal contact buttons (WhatsApp/call)
+│       │   ├── ChatButton.tsx     # Chat button: opens the dock on the parent's thread, prefilled
+│       │   ├── ContactButtons.tsx # Contact row: Chat, then tap-to-reveal WhatsApp/call
 │       │   └── DeleteListingButton.tsx # Delete button with confirmation
 │       └── search/
 │           ├── Searchbar.tsx      # Search input on the find-a-cat page
