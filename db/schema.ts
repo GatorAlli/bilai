@@ -4,8 +4,10 @@ import {
   check,
   index,
   pgTable,
+  primaryKey,
   text,
   timestamp,
+  unique,
   varchar,
   integer,
   uuid,
@@ -166,4 +168,82 @@ export const catImages = pgTable(
     position: integer().notNull(),
   },
   (table) => [index("cat_images_catId_idx").on(table.catId)],
+);
+
+// Chat (see docs/chat_button_plan.md). One thread per pair of users, shared
+// across all of one owner's cats. Threads deliberately have no foreign key to
+// cats: a conversation outlives the listing that started it.
+export const chatThreads = pgTable(
+  "chat_threads",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    // Ably Chat room name, "dm:<userA>:<userB>"
+    roomName: text("room_name").notNull().unique(),
+    // userA < userB, so a pair has one row whoever starts the chat. Sort the
+    // two ids with JavaScript's `<` (code-unit order) before inserting.
+    userA: text("user_a")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    userB: text("user_b")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    lastMessageAt: timestamp("last_message_at", { withTimezone: true }),
+  },
+  (table) => [
+    unique("chat_threads_pair_key").on(table.userA, table.userB),
+    // COLLATE "C" compares bytes, matching JavaScript's `<` for the ASCII ids
+    // better-auth generates. The default collation can order mixed-case ids
+    // differently (e.g. "a" < "B"), which would reject valid pairs.
+    check(
+      "chat_threads_ordered_check",
+      sql`${table.userA} collate "C" < ${table.userB} collate "C"`,
+    ),
+    index("chat_threads_user_b_idx").on(table.userB),
+  ],
+);
+
+// Postgres copy of every Ably chat message, written by the Ably webhook and
+// keyed by Ably's message serial so redelivered webhooks are harmless.
+export const chatMessages = pgTable(
+  "chat_messages",
+  {
+    serial: text().primaryKey(),
+    threadId: uuid("thread_id")
+      .notNull()
+      .references(() => chatThreads.id, { onDelete: "cascade" }),
+    senderId: text("sender_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    text: text().notNull(),
+    // Latest Ably version serial applied. Version serials sort as strings, so
+    // an older update or delete that arrives late can be ignored.
+    versionSerial: text("version_serial").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+    editedAt: timestamp("edited_at", { withTimezone: true }),
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
+  },
+  (table) => [
+    index("chat_messages_thread_created_idx").on(
+      table.threadId,
+      table.createdAt,
+    ),
+  ],
+);
+
+// When each user last read each thread; drives the unread badge.
+export const chatReads = pgTable(
+  "chat_reads",
+  {
+    threadId: uuid("thread_id")
+      .notNull()
+      .references(() => chatThreads.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    lastReadAt: timestamp("last_read_at", { withTimezone: true }).notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.threadId, table.userId] })],
 );

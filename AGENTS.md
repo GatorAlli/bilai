@@ -47,7 +47,7 @@ There are two test runners in this repo:
 - vitest runs `lib/*.test.ts`, e.g. `lib/phone.test.ts`. Single file: `npx vitest run lib/phone.test.ts`.
 - `tests/*.test.mjs` runs under Node's built-in test runner (`node --test tests/delete-listing.test.mjs`), not vitest. These tests transpile a single `.ts`/`.tsx` file in isolation with the TypeScript compiler and execute it in a `vm` context with hand-written mocks for `@/db`, `@/lib/auth`, `next/navigation`, etc. (see `tests/delete-listing.test.mjs`). Follow that pattern for new tests that need to exercise a server action or component without a real DB/Next runtime.
 
-Drizzle migrations: `npx drizzle-kit generate` to create a migration from schema changes, `npx drizzle-kit migrate` (or run the SQL in `drizzle/`) to apply. Config in `drizzle.config.ts`; schema lives in `db/schema.ts` (and `auth-schema.ts`, which better-auth reads from).
+Drizzle migrations: `npx drizzle-kit migrate` (or run the SQL in `drizzle/`) to apply. Only the first migration folder has a `snapshot.json`; the later ones are hand-written SQL, so `npx drizzle-kit generate` diffs against that first snapshot and re-emits every later change. Until the snapshots are rebuilt, write new migrations by hand as `drizzle/<YYYYMMDDHHMMSS>_<name>/migration.sql` using `IF NOT EXISTS` guards. To get the exact SQL for new tables, run `drizzle-kit generate` with a throwaway config whose `out` is an empty scratch folder and copy only the relevant statements. Config in `drizzle.config.ts`; schema lives in `db/schema.ts` (and `auth-schema.ts`, which better-auth reads from).
 
 ## Project file structure
 
@@ -132,8 +132,11 @@ Update this whenever the structure changes (working agreement 2). Generated or i
 │           └── CatFilters.tsx     # Filter controls (shape from lib/cat-filters.ts)
 ├── db/
 │   ├── index.ts                   # Drizzle client (Neon HTTP driver)
-│   └── schema.ts                  # App tables: cats, cat_images (+ re-exports auth tables)
-├── drizzle/                       # Generated SQL migrations and snapshots (timestamped folders)
+│   └── schema.ts                  # App tables: cats, cat_images, chat_threads/messages/reads (+ auth tables)
+├── docs/                          # Design notes and plans (Obsidian-formatted Markdown)
+│   ├── ably_setup.md              # How the Ably Chat client/auth/provider scaffolding was set up
+│   └── chat_button_plan.md        # Chat feature plan (Chat button, dock, webhook mirror), by phase
+├── drizzle/                       # SQL migrations (timestamped folders; only the first has a snapshot)
 ├── lib/
 │   ├── auth.ts                    # better-auth server config, `getSession()`, sign-up phone hook
 │   ├── auth-client.ts             # better-auth browser client
