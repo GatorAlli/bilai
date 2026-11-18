@@ -20,3 +20,9 @@ export const headingText =
 /** Section headings on the homepage, in the display face. */
 export const homeHeading =
   "font-display text-[clamp(1.8rem,3.1vw,2.75rem)] font-[660] leading-[1.08] tracking-[-.038em]";
+
+/** The green call to action: hero "Meet the cats" and the footer's "List a
+    cat". Height and horizontal padding are set per use, so the hero's larger
+    button never has to out-rank a value from this string. */
+export const homeCta =
+  "inline-flex items-center justify-center gap-[.55rem] rounded-[.65rem] border border-transparent bg-green py-[.65rem] text-[.9375rem] leading-[1.3] font-bold text-ink *:shrink-0 hover:bg-green-hover active:bg-green-hover focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-paper forced-colors:border-[color:ButtonText] print:hidden";

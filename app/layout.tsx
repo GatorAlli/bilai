@@ -1,8 +1,11 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { Albert_Sans, Bree_Serif, Figtree, Lora } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 import { cn } from "@/lib/utils";
+import { ChatDockProvider } from "@/components/chat/ChatDockProvider";
+import ChatDockSlot from "@/components/chat/ChatDockSlot";
 
 const loraHeading = Lora({ subsets: ["latin"], variable: "--font-heading" });
 
@@ -43,7 +46,15 @@ export default function RootLayout({
       )}
     >
       <body className="flex min-h-screen flex-col font-sans antialiased">
-        {children}
+        {/* The chat dock is on every page. Its provider only holds UI state;
+            the slot reads the session, so it streams in under Suspense and
+            the static shell is unaffected. Ably itself loads on first open. */}
+        <ChatDockProvider>
+          {children}
+          <Suspense fallback={null}>
+            <ChatDockSlot />
+          </Suspense>
+        </ChatDockProvider>
       </body>
     </html>
   );

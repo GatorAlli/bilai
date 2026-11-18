@@ -295,3 +295,45 @@ export default async function MessagesPage() {
     trace, no leaked key).
   - `/`, `/find_a_cat` → still `200`, unaffected by the new files since
     nothing was mounted in the root layout.
+
+## Webhook: mirroring chat into Postgres
+
+Added with the chat feature ([[chat_button_plan]], phase 4). Ably POSTs every
+chat message, edit and delete to `app/api/ably-webhook/route.ts`, which
+checks Ably's signature and writes `chat_messages` through
+`recordChatMessages()` in `lib/chat.ts`.
+
+### Dashboard setup (once per environment)
+
+In the Ably dashboard for this app: **Integrations → New integration rule →
+Webhook**.
+
+| Setting        | Value                                                        |
+| -------------- | ------------------------------------------------------------ |
+| URL            | `https://<your-host>/api/ably-webhook`                       |
+| Source         | `channel.message`                                            |
+| Channel filter | `^dm:` (regex; chat rooms are `dm:<userA>:<userB>::$chat`)   |
+| Encoding       | JSON                                                         |
+| Request mode   | Batched, **enveloped**                                       |
+| Sign with key  | The same key as `ABLY_API_KEY` (the route checks against it) |
+
+No new environment variables: the route verifies `X-Ably-Signature` (HMAC
+SHA-256 of the raw body, base64) with the secret half of `ABLY_API_KEY`, and
+checks `X-Ably-Key` matches its key name.
+
+**Local development:** Ably can't reach `localhost`. Run a tunnel (e.g.
+`cloudflared tunnel --url http://localhost:3000` or `ngrok http 3000`) and
+add a separate dev rule pointing at the tunnel URL. Without it, chat still
+works live; only the Postgres copy (and so unread counts) stays empty.
+
+### What was checked against live Ably (2026-11-19)
+
+- A chat room `X` is the Pub/Sub channel `X::$chat`. Capability keys are the
+  room name (`X`), and a token for one room is refused on another (40160).
+- Decoded with `Message.fromEncodedArray()` (exported by
+  `@ably/pubsub-server`), `action` is `message.create` / `message.update` /
+  `message.delete`, `timestamp` keeps the original send time on edits and
+  deletes, `version.serial` grows with every change, and the text is in
+  `data.text`. The webhook also accepts the numeric wire values (0/1/2).
+- The route returns 500 if a database write fails, so Ably retries; writes
+  are idempotent (keyed by serial, newer `version_serial` wins).

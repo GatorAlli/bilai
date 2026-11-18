@@ -5,10 +5,15 @@ import Link from "next/link";
 import { MessageCircle, Phone } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { getContactUrl } from "@/app/(pages)/find_a_cat/[id]/actions";
+import ChatButton from "@/components/view/cat/ChatButton";
 import type { ContactMethod } from "@/lib/cat-limits";
 
 type Props = {
   catId: number;
+  catName: string;
+  // Signed in and not the lister. Chat needs no phone number, so it shows
+  // even when WhatsApp/Call can't.
+  canChat: boolean;
   whatsapp: boolean;
   call: boolean;
   hasPhone: boolean;
@@ -18,6 +23,8 @@ type Props = {
 
 export default function ContactButtons({
   catId,
+  catName,
+  canChat,
   whatsapp,
   call,
   hasPhone,
@@ -28,13 +35,14 @@ export default function ContactButtons({
   const [pending, setPending] = useState<ContactMethod | null>(null);
   const [, startTransition] = useTransition();
 
-  if (!whatsapp && !call) return null;
+  if (!whatsapp && !call && !canChat) return null;
 
   if (isOwner && !hasPhone) {
     return (
       <p className="text-sm text-muted-foreground">
-        Adopters can&apos;t contact you yet because your account has no phone
-        number. You&apos;ll be asked for one when you list your next cat.
+        Adopters can message you in Bilai chat. They can&apos;t WhatsApp or call
+        you because your account has no phone number; you&apos;ll be asked for
+        one when you list your next cat.
       </p>
     );
   }
@@ -43,23 +51,24 @@ export default function ContactButtons({
     return (
       <p className="text-sm text-muted-foreground">
         This is your listing. Adopters can reach you by{" "}
-        {[whatsapp && "WhatsApp", call && "phone call"]
-          .filter(Boolean)
-          .join(" or ")}
+        {new Intl.ListFormat("en", { type: "disjunction" }).format(
+          ["Bilai chat", whatsapp && "WhatsApp", call && "phone call"].filter(
+            (method): method is string => Boolean(method),
+          ),
+        )}
         .
       </p>
     );
   }
 
-  if (!hasPhone) {
-    return (
-      <p className="text-sm text-muted-foreground">
-        The parent hasn&apos;t added a phone number yet.
-      </p>
-    );
-  }
+  const noPhoneNote = (
+    <p className="text-sm text-muted-foreground">
+      The parent hasn&apos;t added a phone number yet.
+    </p>
+  );
 
   if (!isLoggedIn) {
+    if (!hasPhone) return noPhoneNote;
     return (
       <Link
         href="/auth"
@@ -102,7 +111,8 @@ export default function ContactButtons({
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap gap-3">
-        {whatsapp && (
+        {canChat && <ChatButton catId={catId} catName={catName} />}
+        {hasPhone && whatsapp && (
           <Button
             type="button"
             size="lg"
@@ -114,7 +124,7 @@ export default function ContactButtons({
             {pending === "whatsapp" ? "Opening…" : "WhatsApp"}
           </Button>
         )}
-        {call && (
+        {hasPhone && call && (
           <Button
             type="button"
             size="lg"
@@ -128,6 +138,7 @@ export default function ContactButtons({
           </Button>
         )}
       </div>
+      {!hasPhone && noPhoneNote}
       {error && (
         <p role="alert" className="text-sm text-destructive">
           {error}

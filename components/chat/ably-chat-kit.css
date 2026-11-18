@@ -1,0 +1,4 @@
+/* The Ably chat UI kit's stylesheet, loaded into the `ably-chat` cascade
+   layer (order declared at the top of app/globals.css). Imported only by
+   components/providers/ChatProviders.tsx, so it loads with the chat panel. */
+@import "@ably/chat-react-ui-kit/dist/style.css" layer(ably-chat);

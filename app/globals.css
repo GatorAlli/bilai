@@ -1,3 +1,10 @@
+/* Fix the cascade-layer order before Tailwind declares its own. The Ably chat
+   UI kit ships Tailwind v3 CSS with an unlayered preflight (button and html
+   resets); components/chat/ably-chat-kit.css loads it into `ably-chat`, which
+   sits above our base styles but below our utilities, so it can never
+   override the site's own classes. */
+@layer theme, base, ably-chat, components, utilities;
+
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";

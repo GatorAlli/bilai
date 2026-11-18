@@ -2,12 +2,12 @@
 
 import { useEffect } from "react";
 
-export default function HomeEffects() {
+export default function ScrollEffects() {
   useEffect(() => {
     if (!("IntersectionObserver" in window)) return;
 
-    const home = document.querySelector("[data-bilai-home]");
-    if (!home) return;
+    const site = document.querySelector(".bilai-site");
+    if (!site) return;
 
     const root = document.documentElement;
     const visibleDarkSections = new Set<Element>();
@@ -21,7 +21,7 @@ export default function HomeEffects() {
         visibleDarkSections.size > 0,
       );
     });
-    for (const section of home.querySelectorAll("[data-bilai-dark]")) {
+    for (const section of site.querySelectorAll("[data-bilai-dark]")) {
       darkSections.observe(section);
     }
 
@@ -35,7 +35,7 @@ export default function HomeEffects() {
       },
       { rootMargin: "0px 0px -56px 0px", threshold: 0.4 },
     );
-    for (const heading of home.querySelectorAll("[data-bilai-reveal]")) {
+    for (const heading of site.querySelectorAll("[data-bilai-reveal]")) {
       headings.observe(heading);
     }
 
