@@ -143,6 +143,10 @@ Update this whenever the structure changes (working agreement 2). Generated or i
 │   ├── ably.ts                    # Server-only Ably HTTP client (`@ably/pubsub-server`) for token signing
 │   ├── cats.ts                    # Server-only read queries for listings (live-only filtering)
 │   ├── contact.ts                 # Server-only contact/phone lookups; never rendered into pages
+│   ├── chat.ts                    # Server-only chat reads/writes (threads, unread counts, read marks)
+│   ├── chat-rooms.ts              # Pure Ably room-name helpers (`pairFor`, `parseDmRoomName`)
+│   ├── chat-rooms.test.ts         # vitest tests for chat-rooms.ts
+│   ├── chat-limits.ts             # Chat message length, send cooldown, new-threads-per-hour limits
 │   ├── cat-filters.ts             # `CatFilters` type shared by the search UI and `getCats()`
 │   ├── cat-limits.ts              # Upload/listing limits (photo count, size, dimensions)
 │   ├── compress-image.ts          # Server-side image normalisation to WebP (<=1600px)

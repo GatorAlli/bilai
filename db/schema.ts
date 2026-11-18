@@ -187,6 +187,10 @@ export const chatThreads = pgTable(
     userB: text("user_b")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
+    // Who opened the conversation; only used to rate-limit new threads.
+    startedBy: text("started_by").references(() => user.id, {
+      onDelete: "set null",
+    }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -202,6 +206,10 @@ export const chatThreads = pgTable(
       sql`${table.userA} collate "C" < ${table.userB} collate "C"`,
     ),
     index("chat_threads_user_b_idx").on(table.userB),
+    index("chat_threads_started_by_created_idx").on(
+      table.startedBy,
+      table.createdAt,
+    ),
   ],
 );
 
