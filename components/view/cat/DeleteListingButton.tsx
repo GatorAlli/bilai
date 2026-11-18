@@ -2,10 +2,13 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Trash2 } from "lucide-react";
+import { Check, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { deleteCatListing } from "@/app/(pages)/find_a_cat/[id]/delete-actions";
 
+// "Mark adopted" is wired to the same removal flow as "Remove listing" for
+// now; it gets its own server action (that updates status instead of
+// deleting) in a later change.
 export default function DeleteListingButton({ catId }: { catId: number }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -37,7 +40,17 @@ export default function DeleteListingButton({ catId }: { catId: number }) {
   }
 
   return (
-    <div className="mt-5 border-t border-border pt-5">
+    <div className="mt-5 flex flex-wrap gap-2 border-t border-border pt-5">
+      <Button
+        type="button"
+        variant="outline"
+        disabled={pending}
+        onClick={removeListing}
+        className="min-h-11 gap-2 px-4 font-bold"
+      >
+        <Check size={16} aria-hidden="true" />
+        Mark adopted
+      </Button>
       <Button
         type="button"
         variant="destructive"
@@ -46,10 +59,10 @@ export default function DeleteListingButton({ catId }: { catId: number }) {
         className="min-h-11 gap-2 px-4 font-bold"
       >
         <Trash2 size={16} aria-hidden="true" />
-        {pending ? "Deleting…" : "Delete listing"}
+        {pending ? "Removing…" : "Remove listing"}
       </Button>
       {error && (
-        <p role="alert" className="mt-2 text-sm text-destructive">
+        <p role="alert" className="mt-2 w-full text-sm text-destructive">
           {error}
         </p>
       )}

@@ -143,39 +143,49 @@ test("successful deletion cleans only owner WebP files and refreshes affected pa
   assert.deepEqual(state.refreshed, ["/", "/find_a_cat", "/find_a_cat/1"]);
 });
 
+// Index 0 is "Mark adopted", index 1 is "Remove listing" — both are wired to
+// the same removal flow for now, so both are exercised identically here.
 for (const confirmed of [false, true]) {
-  test(`confirmation ${confirmed ? "accepts deletion and returns to directory" : "cancels without deleting"}`, async () => {
-    let calls = 0;
-    const navigations = [];
-    const pending = [];
-    const Component = load(
-      "components/view/cat/DeleteListingButton.tsx",
-      {
-        react: {
-          useState: () => [null, () => {}],
-          useTransition: () => [false, (callback) => pending.push(callback())],
-        },
-        "next/navigation": {
-          useRouter: () => ({
-            replace: (url) => navigations.push(url),
-            refresh() {},
-          }),
-        },
-        "@/components/ui/button": { Button: () => null },
-        "@/app/(pages)/find_a_cat/[id]/delete-actions": {
-          deleteCatListing: async (id) => {
-            assert.equal(id, 1);
-            calls++;
-            return { ok: true };
+  for (const [buttonIndex, buttonLabel] of [
+    [0, "Mark adopted"],
+    [1, "Remove listing"],
+  ]) {
+    test(`${buttonLabel} button: confirmation ${confirmed ? "accepts deletion and returns to directory" : "cancels without deleting"}`, async () => {
+      let calls = 0;
+      const navigations = [];
+      const pending = [];
+      const Component = load(
+        "components/view/cat/DeleteListingButton.tsx",
+        {
+          react: {
+            useState: () => [null, () => {}],
+            useTransition: () => [
+              false,
+              (callback) => pending.push(callback()),
+            ],
+          },
+          "next/navigation": {
+            useRouter: () => ({
+              replace: (url) => navigations.push(url),
+              refresh() {},
+            }),
+          },
+          "@/components/ui/button": { Button: () => null },
+          "@/app/(pages)/find_a_cat/[id]/delete-actions": {
+            deleteCatListing: async (id) => {
+              assert.equal(id, 1);
+              calls++;
+              return { ok: true };
+            },
           },
         },
-      },
-      { window: { confirm: () => confirmed } },
-    ).default;
-    const tree = Component({ catId: 1 });
-    tree.props.children[0].props.onClick();
-    await Promise.all(pending);
-    assert.equal(calls, confirmed ? 1 : 0);
-    assert.deepEqual(navigations, confirmed ? ["/find_a_cat"] : []);
-  });
+        { window: { confirm: () => confirmed } },
+      ).default;
+      const tree = Component({ catId: 1 });
+      tree.props.children[buttonIndex].props.onClick();
+      await Promise.all(pending);
+      assert.equal(calls, confirmed ? 1 : 0);
+      assert.deepEqual(navigations, confirmed ? ["/find_a_cat"] : []);
+    });
+  }
 }
