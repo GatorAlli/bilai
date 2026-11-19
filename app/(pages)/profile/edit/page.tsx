@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import Navbar from "@/components/view/navbar/Navbar";
 import { getSession } from "@/lib/auth";
+import { loginUrl } from "@/lib/auth-redirect";
 import EditProfileForm from "./EditProfileForm";
 
 export const metadata: Metadata = { title: "Edit profile" };
@@ -29,7 +30,7 @@ export default function EditProfilePage() {
 // Reads the session, so it has to sit behind the Suspense above.
 async function EditProfile() {
   const session = await getSession();
-  if (!session?.user) redirect("/auth");
+  if (!session?.user) redirect(loginUrl("/profile/edit"));
 
   const { name, email, phone } = session.user;
   return (

@@ -8,6 +8,7 @@ import BilaiPage from "@/components/view/BilaiPage";
 import CatCard from "@/components/view/cat/CatCard";
 import { buttonVariants } from "@/components/ui/button";
 import { getSession } from "@/lib/auth";
+import { loginUrl } from "@/lib/auth-redirect";
 import { getUserCats } from "@/lib/cats";
 import {
   formatTimeLeft,
@@ -59,7 +60,7 @@ function initials(name: string) {
 // Reads the session, so it has to sit behind the Suspense above.
 async function YourProfile() {
   const session = await getSession();
-  if (!session?.user) redirect("/auth");
+  if (!session?.user) redirect(loginUrl("/profile"));
 
   const { id, name, email, phone, createdAt } = session.user;
   const listings = await getUserCats(id);

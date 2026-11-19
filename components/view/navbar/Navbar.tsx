@@ -3,8 +3,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { LogIn, Menu, User, X } from "lucide-react";
-import { useEffect, useId, useRef, useState } from "react";
+import { Suspense, useEffect, useId, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
+import { loginUrl } from "@/lib/auth-redirect";
 import PawIcon from "../PawIcon";
 
 // "profile" is a cat's page; "account" is the signed-in person's own page;
@@ -25,6 +27,36 @@ const navTab = `group flex min-h-10 items-center justify-center rounded-[.65rem]
 // The rule that wipes in under the tab label while the tab is hovered.
 const navLabel =
   "relative after:absolute after:inset-x-0 after:-bottom-[.15rem] after:h-px after:scale-x-0 after:bg-current after:transition-transform after:duration-300 after:ease-[cubic-bezier(.77,0,.175,1)] after:content-[''] group-hover:after:scale-x-100 group-focus-visible:after:scale-x-100 motion-reduce:after:transition-none forced-colors:after:bg-[color:LinkText] forced-colors:after:[forced-color-adjust:none]";
+
+function LoginLink({
+  href,
+  currentPage,
+  onClick,
+}: {
+  href: string;
+  currentPage: Page;
+  onClick: () => void;
+}) {
+  return (
+    <Link
+      href={href}
+      className={`${navButton} bg-brand-ink text-on-dark hover:bg-brand-ink-hover active:bg-brand-ink-hover`}
+      aria-current={currentPage === "login" ? "page" : undefined}
+      onClick={onClick}
+    >
+      <LogIn size={16} aria-hidden="true" />
+      Login
+    </Link>
+  );
+}
+
+// Login brings people back to the page they were on.
+function ReturningLoginLink(
+  props: Omit<Parameters<typeof LoginLink>[0], "href">,
+) {
+  const pathname = usePathname();
+  return <LoginLink {...props} href={loginUrl(pathname)} />;
+}
 
 export default function Navbar({ currentPage }: { currentPage: Page }) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -156,15 +188,22 @@ export default function Navbar({ currentPage }: { currentPage: Page }) {
                 aria-hidden="true"
               />
             ) : (
-              <Link
-                href="/auth"
-                className={`${navButton} bg-brand-ink text-on-dark hover:bg-brand-ink-hover active:bg-brand-ink-hover`}
-                aria-current={currentPage === "login" ? "page" : undefined}
-                onClick={closeMenu}
+              // Reading the URL has to sit behind Suspense; until it is known
+              // (and in the prerendered page) the link is a plain /auth.
+              <Suspense
+                fallback={
+                  <LoginLink
+                    href="/auth"
+                    currentPage={currentPage}
+                    onClick={closeMenu}
+                  />
+                }
               >
-                <LogIn size={16} aria-hidden="true" />
-                Login
-              </Link>
+                <ReturningLoginLink
+                  currentPage={currentPage}
+                  onClick={closeMenu}
+                />
+              </Suspense>
             )}
             <Link
               href="/add_a_cat"

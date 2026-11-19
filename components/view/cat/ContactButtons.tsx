@@ -2,7 +2,9 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { MessageCircle, Phone } from "lucide-react";
+import { loginUrl } from "@/lib/auth-redirect";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { getContactUrl } from "@/app/(pages)/find_a_cat/[id]/actions";
 import ChatButton from "@/components/view/cat/ChatButton";
@@ -31,11 +33,14 @@ export default function ContactButtons({
   isLoggedIn,
   isOwner,
 }: Props) {
+  const pathname = usePathname();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState<ContactMethod | null>(null);
   const [, startTransition] = useTransition();
 
-  if (!whatsapp && !call && !canChat) return null;
+  // Signed-out visitors still get the login link: chat is available once
+  // they sign in, whatever phone methods the parent enabled.
+  if (!whatsapp && !call && !canChat && isLoggedIn) return null;
 
   if (isOwner && !hasPhone) {
     return (
@@ -68,10 +73,11 @@ export default function ContactButtons({
   );
 
   if (!isLoggedIn) {
-    if (!hasPhone) return noPhoneNote;
+    // Chat needs no phone number, so signed-out visitors can always log in
+    // to message the parent; login returns them to this cat.
     return (
       <Link
-        href="/auth"
+        href={loginUrl(pathname)}
         className={buttonVariants({ variant: "outline", size: "lg" })}
       >
         Log in to contact the parent

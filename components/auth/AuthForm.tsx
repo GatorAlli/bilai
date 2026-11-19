@@ -8,7 +8,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { normalizeBdPhone, PHONE_ERROR, PHONE_TAKEN_ERROR } from "@/lib/phone";
 
-export default function AuthForm() {
+// `redirectTo` is a same-site path already checked by `safeNext`.
+export default function AuthForm({
+  redirectTo = "/find_a_cat",
+}: {
+  redirectTo?: string;
+}) {
   const router = useRouter();
   const [isSignUp, setIsSignUp] = useState(false);
   const [name, setName] = useState("");
@@ -77,7 +82,7 @@ export default function AuthForm() {
         }
         return;
       }
-      router.replace("/find_a_cat");
+      router.replace(redirectTo);
       router.refresh();
     } catch {
       setError("Couldn't connect. Please try again.");
@@ -93,7 +98,7 @@ export default function AuthForm() {
     try {
       const result = await authClient.signIn.social({
         provider: "google",
-        callbackURL: "/find_a_cat",
+        callbackURL: redirectTo,
       });
       if (result.error) {
         setError("Couldn't continue with Google. Please try again.");

@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import BilaiPage from "@/components/view/BilaiPage";
 import { headingText, headingTitle } from "@/components/view/styles";
 import { getSession } from "@/lib/auth";
+import { loginUrl } from "@/lib/auth-redirect";
 import ListACat from "./ListACat";
 
 export const metadata: Metadata = { title: "List a cat" };
@@ -12,7 +13,7 @@ export const metadata: Metadata = { title: "List a cat" };
 // Signed-out visitors are sent to the login page.
 async function RequireSignIn() {
   const session = await getSession();
-  if (!session?.user) redirect("/auth");
+  if (!session?.user) redirect(loginUrl("/add_a_cat"));
   return <ListACat />;
 }
 

@@ -8,6 +8,7 @@ import { MessagesSquare, X } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { useChatDock } from "@/components/chat/ChatDockProvider";
 import { getMyUnreadCount } from "@/components/chat/actions";
+import { loginUrl } from "@/lib/auth-redirect";
 import type { ChatUser } from "@/lib/chat";
 import { cn } from "@/lib/utils";
 
@@ -153,7 +154,7 @@ export default function ChatDock({ signedIn, me, initialUnread = 0 }: Props) {
               />
               <p className="font-bold">Sign in to check your messages</p>
               <Link
-                href="/auth"
+                href={loginUrl(pathname)}
                 onClick={() => setMode("hidden")}
                 className={buttonVariants({
                   size: "lg",

@@ -185,6 +185,8 @@ Update this whenever the structure changes (working agreement 2). Generated or i
 ├── lib/
 │   ├── auth.ts                    # better-auth server config, `getSession()`, sign-up phone hook
 │   ├── auth-client.ts             # better-auth browser client
+│   ├── auth-redirect.ts           # `safeNext`/`loginUrl`: same-site-only `?next=` return path for /auth
+│   ├── auth-redirect.test.ts      # vitest tests for auth-redirect.ts
 │   ├── ably.ts                    # Server-only Ably HTTP client (`@ably/pubsub-server`) for token signing
 │   ├── cats.ts                    # Server-only read queries for listings (live-only filtering)
 │   ├── contact.ts                 # Server-only contact/phone lookups; never rendered into pages
