@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
+import type { Metadata } from "next";
 import { after } from "next/server";
 import { ChevronDown, LoaderCircle, SlidersHorizontal } from "lucide-react";
 import BilaiPage from "@/components/view/BilaiPage";
@@ -17,6 +18,8 @@ import {
 } from "@/lib/cat-filters";
 
 type SearchParams = Promise<CatSearchParams>;
+
+export const metadata: Metadata = { title: "Explore" };
 
 export default function FindCatsPage({
   searchParams,

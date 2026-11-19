@@ -1,5 +1,6 @@
 import "server-only";
 
+import { cache } from "react";
 import {
   and,
   asc,
@@ -136,7 +137,9 @@ export async function getCatBreeds() {
   return rows.map(({ breed }) => breed);
 }
 
-export async function getCat(id: number) {
+// Wrapped in React `cache()` so `generateMetadata` and the page body share one
+// DB read per request (request-scoped memoization, not cross-request caching).
+export const getCat = cache(async (id: number) => {
   if (!Number.isSafeInteger(id) || id < 1) return null;
   const [cat] = await db
     .select({
@@ -165,7 +168,7 @@ export async function getCat(id: number) {
     .where(eq(catImages.catId, id))
     .orderBy(asc(catImages.position), asc(catImages.id));
   return { ...cat, images, coverImageUrl: images[0]?.url ?? null };
-}
+});
 
 // Everything someone has listed that hasn't expired yet, newest first.
 export async function getUserCats(userId: string) {

@@ -106,6 +106,8 @@ export default function AuthForm() {
   }
 
   function toggleMode() {
+    // Keep the tab title in step with the heading (Next only sets it on load).
+    document.title = `${isSignUp ? "Sign In" : "Sign Up"} | bilai.`;
     setIsSignUp((value) => !value);
     setPassword("");
     setError(null);

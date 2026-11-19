@@ -1,6 +1,9 @@
+import type { Metadata } from "next";
 import BilaiPage from "@/components/view/BilaiPage";
 import { headingText, headingTitle } from "@/components/view/styles";
 import ListACat from "./ListACat";
+
+export const metadata: Metadata = { title: "List a cat" };
 
 export default function ListACatPage() {
   return (

@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
@@ -9,6 +10,17 @@ import ContactButtons from "@/components/view/cat/ContactButtons";
 import { getSession } from "@/lib/auth";
 import { formatCatAge, getCat } from "@/lib/cats";
 import { headingTitle, outlineButton } from "@/components/view/styles";
+
+// getCat is memoized per request, so this shares one DB read with the page.
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const cat = await getCat(Number(id));
+  return { title: cat ? cat.name : "Cat not found" };
+}
 
 export default function CatPage({
   params,

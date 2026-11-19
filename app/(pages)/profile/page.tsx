@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { after } from "next/server";
@@ -14,6 +15,13 @@ import {
   purgeExpiredListings,
 } from "@/lib/listing-expiry";
 import { SignOutButton } from "@/components/auth/signOut";
+
+// The title is the signed-in user's name, so it can't be static. Signed-out
+// visitors are redirected to /auth by the page body.
+export async function generateMetadata(): Promise<Metadata> {
+  const session = await getSession();
+  return { title: session?.user.name ?? "Your profile" };
+}
 
 export default function ProfilePage() {
   return (

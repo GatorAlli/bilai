@@ -1,8 +1,11 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import Navbar from "@/components/view/navbar/Navbar";
 import { getSession } from "@/lib/auth";
 import EditProfileForm from "./EditProfileForm";
+
+export const metadata: Metadata = { title: "Edit profile" };
 
 export default function EditProfilePage() {
   return (
