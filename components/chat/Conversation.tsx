@@ -3,6 +3,7 @@
 import { useCallback, useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
 import type { Message } from "@ably/chat";
+import { useChatClient, useTyping } from "@ably/chat/react";
 import {
   ChatMessageList,
   ChatWindowFooter,
@@ -18,6 +19,11 @@ import { cn } from "@/lib/utils";
 // <ChatWindow>: ChatWindow's labels and placeholder show the raw room name
 // ("dm:<id>:<id>") and its input can't be prefilled. Edit/delete are wired the
 // same way ChatWindow does it, on top of useConversationMessages. Must be inside <ChatRoomProvider>.
+//
+// Typing indicator is also hand-rolled: the kit's own <TypingIndicators>
+// (wired up via ChatMessageList's enableTypingIndicators prop) renders the
+// raw Ably clientId, which is this app's user id, not a name. A DM only ever
+// has one other party, so we just show/hide "<name> is typing" ourselves.
 export default function Conversation({
   thread,
   prefill,
@@ -108,8 +114,8 @@ export default function Conversation({
         onLoadMoreHistory={() => void loadMore()}
         onEdit={onEdit}
         onDelete={onDelete}
-        enableTypingIndicators
       />
+      <TypingStatus otherName={thread.other.name} />
       <ChatWindowFooter>
         <Composer
           initialText={prefill}
@@ -118,6 +124,37 @@ export default function Conversation({
           onSent={replace}
         />
       </ChatWindowFooter>
+    </div>
+  );
+}
+
+// currentTypers can include our own clientId while we're typing (echoed
+// back from the room), so filter it out before checking for the other party.
+function TypingStatus({ otherName }: { otherName: string }) {
+  const { clientId } = useChatClient();
+  const { currentTypers } = useTyping();
+  const otherIsTyping = currentTypers.some(
+    (typer) => typer.clientId !== clientId,
+  );
+
+  if (!otherIsTyping) return null;
+
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="flex items-center gap-2 px-4 pb-1 text-sm text-muted-foreground"
+    >
+      <span className="flex gap-0.5" aria-hidden="true">
+        {[0, 1, 2].map((dot) => (
+          <span
+            key={dot}
+            className="size-1.5 animate-bounce rounded-full bg-current"
+            style={{ animationDelay: `${dot * 0.15}s` }}
+          />
+        ))}
+      </span>
+      <span>{otherName} is typing</span>
     </div>
   );
 }
