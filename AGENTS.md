@@ -93,6 +93,7 @@ Update this whenever the structure changes (working agreement 2). Generated or i
 ├── app/
 │   ├── layout.tsx                 # Root layout: fonts, global wrapper, chat dock (provider + Suspense slot)
 │   ├── page.tsx                   # Home page: hero, featured cats, call to action
+│   ├── not-found.tsx              # 404 page: big "404", drifting login-style doodles, "Meet the cats" CTA
 │   ├── globals.css                # Tailwind v4 entry, cascade-layer order, theme tokens, global styles
 │   ├── icon.svg                   # Favicon
 │   ├── fonts/                     # Self-hosted fonts (Fraunces + licence, MatchaMint)
@@ -103,7 +104,7 @@ Update this whenever the structure changes (working agreement 2). Generated or i
 │   └── (pages)/                   # Route group (no URL segment) for all feature pages
 │       ├── auth/
 │       │   ├── page.tsx           # Sign in / sign up page
-│       │   └── LoginBackdrop.tsx  # Decorative hand-placed cat drawings behind the login card
+│       │   └── LoginBackdrop.tsx  # Places the drifting cat doodles behind the login card
 │       ├── add_a_cat/
 │       │   ├── page.tsx           # Create-listing page (server component)
 │       │   ├── ListACat.tsx       # Create-listing form (client)
@@ -151,6 +152,9 @@ Update this whenever the structure changes (working agreement 2). Generated or i
 │       ├── ScrollEffects.tsx      # Scroll-reveal + dark-footer-in-view effects, run on every page
 │       ├── PawIcon.tsx            # Paw SVG icon
 │       ├── styles.ts              # Shared Tailwind class strings (buttons, headings, wave edge, CTA)
+│       ├── doodles/
+│       │   ├── CatDoodle.tsx      # Pencilled cat/yarn/fish line drawings (login backdrop, 404 page)
+│       │   └── DoodleDrift.tsx    # Client layer that drifts each `[data-doodle]` drawing (reduced-motion aware)
 │       ├── navbar/Navbar.tsx      # Top navigation bar
 │       ├── home/
 │       │   └── FeaturedCats.tsx   # Featured cats strip on the home page

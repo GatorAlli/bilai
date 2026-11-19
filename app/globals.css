@@ -14,11 +14,13 @@
 /* Literal design tokens. Colours are named here and used through utilities
    (bg-paper, text-moss, …) so no hex value is ever written into a class. */
 @theme {
-  /* Accents with no light/dark counterpart. */
+  /* Accents with no light/dark counterpart. Blaze is the brand palette's
+     orange, kept to small decorative touches. */
   --color-moss: #369339;
   --color-brand-ink-hover: #332a32;
   --color-green-hover: #40ca45;
   --color-clay: #b64e20;
+  --color-blaze: #ff6219;
 
   /* Where the mobile nav collapses and the wide layouts stack. */
   --breakpoint-nav: 54rem;

@@ -7,8 +7,9 @@ import { useEffect, useId, useRef, useState } from "react";
 import { authClient } from "@/lib/auth-client";
 import PawIcon from "../PawIcon";
 
-// "profile" is a cat's page; "account" is the signed-in person's own page.
-type Page = "home" | "find" | "profile" | "account" | "login" | "list";
+// "profile" is a cat's page; "account" is the signed-in person's own page;
+// "none" highlights no tab (the 404 page).
+type Page = "home" | "find" | "profile" | "account" | "login" | "list" | "none";
 
 const navFocus =
   "focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-focus";
