@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Maximize2, MessagesSquare, Minimize2, X } from "lucide-react";
+import { MessagesSquare, X } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { useChatDock } from "@/components/chat/ChatDockProvider";
 import { getMyUnreadCount } from "@/components/chat/actions";
@@ -134,22 +134,6 @@ export default function ChatDock({ signedIn, me, initialUnread = 0 }: Props) {
           <h2 id="chat-dock-title" className="flex-1 font-bold">
             Messages
           </h2>
-          {signedIn && (
-            <button
-              type="button"
-              onClick={() => setMode(mode === "extended" ? "open" : "extended")}
-              aria-label={
-                mode === "extended" ? "Make chat smaller" : "Make chat bigger"
-              }
-              className={cn(iconButton, "max-sm:hidden")}
-            >
-              {mode === "extended" ? (
-                <Minimize2 className="size-4" aria-hidden="true" />
-              ) : (
-                <Maximize2 className="size-4" aria-hidden="true" />
-              )}
-            </button>
-          )}
           <button
             type="button"
             onClick={() => setMode("hidden")}
