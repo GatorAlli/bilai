@@ -6,6 +6,23 @@ Canonical instructions for every AI coding agent working in this repository (Cla
 
 Bilai is a Next.js 16 (App Router, React 19) web app connecting cat adopters and rehomers in Bangladesh. Auth via better-auth (email/password + Google), data in Postgres (Neon) via Drizzle ORM, styling via Tailwind v4 + shadcn (`base-nova` style).
 
+## Tech stack
+
+| Layer         | Choice                                                                                                     | Notes                                                                                                         |
+| ------------- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Language      | TypeScript (`^5`)                                                                                          | Strict app-wide; `@/*` path alias maps to the repo root (`tsconfig.json`).                                    |
+| Framework     | Next.js `16.4.6` (App Router, Turbopack)                                                                   | Not the Next.js in your training data — read the managed block at the bottom of this file first.              |
+| UI library    | React `19.3.0` + React DOM `19.3.0`                                                                        | Server components by default; client components opt in with `"use client"`.                                   |
+| Styling       | Tailwind CSS v4 (`^4`) + shadcn (`base-nova` style, `@base-ui/react`)                                      | CSS-first config in `app/globals.css`; see the `tailwind-v4`/`tailwind-4-docs` skills before writing classes. |
+| ORM           | Drizzle ORM (`^1.0.0-rc`) + `drizzle-kit`                                                                  | Schema in `db/schema.ts` and `auth-schema.ts`; migrations hand-written under `drizzle/` (see Commands).       |
+| Database      | Postgres via Neon (`@neondatabase/serverless`)                                                             | Neon's HTTP driver (`db/index.ts`) — no persistent connections, no separate blob store for photos.            |
+| Auth          | better-auth (`^1.7.14`)                                                                                    | Email/password + Google OAuth; config and hooks in `lib/auth.ts`.                                             |
+| Realtime chat | Ably Chat / PubSub (`@ably/chat`, `@ably/chat-react-ui-kit`, `@ably/pubsub-server`, `@ably/pubsub-device`) | Token auth via `app/api/ably-token`; inbound webhook mirrors messages to Postgres via `app/api/ably-webhook`. |
+| Testing       | Vitest (`^5`) + Node's built-in `node --test`                                                              | See Commands below for which runner covers which files.                                                       |
+| Lint/format   | ESLint (`next/core-web-vitals`) + Prettier (`prettier-plugin-tailwindcss`)                                 | Prettier runs on every save (see working agreement 1).                                                        |
+
+**External APIs/services in use**: better-auth's Google OAuth provider (sign-in), Ably (Chat + token auth + webhook) for the chat dock, and Neon's serverless Postgres HTTP API for all data access. There is no other third-party API integration in this repo — check `package.json` before assuming otherwise, since this table can drift.
+
 ## Working agreements (all agents, always)
 
 1. **Format on every save.** Run Prettier on every file you create or edit, immediately after writing it: `npx prettier --write <file>`. Claude Code does this automatically through a `PostToolUse` hook (`.claude/settings.json` -> `.claude/hooks/format.mjs`); every other agent must do it manually after each file write. Config: `.prettierrc` (with `prettier-plugin-tailwindcss`) and `.prettierignore`.
