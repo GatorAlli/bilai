@@ -170,7 +170,7 @@ export const catImages = pgTable(
   (table) => [index("cat_images_catId_idx").on(table.catId)],
 );
 
-// Chat (see docs/chat_button_plan.md). One thread per pair of users, shared
+// Chat (see docs/chat/chat_button_plan.md). One thread per pair of users, shared
 // across all of one owner's cats. Threads deliberately have no foreign key to
 // cats: a conversation outlives the listing that started it.
 export const chatThreads = pgTable(

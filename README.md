@@ -37,6 +37,8 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 ## Listing photos
 
+See the [listing photo storage guide](docs/image_storage/README.md) for the full upload, delivery and cleanup flow. [Browse all project docs](docs/README.md).
+
 Photo bytes are saved in the shared PostgreSQL database with their listing.
 Every checkout and deployment using the same database can serve the existing
 `/uploads/...` URLs; no writable server disk is needed for new uploads.

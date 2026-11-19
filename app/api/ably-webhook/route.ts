@@ -4,7 +4,7 @@ import { recordChatMessages, type DecodedChatMessage } from "@/lib/chat";
 
 // Ably integration rule -> webhook for chat rooms (source "channel.message",
 // channel filter ^dm:, signed with the ABLY_API_KEY key). Mirrors each chat
-// message, edit and delete into Postgres. Setup steps: docs/ably_setup.md.
+// message, edit and delete into Postgres. Setup steps: docs/chat/ably_setup.md.
 //
 // A route rather than a server action because Ably POSTs to a real URL.
 // There is no session here: the HMAC signature is the authentication.
