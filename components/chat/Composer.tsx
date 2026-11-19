@@ -75,7 +75,7 @@ export default function Composer({
 
   return (
     <form
-      className="flex w-full flex-col gap-1"
+      className="flex w-full flex-col gap-1 p-3"
       onSubmit={(event) => {
         event.preventDefault();
         void send();
