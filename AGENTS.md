@@ -168,7 +168,8 @@ Update this whenever the structure changes (working agreement 2). Generated or i
 ├── docs/                          # Design notes and plans (Obsidian-formatted Markdown)
 │   ├── ably_setup.md              # Ably Chat scaffolding + webhook dashboard setup
 │   ├── chat_button_plan.md        # Chat feature plan (Chat button, dock, webhook mirror), by phase
-│   └── chat_implementation_report.md # What was built, changes from the plan, verification, what's left
+│   ├── chat_implementation_report.md # What was built, changes from the plan, verification, what's left
+│   └── chat_code_walkthrough.md    # Commit history, code excerpts, and the chat flow from listing to unread badge
 ├── drizzle/                       # SQL migrations (timestamped folders; only the first has a snapshot)
 ├── lib/
 │   ├── auth.ts                    # better-auth server config, `getSession()`, sign-up phone hook

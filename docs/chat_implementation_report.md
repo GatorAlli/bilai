@@ -14,6 +14,8 @@ related:
 
 # Chat implementation report
 
+This report captures the pre-merge build. The [chat code walkthrough](chat_code_walkthrough.md) follows the implementation as merged into `main` at `4800d9e`.
+
 > [!summary]
 > All nine phases of [[chat_button_plan]] are built on branch `feat/chat`, with one commit per phase. Adopters can press **Chat** on a cat page. That opens a chat dock at the bottom right, prefilled with the cat's name and link, and the message goes to the parent in real time. Edits, deletes and typing indicators work, and there's an unread badge. Nothing has been pushed or merged.
 >
