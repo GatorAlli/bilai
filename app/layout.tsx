@@ -23,12 +23,8 @@ const matcha = localFont({
 });
 
 export const metadata: Metadata = {
-  // The home page uses `default`; every other page sets its own title and
-  // gets the " | bilai." suffix from `template`.
-  title: {
-    default: "bilai. | A little friend. A whole lot of love.",
-    template: "%s | bilai.",
-  },
+  // The home page uses this; every other page sets its own title.
+  title: "Home",
   description:
     "Bilai connects cat parents and adopters in Bangladesh. Find a friend, share a cat’s story, and start with a hello.",
 };
