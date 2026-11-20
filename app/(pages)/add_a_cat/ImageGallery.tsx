@@ -6,6 +6,7 @@ import { GripVertical, ImagePlus, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import CatDoodle from "@/components/view/doodles/CatDoodle";
 import { cn } from "@/lib/utils";
 import { compressImage, ImageUploadError } from "@/lib/compress-image";
 import {
@@ -140,23 +141,12 @@ export default function ImageGallery({
   }
 
   const isFull = images.length >= MAX_IMAGES;
+  const hasImages = images.length > 0;
 
   return (
-    <section className="flex flex-col gap-3">
-      <div>
-        <div className="flex flex-wrap items-baseline justify-between gap-3">
-          <h2 className="text-lg font-extrabold">Cat photos</h2>
-          <span className="text-sm text-muted-foreground">
-            {images.length} / {MAX_IMAGES}
-          </span>
-        </div>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Add up to {MAX_IMAGES} photos, {MAX_INPUT_SIZE_MB} MB each. The first
-          photo is the cover.
-        </p>
-      </div>
-
-      {/* Dropzone */}
+    <section className="flex flex-col gap-3" aria-labelledby="cat-photos-title">
+      {/* Dropzone: a large dashed card until the first photo lands, then a
+          compact one so the uploaded photos take over the column. */}
       <div
         onDragOver={(e) => {
           if (!e.dataTransfer.types.includes("Files")) return;
@@ -172,10 +162,35 @@ export default function ImageGallery({
           addFiles(e.dataTransfer.files);
         }}
         className={cn(
-          "flex flex-wrap items-center gap-3 rounded-lg transition-colors",
+          "relative flex flex-col items-center gap-3 rounded-2xl border-2 border-dashed border-secondary/40 bg-secondary/5 text-center transition-colors",
+          hasImages ? "px-4 py-5" : "px-5 py-10",
           isDropTarget && "border-secondary bg-secondary/15",
         )}
       >
+        <span
+          aria-hidden="true"
+          className="absolute top-3 right-4 text-sm text-muted-foreground"
+        >
+          {images.length} / {MAX_IMAGES}
+        </span>
+        {!hasImages && (
+          <CatDoodle name="peek" className="size-24 text-secondary" />
+        )}
+        <div className="grid gap-1">
+          <h2
+            id="cat-photos-title"
+            className={cn(
+              "font-extrabold",
+              hasImages ? "text-base" : "text-xl",
+            )}
+          >
+            Cat photos
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Add up to {MAX_IMAGES} photos, {MAX_INPUT_SIZE_MB} MB each. The
+            first photo is the cover.
+          </p>
+        </div>
         <input
           ref={fileInputRef}
           type="file"
@@ -201,7 +216,7 @@ export default function ImageGallery({
           <ImagePlus />
           Add photos
         </Button>
-        <p role="status" className="text-sm text-muted-foreground">
+        <p role="status" className="-mt-1 text-sm text-muted-foreground">
           {isProcessing
             ? "Processing…"
             : isFull
@@ -245,7 +260,7 @@ export default function ImageGallery({
               }}
               onDragEnd={resetDrag}
               className={cn(
-                "grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-xl border border-border bg-card p-3 transition-opacity sm:flex sm:gap-3",
+                "grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-xl border border-border bg-card p-3 transition-opacity",
                 draggingId === img.id && "opacity-40",
                 overId === img.id &&
                   draggingId !== img.id &&
@@ -274,7 +289,7 @@ export default function ImageGallery({
                 <GripVertical className="size-5" />
               </button>
 
-              <div className="relative col-span-2 h-16 w-24 shrink-0 overflow-hidden rounded-lg bg-background sm:h-20 sm:w-32">
+              <div className="relative h-28 min-w-0 overflow-hidden rounded-lg bg-background">
                 <Image
                   src={img.previewUrl}
                   alt={img.caption || img.file.name}
@@ -295,18 +310,14 @@ export default function ImageGallery({
                 placeholder="Add a caption (optional)"
                 value={img.caption}
                 onChange={(e) => setCaption(img.id, e.target.value)}
-                className="col-span-2 row-start-2 h-11 min-w-0 flex-1 bg-background"
+                className="col-span-3 row-start-2 h-11 min-w-0 bg-background"
               />
-
-              <span className="hidden w-5 text-center text-sm text-muted-foreground sm:block">
-                {index + 1}
-              </span>
 
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="col-start-3 row-start-2"
+                className="col-start-3 row-start-1"
                 aria-label={`Remove image ${index + 1}`}
                 onClick={() => removeImage(img.id)}
               >

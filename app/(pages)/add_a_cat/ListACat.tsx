@@ -166,165 +166,171 @@ export default function ListACat() {
 
   return (
     <form
-      className="grid min-w-0 gap-7"
+      className="grid min-w-0 gap-7 nav:grid-cols-[minmax(0,7fr)_minmax(0,3fr)] nav:items-start nav:gap-x-10"
       onSubmit={handleSubmit}
       aria-labelledby="list-title"
     >
-      <ImageGallery images={images} onChange={setImages} />
+      {/* Photos come first on a phone; on a wide screen they sit in the
+          right-hand 30% and stay in view while the long form scrolls. */}
+      <div className="min-w-0 nav:sticky nav:top-24 nav:col-start-2 nav:row-start-1 nav:-m-1 nav:max-h-[calc(100dvh-7rem)] nav:overflow-y-auto nav:p-1">
+        <ImageGallery images={images} onChange={setImages} />
+      </div>
 
-      <section className="grid gap-4" aria-labelledby="cat-details-title">
-        <h2 id="cat-details-title" className="text-lg font-extrabold">
-          Cat details
-        </h2>
-        <div className={formPair}>
-          <FormElement
-            labelText="Name"
-            inputPlaceholder="Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+      <div className="grid min-w-0 gap-7 nav:col-start-1 nav:row-start-1">
+        <section className="grid gap-4" aria-labelledby="cat-details-title">
+          <h2 id="cat-details-title" className="text-lg font-extrabold">
+            Cat details
+          </h2>
+          <div className={formPair}>
+            <FormElement
+              labelText="Name"
+              inputPlaceholder="Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+            <FormElement
+              labelText="Breed"
+              inputPlaceholder="Start typing or pick a suggestion"
+              suggestions={BREED_SUGGESTIONS}
+              value={breed}
+              onChange={(e) => setBreed(e.target.value)}
+            />
+          </div>
+
+          <LocationFields
+            district={district}
+            area={area}
+            onDistrictChange={(next) => {
+              setDistrict(next);
+              if (next !== district) setArea("");
+            }}
+            onAreaChange={setArea}
           />
-          <FormElement
-            labelText="Breed"
-            inputPlaceholder="Start typing or pick a suggestion"
-            suggestions={BREED_SUGGESTIONS}
-            value={breed}
-            onChange={(e) => setBreed(e.target.value)}
-          />
-        </div>
 
-        <LocationFields
-          district={district}
-          area={area}
-          onDistrictChange={(next) => {
-            setDistrict(next);
-            if (next !== district) setArea("");
-          }}
-          onAreaChange={setArea}
-        />
-
-        <div className={formPair}>
-          <fieldset className="min-w-0">
-            <legend className="mb-2 text-sm font-bold">Age</legend>
-            <div className="grid max-w-xs grid-cols-2 gap-2">
-              <div className="grid min-w-0 gap-1">
-                <Label htmlFor="age-years">Years</Label>
-                <Input
-                  id="age-years"
-                  className={formField}
-                  type="number"
-                  min={0}
-                  max={30}
-                  value={ageYears}
-                  onChange={(e) => setAgeYears(clamp(e.target.value, 0, 30))}
-                />
+          <div className={formPair}>
+            <fieldset className="min-w-0">
+              <legend className="mb-2 text-sm font-bold">Age</legend>
+              <div className="grid max-w-xs grid-cols-2 gap-2">
+                <div className="grid min-w-0 gap-1">
+                  <Label htmlFor="age-years">Years</Label>
+                  <Input
+                    id="age-years"
+                    className={formField}
+                    type="number"
+                    min={0}
+                    max={30}
+                    value={ageYears}
+                    onChange={(e) => setAgeYears(clamp(e.target.value, 0, 30))}
+                  />
+                </div>
+                <div className="grid min-w-0 gap-1">
+                  <Label htmlFor="age-months">Months</Label>
+                  <Input
+                    id="age-months"
+                    className={formField}
+                    type="number"
+                    min={0}
+                    max={11}
+                    value={ageMonths}
+                    onChange={(e) => setAgeMonths(clamp(e.target.value, 0, 11))}
+                  />
+                </div>
               </div>
-              <div className="grid min-w-0 gap-1">
-                <Label htmlFor="age-months">Months</Label>
-                <Input
-                  id="age-months"
-                  className={formField}
-                  type="number"
-                  min={0}
-                  max={11}
-                  value={ageMonths}
-                  onChange={(e) => setAgeMonths(clamp(e.target.value, 0, 11))}
-                />
-              </div>
-            </div>
-          </fieldset>
-          <RadioGroup
-            legend="Gender"
-            name="gender"
-            options={GENDER_OPTIONS}
-            value={gender}
-            onChange={setGender}
+            </fieldset>
+            <RadioGroup
+              legend="Gender"
+              name="gender"
+              options={GENDER_OPTIONS}
+              value={gender}
+              onChange={setGender}
+            />
+          </div>
+
+          <div className={formPair}>
+            <RadioGroup
+              legend="Vaccinated"
+              name="vaccinated"
+              options={YES_NO_UNKNOWN_OPTIONS}
+              value={vaccinated}
+              onChange={setVaccinated}
+            />
+            <RadioGroup
+              legend="Spayed / neutered"
+              name="neutered"
+              options={YES_NO_UNKNOWN_OPTIONS}
+              value={neutered}
+              onChange={setNeutered}
+            />
+          </div>
+        </section>
+
+        <section className="grid gap-4" aria-labelledby="cat-story-title">
+          <h2 id="cat-story-title" className="text-lg font-extrabold">
+            Their story
+          </h2>
+          <FormElement
+            labelText="Temperament"
+            inputPlaceholder="e.g. Playful, shy, calm"
+            maxLength={MAX_TEMPERAMENT_LENGTH}
+            value={temperament}
+            onChange={(e) => setTemperament(e.target.value)}
           />
-        </div>
-
-        <div className={formPair}>
-          <RadioGroup
-            legend="Vaccinated"
-            name="vaccinated"
-            options={YES_NO_UNKNOWN_OPTIONS}
-            value={vaccinated}
-            onChange={setVaccinated}
+          <TextAreaElement
+            labelText="Description"
+            placeholder="Tell people about this cat"
+            maxLength={MAX_DESCRIPTION_LENGTH}
+            value={description}
+            onChange={setDescription}
           />
-          <RadioGroup
-            legend="Spayed / neutered"
-            name="neutered"
-            options={YES_NO_UNKNOWN_OPTIONS}
-            value={neutered}
-            onChange={setNeutered}
+          <TextAreaElement
+            labelText="Reason for rehoming"
+            placeholder="Why does this cat need a new home?"
+            maxLength={MAX_REHOMING_REASON_LENGTH}
+            value={rehomingReason}
+            onChange={setRehomingReason}
           />
-        </div>
-      </section>
+        </section>
 
-      <section className="grid gap-4" aria-labelledby="cat-story-title">
-        <h2 id="cat-story-title" className="text-lg font-extrabold">
-          Their story
-        </h2>
-        <FormElement
-          labelText="Temperament"
-          inputPlaceholder="e.g. Playful, shy, calm"
-          maxLength={MAX_TEMPERAMENT_LENGTH}
-          value={temperament}
-          onChange={(e) => setTemperament(e.target.value)}
+        <CheckboxGroup
+          legend="How can adopters contact you?"
+          hint="Pick one or both. We use the phone number on your profile."
+          name="contactMethods"
+          options={CONTACT_OPTIONS}
+          value={contactMethods}
+          onChange={setContactMethods}
         />
-        <TextAreaElement
-          labelText="Description"
-          placeholder="Tell people about this cat"
-          maxLength={MAX_DESCRIPTION_LENGTH}
-          value={description}
-          onChange={setDescription}
-        />
-        <TextAreaElement
-          labelText="Reason for rehoming"
-          placeholder="Why does this cat need a new home?"
-          maxLength={MAX_REHOMING_REASON_LENGTH}
-          value={rehomingReason}
-          onChange={setRehomingReason}
-        />
-      </section>
 
-      <CheckboxGroup
-        legend="How can adopters contact you?"
-        hint="Pick one or both. We use the phone number on your profile."
-        name="contactMethods"
-        options={CONTACT_OPTIONS}
-        value={contactMethods}
-        onChange={setContactMethods}
-      />
-
-      {needsPhone && (
-        <FormElement
-          labelText="Your phone number"
-          inputPlaceholder="01712345678"
-          inputType="tel"
-          maxLength={20}
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-        />
-      )}
-
-      <div className="grid justify-items-start gap-2">
-        {error && (
-          <p role="alert" className="text-sm text-destructive">
-            {error}
-          </p>
+        {needsPhone && (
+          <FormElement
+            labelText="Your phone number"
+            inputPlaceholder="01712345678"
+            inputType="tel"
+            maxLength={20}
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+          />
         )}
-        <div className="flex flex-wrap items-center gap-3">
-          <Button
-            type="submit"
-            variant="secondary"
-            size="lg"
-            disabled={isPending}
-            className="h-11 font-bold"
-          >
-            {isPending ? "Saving…" : "Save cat profile"}
-          </Button>
-          <Link href="/find_a_cat" className={outlineButton}>
-            Back to Find a Cat
-          </Link>
+
+        <div className="grid justify-items-start gap-2">
+          {error && (
+            <p role="alert" className="text-sm text-destructive">
+              {error}
+            </p>
+          )}
+          <div className="flex flex-wrap items-center gap-3">
+            <Button
+              type="submit"
+              variant="secondary"
+              size="lg"
+              disabled={isPending}
+              className="h-11 font-bold"
+            >
+              {isPending ? "Saving…" : "Save cat profile"}
+            </Button>
+            <Link href="/find_a_cat" className={outlineButton}>
+              Back to Find a Cat
+            </Link>
+          </div>
         </div>
       </div>
     </form>
