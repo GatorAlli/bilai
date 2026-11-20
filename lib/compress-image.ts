@@ -1,4 +1,8 @@
-import { MAX_DIMENSION, TARGET_SIZE_BYTES } from "@/lib/cat-limits";
+import {
+  HEIF_IMAGE_TYPES,
+  MAX_DIMENSION,
+  TARGET_SIZE_BYTES,
+} from "@/lib/cat-limits";
 
 /** Thrown with a message that is safe to show to the user. */
 export class ImageUploadError extends Error {}
@@ -16,7 +20,24 @@ function firstPassQuality(fileSize: number) {
   return 0.52;
 }
 
-function encodeWebp(
+async function decodeImage(file: File) {
+  // Apply the photo's orientation before discarding its metadata.
+  try {
+    return await createImageBitmap(file, { imageOrientation: "from-image" });
+  } catch (error) {
+    const extension = file.name.match(/\.[^.]+$/)?.[0].toLowerCase();
+    if (
+      !HEIF_IMAGE_TYPES.some((type) => type === file.type || type === extension)
+    ) {
+      throw error;
+    }
+
+    const { heicTo } = await import("heic-to/csp");
+    return heicTo({ blob: file, type: "bitmap" });
+  }
+}
+
+async function encodeWebp(
   source: CanvasImageSource,
   width: number,
   height: number,
@@ -27,10 +48,23 @@ function encodeWebp(
   canvas.height = height;
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("Canvas 2D context is unavailable.");
-  ctx.drawImage(source, 0, 0, width, height);
-  return new Promise<Blob | null>((resolve) =>
-    canvas.toBlob(resolve, "image/webp", quality),
-  );
+  try {
+    ctx.drawImage(source, 0, 0, width, height);
+    const blob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, "image/webp", quality),
+    );
+    if (blob?.type === "image/webp") return blob;
+
+    // Safari can decode WebP but may return PNG when asked to encode it.
+    const { default: encode } = await import("@jsquash/webp/encode.js");
+    const bytes = await encode(ctx.getImageData(0, 0, width, height), {
+      quality: Math.round(quality * 100),
+    });
+    return new Blob([bytes], { type: "image/webp" });
+  } finally {
+    canvas.width = 0;
+    canvas.height = 0;
+  }
 }
 
 /**
@@ -42,23 +76,17 @@ function encodeWebp(
 export async function compressImage(file: File): Promise<File> {
   let bitmap: ImageBitmap | undefined;
   try {
-    // "from-image" applies the photo's rotation before EXIF is stripped.
-    bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
+    bitmap = await decodeImage(file);
 
     const scale = Math.min(
       1,
       MAX_DIMENSION / Math.max(bitmap.width, bitmap.height),
     );
-    let width = Math.round(bitmap.width * scale);
-    let height = Math.round(bitmap.height * scale);
+    let width = Math.max(1, Math.round(bitmap.width * scale));
+    let height = Math.max(1, Math.round(bitmap.height * scale));
     const quality = firstPassQuality(file.size);
 
     let blob = await encodeWebp(bitmap, width, height, quality);
-    if (!blob) throw new Error("canvas.toBlob returned null.");
-    // Browsers that can't encode WebP silently return PNG instead.
-    if (blob.type !== "image/webp") {
-      throw new Error(`Browser can't encode WebP (got ${blob.type}).`);
-    }
 
     if (blob.size > TARGET_SIZE_BYTES) {
       // Second (last) pass: file size scales roughly with pixel count, so
@@ -67,7 +95,6 @@ export async function compressImage(file: File): Promise<File> {
       width = Math.max(1, Math.round(width * shrink));
       height = Math.max(1, Math.round(height * shrink));
       blob = await encodeWebp(bitmap, width, height, quality);
-      if (!blob) throw new Error("canvas.toBlob returned null.");
     }
 
     if (blob.size > TARGET_SIZE_BYTES) {
@@ -84,7 +111,9 @@ export async function compressImage(file: File): Promise<File> {
   } catch (err) {
     if (err instanceof ImageUploadError) throw err;
     console.error(`Compressing ${file.name} failed:`, err);
-    throw new ImageUploadError(`${file.name}: upload failed.`);
+    throw new ImageUploadError(
+      `${file.name}: couldn't open or convert this photo. Try another copy saved as JPEG or PNG.`,
+    );
   } finally {
     bitmap?.close();
   }

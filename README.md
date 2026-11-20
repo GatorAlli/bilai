@@ -37,6 +37,8 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 ## Listing photos
 
+You can upload HEIC/HEIF, JPEG, PNG, WebP, AVIF, GIF, or BMP photos up to 25 MiB each. The browser converts them to WebP before upload.
+
 See the [listing photo storage guide](docs/image_storage/README.md) for the full upload, delivery and cleanup flow. [Browse all project docs](docs/README.md).
 
 Photo bytes are saved in the shared PostgreSQL database with their listing.

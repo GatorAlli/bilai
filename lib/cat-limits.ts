@@ -1,9 +1,29 @@
 // Shared between the client form and the server actions.
-export const ACCEPTED_IMAGE_TYPES = [
+export const HEIF_IMAGE_TYPES = [
+  "image/heic",
+  "image/heif",
+  "image/heic-sequence",
+  "image/heif-sequence",
+  ".heic",
+  ".heif",
+  ".heics",
+  ".heifs",
+] as const;
+export const ACCEPTED_IMAGE_TYPES: readonly string[] = [
   "image/jpeg",
+  ".jpg",
+  ".jpeg",
   "image/png",
+  ".png",
   "image/gif",
+  ".gif",
   "image/webp",
+  ".webp",
+  "image/avif",
+  ".avif",
+  "image/bmp",
+  ".bmp",
+  ...HEIF_IMAGE_TYPES,
 ] as const;
 export const MAX_IMAGES = 5;
 
