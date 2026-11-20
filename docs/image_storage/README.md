@@ -83,4 +83,6 @@ Before R2, photo bytes were stored as base64 in `cat_images.data` and served by 
 - **Upload size.** Photos pass through the `submitForm` Server Action (`bodySizeLimit` is 20 MB in `next.config.ts`). A host with a lower request cap (Vercel: about 4.5 MB) would need presigned PUT uploads straight from the browser to R2.
 - **Secrets stay on the server.** `lib/cloudflareR2.ts` holds the R2 secret key. Import it only from server code (server actions, `lib/*` server modules, scripts).
 
+New to this system? [The image storage guide](guide.md) teaches S3 and R2 from scratch and walks through every line of this code.
+
 [All project docs](../README.md)

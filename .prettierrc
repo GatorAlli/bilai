@@ -1,5 +1,11 @@
 {
   "plugins": ["prettier-plugin-tailwindcss"],
   "tailwindStylesheet": "./app/globals.css",
-  "tailwindFunctions": ["cn", "cva"]
+  "tailwindFunctions": ["cn", "cva"],
+  "overrides": [
+    {
+      "files": "docs/image_storage/guide.md",
+      "options": { "embeddedLanguageFormatting": "off" }
+    }
+  ]
 }

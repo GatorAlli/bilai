@@ -84,7 +84,7 @@ Update this whenever the structure changes (working agreement 2). Generated or i
 ├── next.config.ts                 # Next config (cacheComponents, partialPrefetching, agent flags)
 ├── tsconfig.json                  # TypeScript config; `@/*` alias maps to repo root
 ├── auth-schema.ts                 # better-auth generated Drizzle tables (user, session, account, verification)
-├── .prettierrc                    # Prettier config (Tailwind class-sorting plugin)
+├── .prettierrc                    # Prettier config (Tailwind class-sorting plugin; no embedded-code formatting for docs/image_storage/guide.md)
 ├── .prettierignore                # Paths Prettier must not touch
 ├── .agents/skills/                # Installed agent skills (canonical copies)
 ├── .claude/
@@ -177,7 +177,8 @@ Update this whenever the structure changes (working agreement 2). Generated or i
 │   │   ├── chat_implementation_report.md # Build, plan changes, verification and open work
 │   │   └── chat_code_walkthrough.md # Chat flow, source excerpts and commit history
 │   └── image_storage/            # Listing photo storage (Cloudflare R2)
-│       └── README.md             # R2 photo storage: ids/keys, code map, setup, r2:check
+│       ├── README.md             # R2 photo storage: ids/keys, code map, setup, r2:check
+│       └── guide.md              # Learning guide: S3/R2 concepts, every line of the image code, quizzes
 ├── drizzle/                       # SQL migrations (timestamped folders; only the first has a snapshot)
 ├── lib/
 │   ├── auth.ts                    # better-auth server config, `getSession()`, sign-up phone hook
