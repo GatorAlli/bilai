@@ -6,7 +6,7 @@ import { outlineButton } from "@/components/view/styles";
 import { cn } from "@/lib/utils";
 
 type CatSummary = {
-  id: number;
+  publicId: string;
   name: string;
   area: string | null;
   district: string;
@@ -112,7 +112,7 @@ export default function CatCard({
           ))}
         </dl>
         <Link
-          href={`/find_a_cat/${cat.id}`}
+          href={`/find_a_cat/${cat.publicId}`}
           prefetch={false}
           className={cn(
             outlineButton,

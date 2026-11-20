@@ -99,12 +99,13 @@ Decisions:
   integration" piece: no new chat-specific tables were added, the existing
   user/session tables are reused as-is.
 - **Plain `Response` / `new Response(...)`**, not `NextResponse` — matches
-  the convention already used in `app/uploads/[...path]/route.ts`.
+  the convention used by the other route handlers (at the time,
+  `app/uploads/[...path]/route.ts`, since removed when photos moved to R2).
 - **Why a route and not a server action**: `ClientOptions.authUrl` on the
   Ably client is a URL it `fetch()`s itself; it can't call a server action.
   The architecture doc's "server actions, not API routes" rule already has
   two exceptions (`app/api/auth/[...all]/route.ts`,
-  `app/uploads/[...path]/route.ts`) for the same reason — something external
+  `app/uploads/[...path]/route.ts`, since removed) for the same reason — something external
   needs to hit a real URL. This is a third.
 
 ### `components/providers/ChatProviders.tsx` — client + providers

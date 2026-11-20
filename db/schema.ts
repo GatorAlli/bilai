@@ -110,6 +110,9 @@ export const cats = pgTable(
   "cats",
   {
     id: integer().primaryKey().generatedByDefaultAsIdentity(),
+    // Random 8-character id (a-z, 0-9) used in URLs and R2 photo keys, so the
+    // sequential id never leaves the server. See lib/public-id.ts.
+    publicId: text("public_id").notNull().unique(),
     name: text().notNull(),
     breed: text().notNull(),
     ageMonths: integer().notNull(), // Age is to be inserted in months here
@@ -144,6 +147,7 @@ export const cats = pgTable(
     index("cats_status_idx").on(table.status),
     index("cats_district_idx").on(table.district),
     index("cats_breed_idx").on(table.breed),
+    check("cats_public_id_check", sql`${table.publicId} ~ '^[a-z0-9]{8}$'`),
     check(
       "cats_contact_method_check",
       sql`${table.contactWhatsapp} or ${table.contactCall}`,
@@ -158,12 +162,10 @@ export const catImages = pgTable(
     catId: integer("cat_id")
       .notNull()
       .references(() => cats.id, { onDelete: "cascade" }),
-    // Storage key/path of the uploaded file
+    // R2 object key, "cats/<publicId>-<n>.webp" (lib/uploads.ts). The public
+    // URL is built from it by catPhotoUrl.
     key: text().notNull(),
-    url: text().notNull(),
     caption: text(),
-    // Shared image bytes; base64 keeps the Neon HTTP transport simple.
-    data: text(),
     // 0 = cover photo
     position: integer().notNull(),
   },

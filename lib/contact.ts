@@ -4,6 +4,7 @@ import { and, eq, ne } from "drizzle-orm";
 import { db } from "@/db";
 import { cats, user } from "@/db/schema";
 import type { ContactMethod } from "@/lib/cat-limits";
+import { isPublicId } from "@/lib/public-id";
 import { PHONE_TAKEN_ERROR } from "@/lib/phone";
 
 // The database keeps 8801712345678. We hand out +8801712345678, which works
@@ -45,11 +46,11 @@ export async function saveUserPhone(
 
 // Only what the contact action needs. Never select the phone number into
 // anything that is rendered on a page.
-export async function getCatContact(catId: number) {
-  if (!Number.isSafeInteger(catId) || catId < 1) return null;
+export async function getCatContact(publicId: string) {
+  if (!isPublicId(publicId)) return null;
   const [cat] = await db
     .select({
-      id: cats.id,
+      publicId: cats.publicId,
       name: cats.name,
       status: cats.status,
       userId: cats.userId,
@@ -57,7 +58,7 @@ export async function getCatContact(catId: number) {
       contactCall: cats.contactCall,
     })
     .from(cats)
-    .where(eq(cats.id, catId))
+    .where(eq(cats.publicId, publicId))
     .limit(1);
   return cat ?? null;
 }
@@ -65,7 +66,7 @@ export async function getCatContact(catId: number) {
 export function buildContactUrl(
   method: ContactMethod,
   phone: string,
-  cat: { id: number; name: string },
+  cat: { publicId: string; name: string },
 ) {
   if (method === "call") return `tel:${phone}`;
 
@@ -73,7 +74,7 @@ export function buildContactUrl(
   const digits = phone.replace(/\D/g, "");
   const baseUrl = process.env.BETTER_AUTH_URL?.replace(/\/$/, "");
   const message = baseUrl
-    ? `Hi! I saw ${cat.name} on Bilai and would like to know more: ${baseUrl}/find_a_cat/${cat.id}`
+    ? `Hi! I saw ${cat.name} on Bilai and would like to know more: ${baseUrl}/find_a_cat/${cat.publicId}`
     : `Hi! I saw ${cat.name} on Bilai and would like to know more.`;
   return `https://wa.me/${digits}?text=${encodeURIComponent(message)}`;
 }

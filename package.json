@@ -10,7 +10,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest run --exclude 'tests/**' && node --test tests/*.test.mjs",
-    "photos:sync": "tsx scripts/sync-photos.ts"
+    "r2:check": "tsx scripts/check-r2.ts"
   },
   "dependencies": {
     "@ably/chat": "^2.0.0",

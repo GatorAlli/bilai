@@ -4,12 +4,16 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { deleteCatListing } from "@/app/(pages)/find_a_cat/[id]/delete-actions";
+import { deleteCatListing } from "@/app/(pages)/find_a_cat/[publicId]/delete-actions";
 
 // "Mark adopted" is wired to the same removal flow as "Remove listing" for
 // now; it gets its own server action (that updates status instead of
 // deleting) in a later change.
-export default function DeleteListingButton({ catId }: { catId: number }) {
+export default function DeleteListingButton({
+  publicId,
+}: {
+  publicId: string;
+}) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -26,7 +30,7 @@ export default function DeleteListingButton({ catId }: { catId: number }) {
     setError(null);
     startTransition(async () => {
       try {
-        const result = await deleteCatListing(catId);
+        const result = await deleteCatListing(publicId);
         if (!result.ok) {
           setError(result.error);
           return;

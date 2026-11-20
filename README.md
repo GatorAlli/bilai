@@ -39,20 +39,12 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 You can upload HEIC/HEIF, JPEG, PNG, WebP, AVIF, GIF, or BMP photos up to 25 MiB each. The browser converts them to WebP before upload.
 
-See the [listing photo storage guide](docs/image_storage/README.md) for the full upload, delivery and cleanup flow. [Browse all project docs](docs/README.md).
+Photos are stored in a Cloudflare R2 bucket as `cats/<publicId>-<n>.webp` and
+loaded straight from the bucket's public domain (`R2_PUBLIC_URL`). Postgres keeps
+only each photo's key, caption and order. Every listing has a random
+8-character public id that is used in its URL (`/find_a_cat/gj34jfxk`) and in its
+photo keys.
 
-Photo bytes are saved in the shared PostgreSQL database with their listing.
-Every checkout and deployment using the same database can serve the existing
-`/uploads/...` URLs; no writable server disk is needed for new uploads.
-Apply `drizzle/20261111020000_shared_photo_storage/migration.sql` before running
-this version against an older database.
-
-Run `npm run photos:sync` to import older local files into shared storage and
-export shared photos into the Git-tracked `uploads/` directory. Run it on each
-computer that previously accepted uploads to recover files missing elsewhere.
-Then commit and push `uploads/` to include a snapshot on GitHub. Runtime uploads
-do not automatically create GitHub commits. Do not put GitHub credentials in the
-client or rely on Git pulls for live photo delivery.
-
-Database photo storage is intended for this small prototype; base64 adds roughly
-33% storage overhead. Move image bytes to shared object storage as the catalog grows.
+See the [listing photo storage guide](docs/image_storage/README.md) for the full
+flow, R2 bucket setup, environment variables and the `npm run r2:check` smoke
+test. [Browse all project docs](docs/README.md).

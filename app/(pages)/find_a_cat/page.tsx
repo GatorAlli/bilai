@@ -112,7 +112,7 @@ async function CatResults({ searchParams }: { searchParams: SearchParams }) {
           <div className="grid grid-cols-1 gap-4 min-[24rem]:grid-cols-2 sm:grid-cols-3 min-[66rem]:grid-cols-4">
             {items.map((cat) => (
               <CatCard
-                key={cat.id}
+                key={cat.publicId}
                 cat={cat}
                 nameAs="h2"
                 wholeCardLink

@@ -10,7 +10,7 @@ export type ContactResult =
 // Returns the WhatsApp or tel: link for one cat. The number is only sent
 // when a logged-in user asks for it, so it never sits in the page HTML.
 export async function getContactUrl(
-  catId: number,
+  publicId: string,
   method: ContactMethod,
 ): Promise<ContactResult> {
   // Server actions can be called directly, so check everything here.
@@ -21,7 +21,7 @@ export async function getContactUrl(
     return { ok: false, error: "Something went wrong. Please try again." };
   }
 
-  const cat = await getCatContact(Number(catId));
+  const cat = await getCatContact(publicId);
   if (!cat) return { ok: false, error: "This cat is no longer listed." };
   if (cat.status === "adopted") {
     return { ok: false, error: "This cat has already been adopted." };

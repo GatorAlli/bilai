@@ -35,7 +35,7 @@ export default async function FeaturedCats() {
         <div className="grid grid-cols-3 gap-[.85rem] max-sm:grid-cols-1">
           {featuredCats.map((cat) => (
             <CatCard
-              key={cat.id}
+              key={cat.publicId}
               cat={cat}
               sizes="(max-width: 640px) 100vw, 33vw"
               imageClassName="max-h-56"

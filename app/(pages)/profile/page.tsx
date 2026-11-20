@@ -146,7 +146,7 @@ async function YourProfile() {
           <div className="mt-5 grid grid-cols-1 gap-4 min-[36rem]:grid-cols-2">
             {listings.map((cat) => (
               <CatCard
-                key={cat.id}
+                key={cat.publicId}
                 cat={cat}
                 wholeCardLink
                 sizes="(max-width: 36rem) 100vw, 21rem"

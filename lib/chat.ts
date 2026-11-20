@@ -17,6 +17,7 @@ import { cats, chatMessages, chatReads, chatThreads, user } from "@/db/schema";
 import { CHAT_MESSAGE_MAX_LENGTH } from "@/lib/chat-limits";
 import { roomNameFromChannel } from "@/lib/chat-rooms";
 import { isLiveListing } from "@/lib/listing-expiry";
+import { isPublicId } from "@/lib/public-id";
 
 // The only place that reads chat_threads / chat_messages / chat_reads (same
 // rule as lib/cats.ts and lib/contact.ts). Room-name helpers that the browser
@@ -128,14 +129,20 @@ export async function getThreadForMember(roomName: string, userId: string) {
 
 // The parent of a live, not-adopted listing, for starting a chat from its page.
 export async function getCatOwnerForChat(
-  catId: number,
+  publicId: string,
 ): Promise<ChatUser | null> {
-  if (!Number.isSafeInteger(catId) || catId < 1) return null;
+  if (!isPublicId(publicId)) return null;
   const [row] = await db
     .select({ id: user.id, name: user.name, image: user.image })
     .from(cats)
     .innerJoin(user, eq(cats.userId, user.id))
-    .where(and(eq(cats.id, catId), ne(cats.status, "adopted"), isLiveListing))
+    .where(
+      and(
+        eq(cats.publicId, publicId),
+        ne(cats.status, "adopted"),
+        isLiveListing,
+      ),
+    )
     .limit(1);
   return row ?? null;
 }

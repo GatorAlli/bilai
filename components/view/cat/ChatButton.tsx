@@ -4,15 +4,15 @@ import { useState, useTransition } from "react";
 import { MessagesSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useChatDock } from "@/components/chat/ChatDockProvider";
-import { openThread } from "@/app/(pages)/find_a_cat/[id]/chat-actions";
+import { openThread } from "@/app/(pages)/find_a_cat/[publicId]/chat-actions";
 
 // Opens the chat dock on the conversation with this cat's parent, with the
 // message box prefilled so the parent knows which cat it's about.
 export default function ChatButton({
-  catId,
+  publicId,
   catName,
 }: {
-  catId: number;
+  publicId: string;
   catName: string;
 }) {
   const dock = useChatDock();
@@ -23,7 +23,7 @@ export default function ChatButton({
     setError(null);
     startTransition(async () => {
       try {
-        const result = await openThread(catId);
+        const result = await openThread(publicId);
         if (!result.ok) {
           setError(result.error);
           return;
@@ -31,7 +31,7 @@ export default function ChatButton({
         dock.openThread({
           roomName: result.roomName,
           other: result.other,
-          prefill: `Hi! I'm interested in ${catName}: ${window.location.origin}/find_a_cat/${catId}`,
+          prefill: `Hi! I'm interested in ${catName}: ${window.location.origin}/find_a_cat/${publicId}`,
         });
       } catch (err) {
         console.error(err);

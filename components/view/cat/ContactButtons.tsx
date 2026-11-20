@@ -6,12 +6,12 @@ import { usePathname } from "next/navigation";
 import { MessageCircle, Phone } from "lucide-react";
 import { loginUrl } from "@/lib/auth-redirect";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { getContactUrl } from "@/app/(pages)/find_a_cat/[id]/actions";
+import { getContactUrl } from "@/app/(pages)/find_a_cat/[publicId]/actions";
 import ChatButton from "@/components/view/cat/ChatButton";
 import type { ContactMethod } from "@/lib/cat-limits";
 
 type Props = {
-  catId: number;
+  publicId: string;
   catName: string;
   // Signed in and not the lister. Chat needs no phone number, so it shows
   // even when WhatsApp/Call can't.
@@ -24,7 +24,7 @@ type Props = {
 };
 
 export default function ContactButtons({
-  catId,
+  publicId,
   catName,
   canChat,
   whatsapp,
@@ -96,7 +96,7 @@ export default function ContactButtons({
 
     startTransition(async () => {
       try {
-        const result = await getContactUrl(catId, method);
+        const result = await getContactUrl(publicId, method);
         if (!result.ok) {
           tab?.close();
           setError(result.error);
@@ -117,7 +117,7 @@ export default function ContactButtons({
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap gap-3">
-        {canChat && <ChatButton catId={catId} catName={catName} />}
+        {canChat && <ChatButton publicId={publicId} catName={catName} />}
         {hasPhone && whatsapp && (
           <Button
             type="button"

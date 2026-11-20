@@ -1,7 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import path from "node:path";
 import vm from "node:vm";
 import { createRequire } from "node:module";
 import ts from "typescript";
@@ -29,6 +28,16 @@ function load(file, mocks = {}, globals = {}) {
 }
 
 const schema = load("db/schema.ts");
+const publicIdModule = load("lib/public-id.ts");
+const uploadsModule = load(
+  "lib/uploads.ts",
+  {
+    "./cat-limits": { MAX_IMAGES: 5 },
+  },
+  { process },
+);
+const ID = "gj34jfxk";
+
 function setup({
   loggedIn = true,
   deleted = [{ id: 1 }],
@@ -63,15 +72,18 @@ function setup({
     }),
   };
   const { deleteCatListing } = load(
-    "app/(pages)/find_a_cat/[id]/delete-actions.ts",
+    "app/(pages)/find_a_cat/[publicId]/delete-actions.ts",
     {
       "@/db": { db },
       "@/db/schema": schema,
       "@/lib/auth": {
         getSession: async () => (loggedIn ? { user: { id: "owner" } } : null),
       },
-      "@/lib/uploads": { UPLOAD_ROOT: path.resolve("/tmp/bilai-delete-test") },
-      "node:fs/promises": { unlink: async (file) => removed.push(file) },
+      "@/lib/cloudflareR2": {
+        deleteCatPhotos: async (keys) => removed.push(...keys),
+      },
+      "@/lib/public-id": publicIdModule,
+      "@/lib/uploads": uploadsModule,
       "next/cache": { revalidatePath: (url) => refreshed.push(url) },
     },
   );
@@ -80,7 +92,7 @@ function setup({
 
 test("anonymous callers cannot query or delete listings", async () => {
   const state = setup({ loggedIn: false });
-  assert.equal((await state.deleteCatListing(1)).ok, false);
+  assert.equal((await state.deleteCatListing(ID)).ok, false);
   assert.equal(state.conditions.length, 0);
 });
 
@@ -88,59 +100,64 @@ test("invalid listing IDs cannot reach the database", async () => {
   const state = setup();
   for (const id of [
     0,
-    -1,
-    1.5,
-    NaN,
-    Infinity,
+    1,
+    12345678,
+    "",
     "1",
-    Number.MAX_SAFE_INTEGER + 1,
+    "gj34jfx",
+    "gj34jfxkk",
+    "GJ34JFXK",
+    "../../..",
+    "gj34%fxk",
+    null,
+    undefined,
   ]) {
     assert.equal((await state.deleteCatListing(id)).ok, false);
   }
   assert.equal(state.conditions.length, 0);
 });
 
-test("both photo lookup and delete are constrained by ID AND authenticated owner", async () => {
+test("both photo lookup and delete are constrained by public ID AND authenticated owner", async () => {
   const state = setup();
-  assert.equal((await state.deleteCatListing(1)).ok, true);
+  assert.equal((await state.deleteCatListing(ID)).ok, true);
   assert.equal(state.conditions.length, 2);
   for (const condition of state.conditions) {
     assert.match(
       condition.sql.replace(/[()]/g, ""),
-      /"cats"\."id" = \$1 and "cats"\."user_id" = \$2/,
+      /"cats"\."public_id" = \$1 and "cats"\."user_id" = \$2/,
     );
-    assert.deepEqual(condition.params, [1, "owner"]);
+    assert.deepEqual(condition.params, [ID, "owner"]);
   }
 });
 
-test("missing, non-owned, or concurrently deleted listings do not delete files", async () => {
-  const state = setup({ deleted: [], images: [{ key: "owner/photo.webp" }] });
-  assert.equal((await state.deleteCatListing(1)).ok, false);
+test("missing, non-owned, or concurrently deleted listings do not delete photos", async () => {
+  const state = setup({ deleted: [], images: [{ key: `cats/${ID}-1.webp` }] });
+  assert.equal((await state.deleteCatListing(ID)).ok, false);
   assert.equal(state.removed.length, 0);
   assert.equal(state.refreshed.length, 0);
 });
 
-test("failed database mutation preserves uploaded files", async () => {
-  const state = setup({ fail: true, images: [{ key: "owner/photo.webp" }] });
-  assert.equal((await state.deleteCatListing(1)).ok, false);
+test("failed database mutation preserves uploaded photos", async () => {
+  const state = setup({ fail: true, images: [{ key: `cats/${ID}-1.webp` }] });
+  assert.equal((await state.deleteCatListing(ID)).ok, false);
   assert.equal(state.removed.length, 0);
 });
 
-test("successful deletion cleans only owner WebP files and refreshes affected pages", async () => {
+test("successful deletion removes only this listing's R2 photos and refreshes affected pages", async () => {
   const state = setup({
     images: [
-      { key: "owner/photo.webp" },
-      { key: "../secret.webp" },
-      { key: "other/photo.webp" },
-      { key: "owner/../../secret.webp" },
-      { key: "owner/document.txt" },
+      { key: `cats/${ID}-1.webp` },
+      { key: `cats/${ID}-2.webp` },
+      { key: "cats/other123-1.webp" },
+      { key: `cats/../${ID}-1.webp` },
+      { key: `cats/${ID}-1.png` },
+      { key: "owner/legacy.webp" },
+      { key: "other/legacy.webp" },
     ],
   });
-  assert.equal((await state.deleteCatListing(1)).ok, true);
-  assert.deepEqual(state.removed, [
-    path.resolve("/tmp/bilai-delete-test/owner/photo.webp"),
-  ]);
-  assert.deepEqual(state.refreshed, ["/", "/find_a_cat", "/find_a_cat/1"]);
+  assert.equal((await state.deleteCatListing(ID)).ok, true);
+  assert.deepEqual(state.removed, [`cats/${ID}-1.webp`, `cats/${ID}-2.webp`]);
+  assert.deepEqual(state.refreshed, ["/", "/find_a_cat", `/find_a_cat/${ID}`]);
 });
 
 // Index 0 is "Mark adopted", index 1 is "Remove listing" — both are wired to
@@ -171,9 +188,9 @@ for (const confirmed of [false, true]) {
             }),
           },
           "@/components/ui/button": { Button: () => null },
-          "@/app/(pages)/find_a_cat/[id]/delete-actions": {
+          "@/app/(pages)/find_a_cat/[publicId]/delete-actions": {
             deleteCatListing: async (id) => {
-              assert.equal(id, 1);
+              assert.equal(id, ID);
               calls++;
               return { ok: true };
             },
@@ -181,7 +198,7 @@ for (const confirmed of [false, true]) {
         },
         { window: { confirm: () => confirmed } },
       ).default;
-      const tree = Component({ catId: 1 });
+      const tree = Component({ publicId: ID });
       tree.props.children[buttonIndex].props.onClick();
       await Promise.all(pending);
       assert.equal(calls, confirmed ? 1 : 0);

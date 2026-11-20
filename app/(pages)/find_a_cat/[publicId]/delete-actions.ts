@@ -1,25 +1,27 @@
 "use server";
 
-import { unlink } from "node:fs/promises";
-import path from "node:path";
 import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db } from "@/db";
 import { catImages, cats } from "@/db/schema";
 import { getSession } from "@/lib/auth";
-import { UPLOAD_ROOT } from "@/lib/uploads";
+import { deleteCatPhotos } from "@/lib/cloudflareR2";
+import { isPublicId } from "@/lib/public-id";
+import { isCatPhotoKey } from "@/lib/uploads";
 
 type DeleteResult = { ok: true } | { ok: false; error: string };
 
-export async function deleteCatListing(catId: number): Promise<DeleteResult> {
+export async function deleteCatListing(
+  publicId: string,
+): Promise<DeleteResult> {
   const session = await getSession();
   if (!session?.user) return { ok: false, error: "Please log in first." };
-  if (!Number.isSafeInteger(catId) || catId < 1) {
+  if (!isPublicId(publicId)) {
     return { ok: false, error: "Invalid listing." };
   }
 
   const ownedListing = and(
-    eq(cats.id, catId),
+    eq(cats.publicId, publicId),
     eq(cats.userId, session.user.id),
   );
   let images: { key: string }[];
@@ -46,25 +48,18 @@ export async function deleteCatListing(catId: number): Promise<DeleteResult> {
     };
   }
 
-  const ownerRoot = path.resolve(UPLOAD_ROOT, session.user.id);
-  await Promise.all(
-    images.map(async ({ key }) => {
-      const file = path.resolve(UPLOAD_ROOT, key);
-      // Only remove this owner's uploaded files; never directories or other paths.
-      if (!file.startsWith(ownerRoot + path.sep) || !file.endsWith(".webp"))
-        return;
-      try {
-        await unlink(file);
-      } catch (error) {
-        if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
-          console.error("Couldn't remove deleted listing photo", error);
-        }
-      }
-    }),
+  // Only this listing's own photo keys (cats/<publicId>-<n>.webp) are removed
+  // from R2.
+  await deleteCatPhotos(
+    images
+      .map(({ key }) => key)
+      .filter(
+        (key) => isCatPhotoKey(key) && key.startsWith(`cats/${publicId}-`),
+      ),
   );
 
   revalidatePath("/");
   revalidatePath("/find_a_cat");
-  revalidatePath(`/find_a_cat/${catId}`);
+  revalidatePath(`/find_a_cat/${publicId}`);
   return { ok: true };
 }

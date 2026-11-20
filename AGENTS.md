@@ -15,13 +15,14 @@ Bilai is a Next.js 16 (App Router, React 19) web app connecting cat adopters and
 | UI library    | React `19.3.0` + React DOM `19.3.0`                                                                        | Server components by default; client components opt in with `"use client"`.                                   |
 | Styling       | Tailwind CSS v4 (`^4`) + shadcn (`base-nova` style, `@base-ui/react`)                                      | CSS-first config in `app/globals.css`; see the `tailwind-v4`/`tailwind-4-docs` skills before writing classes. |
 | ORM           | Drizzle ORM (`^1.0.0-rc`) + `drizzle-kit`                                                                  | Schema in `db/schema.ts` and `auth-schema.ts`; migrations hand-written under `drizzle/` (see Commands).       |
-| Database      | Postgres via Neon (`@neondatabase/serverless`)                                                             | Neon's HTTP driver (`db/index.ts`) — no persistent connections, no separate blob store for photos.            |
+| Database      | Postgres via Neon (`@neondatabase/serverless`)                                                             | Neon's HTTP driver (`db/index.ts`) — no persistent connections, photo bytes live in R2.                       |
+| Photo storage | Cloudflare R2 via `@aws-sdk/client-s3`                                                                     | `lib/cloudflareR2.ts`; browsers load photos from the public bucket domain (`R2_PUBLIC_URL`).                  |
 | Auth          | better-auth (`^1.7.14`)                                                                                    | Email/password + Google OAuth; config and hooks in `lib/auth.ts`.                                             |
 | Realtime chat | Ably Chat / PubSub (`@ably/chat`, `@ably/chat-react-ui-kit`, `@ably/pubsub-server`, `@ably/pubsub-device`) | Token auth via `app/api/ably-token`; inbound webhook mirrors messages to Postgres via `app/api/ably-webhook`. |
 | Testing       | Vitest (`^5`) + Node's built-in `node --test`                                                              | See Commands below for which runner covers which files.                                                       |
 | Lint/format   | ESLint (`next/core-web-vitals`) + Prettier (`prettier-plugin-tailwindcss`)                                 | Prettier runs on every save (see working agreement 1).                                                        |
 
-**External APIs/services in use**: better-auth's Google OAuth provider (sign-in), Ably (Chat + token auth + webhook) for the chat dock, and Neon's serverless Postgres HTTP API for all data access. There is no other third-party API integration in this repo — check `package.json` before assuming otherwise, since this table can drift.
+**External APIs/services in use**: better-auth's Google OAuth provider (sign-in), Ably (Chat + token auth + webhook) for the chat dock, Neon's serverless Postgres HTTP API for all data access, and Cloudflare R2 (S3 API) for listing photos. There is no other third-party API integration in this repo — check `package.json` before assuming otherwise, since this table can drift.
 
 ## Working agreements (all agents, always)
 
@@ -56,7 +57,7 @@ npm run lint          # eslint
 npm run format        # prettier --write .
 npm run format:check  # prettier --check .
 npm run test          # vitest (lib/*.test.ts) then node --test tests/*.test.mjs
-npm run photos:sync   # tsx scripts/sync-photos.ts — see "Photo storage" below
+npm run r2:check      # R2 smoke test: upload, read via R2_PUBLIC_URL, delete
 ```
 
 There are two test runners in this repo:
@@ -100,7 +101,6 @@ Update this whenever the structure changes (working agreement 2). Generated or i
 │   ├── api/auth/[...all]/route.ts # better-auth catch-all handler
 │   ├── api/ably-token/route.ts    # Signs Ably token requests; capability = the user's own chat rooms
 │   ├── api/ably-webhook/route.ts  # Signed Ably webhook: mirrors chat messages/edits/deletes into Postgres
-│   ├── uploads/[...path]/route.ts # Serves listing photo bytes; contains the path-traversal guard
 │   └── (pages)/                   # Route group (no URL segment) for all feature pages
 │       ├── auth/
 │       │   ├── page.tsx           # Sign in / sign up page
@@ -109,11 +109,11 @@ Update this whenever the structure changes (working agreement 2). Generated or i
 │       │   ├── page.tsx           # Create-listing page (server component)
 │       │   ├── ListACat.tsx       # Create-listing form (client)
 │       │   ├── ImageGallery.tsx   # Photo picker/reorder/preview for the listing form
-│       │   └── actions.ts         # `submitForm` server action: validate, store photos, insert listing
+│       │   └── actions.ts         # `submitForm` server action: validate, insert listing, upload photos to R2
 │       ├── find_a_cat/
 │       │   ├── page.tsx           # Browse/search listings with filters
-│       │   └── [id]/
-│       │       ├── page.tsx       # Single listing detail page
+│       │   └── [publicId]/
+│       │       ├── page.tsx       # Single listing detail page; redirects old numeric-id URLs
 │       │       ├── actions.ts     # `getContactUrl`: returns WhatsApp/tel link only on explicit tap
 │       │       ├── chat-actions.ts # `openThread`: creates/reuses the chat thread with a cat's parent (rate-limited)
 │       │       └── delete-actions.ts # Server action to delete the owner's own listing
@@ -168,7 +168,7 @@ Update this whenever the structure changes (working agreement 2). Generated or i
 │           └── CatFilters.tsx     # Filter controls (shape from lib/cat-filters.ts)
 ├── db/
 │   ├── index.ts                   # Drizzle client (Neon HTTP driver)
-│   └── schema.ts                  # App tables: cats, cat_images, chat_threads/messages/reads (+ auth tables)
+│   └── schema.ts                  # App tables: cats (+ public_id), cat_images (R2 keys), chat_threads/messages/reads (+ auth tables)
 ├── docs/                          # Project documentation by topic
 │   ├── README.md                  # Documentation index
 │   ├── chat/                     # Ably integration documentation
@@ -176,11 +176,8 @@ Update this whenever the structure changes (working agreement 2). Generated or i
 │   │   ├── chat_button_plan.md    # Chat feature plan (Chat button, dock, webhook mirror), by phase
 │   │   ├── chat_implementation_report.md # Build, plan changes, verification and open work
 │   │   └── chat_code_walkthrough.md # Chat flow, source excerpts and commit history
-│   └── image_storage/            # Listing photo storage guide
-│       ├── README.md             # Start here, setup and guide map
-│       ├── tutorial.md           # Lessons, examples and exercises across the photo lifecycle
-│       ├── source_reference.md   # Verbatim storage code with original line ranges
-│       └── quiz.md               # Quiz and answer key
+│   └── image_storage/            # Listing photo storage (Cloudflare R2)
+│       └── README.md             # R2 photo storage: ids/keys, code map, setup, r2:check
 ├── drizzle/                       # SQL migrations (timestamped folders; only the first has a snapshot)
 ├── lib/
 │   ├── auth.ts                    # better-auth server config, `getSession()`, sign-up phone hook
@@ -197,38 +194,39 @@ Update this whenever the structure changes (working agreement 2). Generated or i
 │   ├── cat-filters.ts             # `CatFilters` type shared by the search UI and `getCats()`
 │   ├── cat-limits.ts              # Upload/listing limits (photo count, size, dimensions)
 │   ├── compress-image.ts          # Server-side image normalisation to WebP (<=1600px)
-│   ├── uploads.ts                 # Photo file helpers: `isWebp`, `removeLocalPhotos`, UPLOAD_ROOT
+│   ├── cloudflareR2.ts            # R2 S3 client + `putCatPhoto`/`deleteCatPhotos`
+│   ├── uploads.ts                 # Photo key/URL helpers (`catPhotoKey`, `isCatPhotoKey`, `catPhotoUrl`), `isWebp`
+│   ├── uploads.test.ts            # vitest tests for uploads.ts
 │   ├── listing-expiry.ts          # 3-month expiry SQL helpers and `purgeExpiredListings()`
 │   ├── locations.ts               # Bangladesh district -> area data for location pickers
 │   ├── phone.ts                   # BD phone normalisation/validation
 │   ├── phone.test.ts              # vitest tests for phone.ts
+│   ├── public-id.ts               # `newPublicId`/`isPublicId`: random 8-char listing ids
+│   ├── public-id.test.ts          # vitest tests for public-id.ts
 │   └── utils.ts                   # `cn()` class-name helper
 ├── scripts/
-│   └── sync-photos.ts             # Reconciles DB-stored photos with `uploads/` on disk
+│   └── check-r2.ts                # R2 smoke test: upload, fetch via R2_PUBLIC_URL, delete
 ├── tests/
 │   ├── delete-listing.test.mjs    # node:test with vm-isolated mocks for the delete action
 │   └── chat.test.mjs              # node:test: openThread checks/rate limit, webhook signature + payload forms
-├── uploads/                       # Legacy/local photo export (git-tracked snapshot, not source of truth)
-└── public/                        # Static assets (hero/featured photos, logo, default Next SVGs)
+└── public/                        # Static assets (home doorstep photo, logo)
 ```
 
 ## Architecture
 
-**Route structure**: Pages live under `app/(pages)/*` (route group, no URL segment) — `add_a_cat`, `auth`, `find_a_cat`, `find_a_cat/[id]`, `profile`, `profile/edit`. API routes are thin and exist only where something external needs a real URL: `app/api/auth/[...all]/route.ts` delegates entirely to better-auth; `app/uploads/[...path]/route.ts` serves photo bytes; `app/api/ably-token/route.ts` is Ably's `authUrl`; `app/api/ably-webhook/route.ts` receives Ably's signed webhook (no session, the HMAC signature is the auth).
+**Route structure**: Pages live under `app/(pages)/*` (route group, no URL segment) — `add_a_cat`, `auth`, `find_a_cat`, `find_a_cat/[publicId]`, `profile`, `profile/edit`. Listings are addressed by `cats.public_id`, a random 8-character id (`lib/public-id.ts`); keep the sequential `cats.id` server-side (not in URLs, client props or action arguments). Old numeric URLs redirect. API routes are thin and exist only where something external needs a real URL: `app/api/auth/[...all]/route.ts` delegates entirely to better-auth; `app/api/ably-token/route.ts` is Ably's `authUrl`; `app/api/ably-webhook/route.ts` receives Ably's signed webhook (no session, the HMAC signature is the auth).
 
-**Server actions, not API routes**: Mutations (`add_a_cat/actions.ts`, `find_a_cat/[id]/delete-actions.ts`, `profile/edit/actions.ts`) are `"use server"` functions colocated with their page, returning `{ ok: true } | { ok: false; error: string }` rather than throwing for expected validation failures. Every action re-derives the session user server-side via `getSession()` (`lib/auth.ts`) and re-validates everything the client already checked — never trust client-side validation alone.
+**Server actions, not API routes**: Mutations (`add_a_cat/actions.ts`, `find_a_cat/[publicId]/delete-actions.ts`, `profile/edit/actions.ts`) are `"use server"` functions colocated with their page, returning `{ ok: true } | { ok: false; error: string }` rather than throwing for expected validation failures. Every action re-derives the session user server-side via `getSession()` (`lib/auth.ts`) and re-validates everything the client already checked — never trust client-side validation alone.
 
 **Data access layer**: `lib/cats.ts`, `lib/contact.ts` and `lib/chat.ts` (chat tables) are the only places that query `cats`/`catImages`/`user` for reads; both are `import "server-only"`. Keep read logic there rather than inlining queries in pages/actions, and never select the phone number into anything rendered on a page — `getCatContact`/contact actions fetch it separately and only hand it to the client on an explicit tap (see comments in `lib/contact.ts`).
 
 **Listing lifecycle**: Listings self-expire 3 months after creation (`lib/listing-expiry.ts`, `LISTING_LIFETIME_MONTHS`). `isLiveListing`/`isExpiredListing`/`listingSecondsLeft` are raw SQL computed against the DB's `now()` so every server instance agrees; all reads in `lib/cats.ts` filter by `isLiveListing`. Expired listings are purged lazily: `purgeExpiredListings()` is invoked via `after()` on successful listing creation and on the Find a Cat and signed-in Profile pages, throttled per server instance to once every 10 minutes (`PURGE_EVERY_MS`), not run on every request or via a cron job.
 
-**Photo storage**: Image bytes are stored as base64 in the `cat_images.data` column (Neon HTTP driver, so no separate blob store) — see the "Listing photos" section of `README.md`. `uploads/` on disk is a legacy/local fallback and a git-tracked export, not the source of truth for new uploads. `scripts/sync-photos.ts` reconciles the two directions (imports old local files into the DB; exports DB photos back to `uploads/` for a GitHub snapshot) and must be run on each machine that previously accepted local uploads. `app/uploads/[...path]/route.ts` and `lib/uploads.ts`'s `removeLocalPhotos` both resolve the requested path and verify it stays inside `UPLOAD_ROOT` and ends in `.webp` before touching the filesystem — preserve that check in any code that touches upload paths, it's the path-traversal guard. The browser normalizes selected photos to WebP with a long edge ≤1600px and a 1 MiB target (`lib/compress-image.ts`, limits in `lib/cat-limits.ts`). The server action checks the submitted byte size and WebP header with `isWebp()` (`lib/uploads.ts`). See the [listing photo storage guide](docs/image_storage/README.md) for the complete flow.
-
 **Phone numbers**: Stored normalized (`8801712345678`, no `+`) via `normalizeBdPhone()` (`lib/phone.ts`), handed to the UI as `+8801712345678` (`getUserPhone` in `lib/contact.ts`), and stripped back to bare digits for `wa.me` links (`buildContactUrl`). Phone is required at email sign-up (enforced in a better-auth `databaseHooks.user.create.before` hook in `lib/auth.ts`) but optional at Google sign-up — Google users are prompted for it the first time they list a cat (`add_a_cat/actions.ts`). Uniqueness is enforced both at the DB level (`user.phone` is `unique()`) and defensively in application code before writes.
 
 **Filters**: `lib/cat-filters.ts` defines the `CatFilters` shape shared between the search UI (`components/view/search/CatFilters.tsx`) and `getCats()` in `lib/cats.ts`, which builds the Drizzle `and()/or()` query dynamically from whichever filters are set.
 
-**Chat**: Adopters message a cat's parent through Ably Chat (plan and decisions: `docs/chat/chat_button_plan.md`; Ably setup and webhook dashboard steps: `docs/chat/ably_setup.md`). One conversation per pair of users, room `dm:<userA>:<userB>` with ids sorted by JS `<` (`pairFor` in `lib/chat-rooms.ts`; `chat_threads` has a matching `COLLATE "C"` check). Threads are created only by `openThread` (`find_a_cat/[id]/chat-actions.ts`) from a live, non-adopted listing you don't own, rate-limited by `chat_threads.started_by`. **Access control is the Ably token capability** (`app/api/ably-token/route.ts` lists only the user's own rooms; no reactions or presence) — the UI is display only. Messages go browser → Ably directly; Postgres gets a copy via the webhook (`recordChatMessages`, idempotent by serial, newest `version_serial` wins), which powers unread counts (`chat_reads`). The dock (`components/chat/`) is mounted in the root layout on every page, but the Ably SDK, UI kit and its CSS load via `next/dynamic` only on first open — keep it that way. The kit's CSS must stay in the `ably-chat` cascade layer (`components/chat/ably-chat-kit.css`, order declared at the top of `app/globals.css`): it contains an unlayered Tailwind v3 preflight that would otherwise override every utility class on the site. Its `ThemeProvider` is pinned to light because it toggles `dark` on `<html>`.
+**Chat**: Adopters message a cat's parent through Ably Chat (plan and decisions: `docs/chat/chat_button_plan.md`; Ably setup and webhook dashboard steps: `docs/chat/ably_setup.md`). One conversation per pair of users, room `dm:<userA>:<userB>` with ids sorted by JS `<` (`pairFor` in `lib/chat-rooms.ts`; `chat_threads` has a matching `COLLATE "C"` check). Threads are created only by `openThread` (`find_a_cat/[publicId]/chat-actions.ts`) from a live, non-adopted listing you don't own, rate-limited by `chat_threads.started_by`. **Access control is the Ably token capability** (`app/api/ably-token/route.ts` lists only the user's own rooms; no reactions or presence) — the UI is display only. Messages go browser → Ably directly; Postgres gets a copy via the webhook (`recordChatMessages`, idempotent by serial, newest `version_serial` wins), which powers unread counts (`chat_reads`). The dock (`components/chat/`) is mounted in the root layout on every page, but the Ably SDK, UI kit and its CSS load via `next/dynamic` only on first open — keep it that way. The kit's CSS must stay in the `ably-chat` cascade layer (`components/chat/ably-chat-kit.css`, order declared at the top of `app/globals.css`): it contains an unlayered Tailwind v3 preflight that would otherwise override every utility class on the site. Its `ThemeProvider` is pinned to light because it toggles `dark` on `<html>`.
 
 **Rendering model**: `cacheComponents` + `partialPrefetching` are on (`next.config.ts`). Per the comment in `lib/cats.ts`, catalog reads are deliberately left uncached and rendered under `Suspense` so each navigation gets fresh data — don't wrap these reads in `"use cache"` without checking whether staleness is acceptable for that view.
 

@@ -21,12 +21,12 @@ export type OpenThreadResult =
 // only start from a live listing you don't own: there is no "message any user
 // id" endpoint. The room joins the user's Ably token capability on the next
 // token request (the dock calls auth.authorize() for that).
-export async function openThread(catId: number): Promise<OpenThreadResult> {
+export async function openThread(publicId: string): Promise<OpenThreadResult> {
   // Server actions can be called directly, so check everything here.
   const session = await getSession();
   if (!session?.user) return { ok: false, error: "Please log in to chat." };
 
-  const owner = await getCatOwnerForChat(Number(catId));
+  const owner = await getCatOwnerForChat(publicId);
   if (!owner) {
     return { ok: false, error: "This cat is no longer available." };
   }

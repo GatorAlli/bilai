@@ -3,29 +3,30 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import BilaiPage from "@/components/view/BilaiPage";
 import DeleteListingButton from "@/components/view/cat/DeleteListingButton";
 import ContactButtons from "@/components/view/cat/ContactButtons";
 import { getSession } from "@/lib/auth";
-import { formatCatAge, getCat } from "@/lib/cats";
+import { isPublicId } from "@/lib/public-id";
+import { formatCatAge, getCat, getCatPublicIdByLegacyId } from "@/lib/cats";
 import { headingTitle, outlineButton } from "@/components/view/styles";
 
 // getCat is memoized per request, so this shares one DB read with the page.
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ publicId: string }>;
 }): Promise<Metadata> {
-  const { id } = await params;
-  const cat = await getCat(Number(id));
+  const { publicId } = await params;
+  const cat = await getCat(publicId);
   return { title: cat ? cat.name : "Cat not found" };
 }
 
 export default function CatPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ publicId: string }>;
 }) {
   return (
     <BilaiPage currentPage="profile" mainClassName="frame py-section">
@@ -46,9 +47,20 @@ export default function CatPage({
   );
 }
 
-async function CatDetails({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const [cat, session] = await Promise.all([getCat(Number(id)), getSession()]);
+async function CatDetails({
+  params,
+}: {
+  params: Promise<{ publicId: string }>;
+}) {
+  const { publicId } = await params;
+  // Old links used the sequential id (/find_a_cat/3). An 8-digit value is a
+  // valid public id, so only shorter or longer numbers are treated as legacy.
+  if (!isPublicId(publicId) && /^\d{1,15}$/.test(publicId)) {
+    const current = await getCatPublicIdByLegacyId(Number(publicId));
+    if (!current) notFound();
+    permanentRedirect(`/find_a_cat/${current}`);
+  }
+  const [cat, session] = await Promise.all([getCat(publicId), getSession()]);
   if (!cat) notFound();
   const isOwner = session?.user.id === cat.owner.id;
 
@@ -115,7 +127,7 @@ async function CatDetails({ params }: { params: Promise<{ id: string }> }) {
           {cat.status !== "adopted" ? (
             <div className="mt-5">
               <ContactButtons
-                catId={cat.id}
+                publicId={cat.publicId}
                 catName={cat.name}
                 canChat={Boolean(session?.user) && !isOwner}
                 whatsapp={cat.contactWhatsapp}
@@ -126,7 +138,7 @@ async function CatDetails({ params }: { params: Promise<{ id: string }> }) {
               />
             </div>
           ) : null}
-          {isOwner ? <DeleteListingButton catId={cat.id} /> : null}
+          {isOwner ? <DeleteListingButton publicId={cat.publicId} /> : null}
         </div>
       </div>
       {[

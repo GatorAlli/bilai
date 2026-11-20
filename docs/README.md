@@ -2,7 +2,7 @@
 
 ## Image storage
 
-- [Listing photo storage guide](image_storage/README.md) follows a photo from the upload form to storage, delivery and cleanup. It includes the source code, exercises and a quiz.
+- [Listing photo storage](image_storage/README.md) covers how photos are stored in Cloudflare R2: listing ids and photo keys, the code path from upload to cleanup, bucket setup, environment variables, and the `r2:check` smoke test.
 
 ## Chat
 

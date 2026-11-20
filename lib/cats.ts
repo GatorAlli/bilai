@@ -19,29 +19,42 @@ import { db } from "@/db";
 import { catImages, cats, user } from "@/db/schema";
 import { MAX_FILTER_AGE, type CatFilters } from "@/lib/cat-filters";
 import { isLiveListing, listingSecondsLeft } from "@/lib/listing-expiry";
+import { isPublicId } from "@/lib/public-id";
+import { catPhotoUrl } from "@/lib/uploads";
 
 export const CATS_PER_PAGE = 20;
 
+// R2 key of a listing's cover photo; withCoverUrl turns it into a public URL.
+const coverImageKey = sql<string | null>`(
+  select ${catImages.key} from ${catImages}
+  where ${catImages.catId} = ${cats.id}
+  order by ${catImages.position} asc, ${catImages.id} asc limit 1
+)`;
+
+function withCoverUrl<T extends { coverImageKey: string | null }>({
+  coverImageKey: key,
+  ...row
+}: T) {
+  return { ...row, coverImageUrl: key ? catPhotoUrl(key) : null };
+}
+
 export async function getFeaturedCats() {
-  return db
+  const rows = await db
     .select({
-      id: cats.id,
+      publicId: cats.publicId,
       name: cats.name,
       breed: cats.breed,
       ageMonths: cats.ageMonths,
       gender: cats.gender,
       area: cats.area,
       district: cats.district,
-      coverImageUrl: sql<string | null>`(
-        select ${catImages.url} from ${catImages}
-        where ${catImages.catId} = ${cats.id}
-        order by ${catImages.position} asc, ${catImages.id} asc limit 1
-      )`,
+      coverImageKey,
     })
     .from(cats)
     .where(and(eq(cats.status, "available"), isLiveListing))
     .orderBy(sql`random()`)
     .limit(3);
+  return rows.map(withCoverUrl);
 }
 
 // Deliberately uncached: render these reads under Suspense with cacheComponents.
@@ -96,7 +109,7 @@ export async function getCats({
   const [items, totals] = await Promise.all([
     db
       .select({
-        id: cats.id,
+        publicId: cats.publicId,
         name: cats.name,
         breed: cats.breed,
         ageMonths: cats.ageMonths,
@@ -105,11 +118,7 @@ export async function getCats({
         district: cats.district,
         status: cats.status,
         owner: { id: user.id, name: user.name },
-        coverImageUrl: sql<string | null>`(
-        select ${catImages.url} from ${catImages}
-        where ${catImages.catId} = ${cats.id}
-        order by ${catImages.position} asc, ${catImages.id} asc limit 1
-      )`,
+        coverImageKey,
       })
       .from(cats)
       .innerJoin(user, eq(cats.userId, user.id))
@@ -121,7 +130,7 @@ export async function getCats({
   ]);
   const total = totals[0].total;
   return {
-    items,
+    items: items.map(withCoverUrl),
     total,
     page: requestedPage,
     totalPages: Math.ceil(total / CATS_PER_PAGE),
@@ -139,8 +148,8 @@ export async function getCatBreeds() {
 
 // Wrapped in React `cache()` so `generateMetadata` and the page body share one
 // DB read per request (request-scoped memoization, not cross-request caching).
-export const getCat = cache(async (id: number) => {
-  if (!Number.isSafeInteger(id) || id < 1) return null;
+export const getCat = cache(async (publicId: string) => {
+  if (!isPublicId(publicId)) return null;
   const [cat] = await db
     .select({
       ...getTableColumns(cats),
@@ -154,27 +163,43 @@ export const getCat = cache(async (id: number) => {
     })
     .from(cats)
     .innerJoin(user, eq(cats.userId, user.id))
-    .where(and(eq(cats.id, id), isLiveListing))
+    .where(and(eq(cats.publicId, publicId), isLiveListing))
     .limit(1);
   if (!cat) return null;
-  const images = await db
+  const rows = await db
     .select({
       id: catImages.id,
-      url: catImages.url,
+      key: catImages.key,
       caption: catImages.caption,
       position: catImages.position,
     })
     .from(catImages)
-    .where(eq(catImages.catId, id))
+    .where(eq(catImages.catId, cat.id))
     .orderBy(asc(catImages.position), asc(catImages.id));
+  const images = rows.map(({ key, ...image }) => ({
+    ...image,
+    url: catPhotoUrl(key),
+  }));
   return { ...cat, images, coverImageUrl: images[0]?.url ?? null };
 });
 
+// Old links used the sequential id (/find_a_cat/3); the page redirects them
+// to the public id. Live listings only, like every other read here.
+export async function getCatPublicIdByLegacyId(id: number) {
+  if (!Number.isSafeInteger(id) || id < 1) return null;
+  const [cat] = await db
+    .select({ publicId: cats.publicId })
+    .from(cats)
+    .where(and(eq(cats.id, id), isLiveListing))
+    .limit(1);
+  return cat?.publicId ?? null;
+}
+
 // Everything someone has listed that hasn't expired yet, newest first.
 export async function getUserCats(userId: string) {
-  return db
+  const rows = await db
     .select({
-      id: cats.id,
+      publicId: cats.publicId,
       name: cats.name,
       breed: cats.breed,
       ageMonths: cats.ageMonths,
@@ -183,15 +208,12 @@ export async function getUserCats(userId: string) {
       district: cats.district,
       status: cats.status,
       secondsLeft: listingSecondsLeft,
-      coverImageUrl: sql<string | null>`(
-        select ${catImages.url} from ${catImages}
-        where ${catImages.catId} = ${cats.id}
-        order by ${catImages.position} asc, ${catImages.id} asc limit 1
-      )`,
+      coverImageKey,
     })
     .from(cats)
     .where(and(eq(cats.userId, userId), isLiveListing))
     .orderBy(desc(cats.createdAt), desc(cats.id));
+  return rows.map(withCoverUrl);
 }
 
 export function formatCatAge(months: number) {

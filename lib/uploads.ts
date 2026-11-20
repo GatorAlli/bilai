@@ -1,32 +1,30 @@
-import { unlink } from "node:fs/promises";
-import path from "node:path";
+// Relative import: also loaded by vitest and the tsx scripts.
+import { MAX_IMAGES } from "./cat-limits";
 
-// Legacy local uploads and GitHub photo exports. New uploads live in PostgreSQL.
-export const UPLOAD_ROOT = path.join(process.cwd(), "uploads");
+// Listing photos live in Cloudflare R2 (lib/cloudflareR2.ts) under
+// "cats/<publicId>-<n>.webp", n = 1..MAX_IMAGES, and browsers load them from
+// the bucket's public domain (R2_PUBLIC_URL).
+const CAT_PHOTO_KEY = new RegExp(`^cats/[a-z0-9]{8}-[1-${MAX_IMAGES}]\\.webp$`);
+
+export function catPhotoKey(publicId: string, n: number) {
+  return `cats/${publicId}-${n}.webp`;
+}
+
+export function isCatPhotoKey(key: string) {
+  return CAT_PHOTO_KEY.test(key);
+}
+
+// Public URL of a photo on the bucket's public domain.
+export function catPhotoUrl(key: string) {
+  const base = process.env.R2_PUBLIC_URL?.replace(/\/+$/, "");
+  if (!base) throw new Error("R2_PUBLIC_URL is not set");
+  return `${base}/${key}`;
+}
 
 export function isWebp(buf: Buffer) {
   return (
     buf.length > 12 &&
     buf.toString("ascii", 0, 4) === "RIFF" &&
     buf.toString("ascii", 8, 12) === "WEBP"
-  );
-}
-
-// Best-effort removal of local copies of deleted photos.
-export async function removeLocalPhotos(keys: string[]) {
-  const root = path.resolve(UPLOAD_ROOT);
-  await Promise.all(
-    keys.map(async (key) => {
-      const file = path.resolve(root, key);
-      // Only files inside uploads/; never directories or other paths.
-      if (!file.startsWith(root + path.sep) || !file.endsWith(".webp")) return;
-      try {
-        await unlink(file);
-      } catch (error) {
-        if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
-          console.error("Couldn't remove local listing photo", error);
-        }
-      }
-    }),
   );
 }

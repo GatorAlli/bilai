@@ -64,7 +64,7 @@ function setupOpenThread({
       },
     }),
   };
-  const action = load("app/(pages)/find_a_cat/[id]/chat-actions.ts", {
+  const action = load("app/(pages)/find_a_cat/[publicId]/chat-actions.ts", {
     "@/db": { db },
     "@/db/schema": schema,
     "@/lib/auth": { getSession: async () => session },
@@ -80,14 +80,14 @@ function setupOpenThread({
 
 test("openThread refuses signed-out visitors", async () => {
   const { openThread, inserted } = setupOpenThread({ session: null });
-  const result = await openThread(1);
+  const result = await openThread("gj34jfxk");
   assert.equal(result.ok, false);
   assert.equal(inserted.length, 0);
 });
 
 test("openThread refuses a missing, expired or adopted listing", async () => {
   const { openThread, inserted } = setupOpenThread({ owner: null });
-  const result = await openThread(1);
+  const result = await openThread("gj34jfxk");
   assert.equal(result.ok, false);
   assert.equal(inserted.length, 0);
 });
@@ -96,7 +96,7 @@ test("openThread refuses chatting about your own listing", async () => {
   const { openThread, inserted } = setupOpenThread({
     session: { user: { id: OWNER } },
   });
-  const result = await openThread(1);
+  const result = await openThread("gj34jfxk");
   assert.deepEqual(
     { ok: result.ok, error: result.error },
     { ok: false, error: "This is your own listing." },
@@ -106,7 +106,7 @@ test("openThread refuses chatting about your own listing", async () => {
 
 test("openThread stores the sorted pair and who started it", async () => {
   const { openThread, inserted } = setupOpenThread();
-  const result = await openThread(1);
+  const result = await openThread("gj34jfxk");
   const { userA, userB, roomName } = rooms.pairFor(ADOPTER, OWNER);
   assert.equal(result.ok, true);
   assert.equal(result.roomName, roomName);
@@ -121,7 +121,7 @@ test("openThread over the hourly limit removes the new thread", async () => {
   const { openThread, deleted } = setupOpenThread({
     startedThisHour: limits.MAX_NEW_THREADS_PER_HOUR + 1,
   });
-  const result = await openThread(1);
+  const result = await openThread("gj34jfxk");
   assert.equal(result.ok, false);
   assert.equal(deleted.length, 1);
 });
@@ -131,7 +131,7 @@ test("openThread never blocks reopening an existing chat", async () => {
     existing: true,
     startedThisHour: limits.MAX_NEW_THREADS_PER_HOUR + 50,
   });
-  const result = await openThread(1);
+  const result = await openThread("gj34jfxk");
   assert.equal(result.ok, true);
   assert.equal(deleted.length, 0);
 });

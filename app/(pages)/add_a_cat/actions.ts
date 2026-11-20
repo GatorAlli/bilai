@@ -1,6 +1,5 @@
 "use server";
 
-import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { after } from "next/server";
@@ -21,7 +20,9 @@ import { getUserPhone, saveUserPhone } from "@/lib/contact";
 import { purgeExpiredListings } from "@/lib/listing-expiry";
 import { isValidLocation } from "@/lib/locations";
 import { normalizeBdPhone, PHONE_ERROR } from "@/lib/phone";
-import { isWebp } from "@/lib/uploads";
+import { deleteCatPhotos, putCatPhoto } from "@/lib/cloudflareR2";
+import { newPublicId } from "@/lib/public-id";
+import { catPhotoKey, isWebp } from "@/lib/uploads";
 
 const GENDERS = ["male", "female", "unknown"] as const;
 
@@ -113,7 +114,7 @@ export async function submitForm(
     return { ok: false, error: "Something went wrong. Please try again." };
   }
 
-  // Read and validate everything BEFORE writing anything to disk.
+  // Read and validate everything BEFORE uploading anything.
   const buffers: Buffer[] = [];
   for (const file of files) {
     const buf = Buffer.from(await file.arrayBuffer());
@@ -139,55 +140,61 @@ export async function submitForm(
     if (!saved.ok) return saved;
   }
 
+  // Insert the listing first: the unique public_id claims the photo keys
+  // (cats/<publicId>-<n>.webp) before anything is uploaded, so a colliding id
+  // can never overwrite another listing's photos. Then upload, then save the
+  // photo rows. If anything fails, the row and uploaded photos are removed.
   let catId: number | null = null;
+  let keys: string[] = [];
   try {
-    const rows: {
-      key: string;
-      data: string;
-      url: string;
-      caption: string | null;
-      position: number;
-    }[] = [];
-    for (const [position, buf] of buffers.entries()) {
-      const key = `${userId}/${randomUUID()}.webp`;
-      rows.push({
+    for (let attempt = 0; attempt < 3 && catId === null; attempt++) {
+      const publicId = newPublicId();
+      const [cat] = await db
+        .insert(cats)
+        .values({
+          publicId,
+          name,
+          breed,
+          ageMonths: years * 12 + months,
+          area,
+          district,
+          gender,
+          vaccinated,
+          neutered,
+          temperament,
+          description,
+          rehomingReason,
+          contactWhatsapp: contactMethods.includes("whatsapp"),
+          contactCall: contactMethods.includes("call"),
+          // status defaults to 'available' in the database
+          userId,
+        })
+        .onConflictDoNothing({ target: cats.publicId })
+        .returning({ id: cats.id });
+      if (cat) {
+        catId = cat.id;
+        keys = buffers.map((_, i) => catPhotoKey(publicId, i + 1));
+      }
+    }
+    if (catId === null) throw new Error("Couldn't find a free public id.");
+
+    await Promise.all(buffers.map((buf, i) => putCatPhoto(keys[i], buf)));
+
+    const listingId = catId;
+    await db.insert(catImages).values(
+      keys.map((key, position) => ({
+        catId: listingId,
         key,
-        data: buf.toString("base64"),
-        url: `/uploads/${key}`,
         caption: captions[position].trim().slice(0, 200) || null,
         position,
-      });
-    }
-
-    const [cat] = await db
-      .insert(cats)
-      .values({
-        name,
-        breed,
-        ageMonths: years * 12 + months,
-        area,
-        district,
-        gender,
-        vaccinated,
-        neutered,
-        temperament,
-        description,
-        rehomingReason,
-        contactWhatsapp: contactMethods.includes("whatsapp"),
-        contactCall: contactMethods.includes("call"),
-        // status defaults to 'available' in the database
-        userId,
-      })
-      .returning({ id: cats.id });
-    catId = cat.id;
-
-    await db
-      .insert(catImages)
-      .values(rows.map((row) => ({ ...row, catId: cat.id })));
+      })),
+    );
   } catch (err) {
-    // Remove a partially created listing if saving its images failed.
-    if (catId !== null) await db.delete(cats).where(eq(cats.id, catId));
     console.error(err);
+    if (catId !== null) {
+      await db.delete(cats).where(eq(cats.id, catId));
+      await deleteCatPhotos(keys);
+    }
     return { ok: false, error: "Couldn't save the cat. Please try again." };
   }
 

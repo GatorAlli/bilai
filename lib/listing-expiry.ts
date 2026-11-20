@@ -3,7 +3,8 @@ import "server-only";
 import { eq, gt, lte, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { catImages, cats } from "@/db/schema";
-import { removeLocalPhotos } from "@/lib/uploads";
+import { deleteCatPhotos } from "@/lib/cloudflareR2";
+import { isCatPhotoKey } from "@/lib/uploads";
 
 // Every listing, with its photos, is deleted this long after it was posted.
 export const LISTING_LIFETIME_MONTHS = 3;
@@ -45,7 +46,8 @@ export async function purgeExpiredListings() {
       .where(isExpiredListing)
       .returning({ id: cats.id });
     if (deleted.length === 0) return;
-    await removeLocalPhotos(images.map(({ key }) => key));
+    // Only well-formed photo keys are sent to R2.
+    await deleteCatPhotos(images.map(({ key }) => key).filter(isCatPhotoKey));
     console.log(`Removed ${deleted.length} expired cat listing(s).`);
   } catch (error) {
     lastPurgeAt = 0; // try again on the next request
