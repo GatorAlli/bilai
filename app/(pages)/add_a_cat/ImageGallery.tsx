@@ -22,8 +22,6 @@ export type GalleryImage = {
   caption: string;
 };
 
-const ACCEPTED_TYPES: string[] = [...ACCEPTED_IMAGE_TYPES];
-
 function moveItem<T>(list: T[], from: number, to: number): T[] {
   const next = [...list];
   const [item] = next.splice(from, 1);
@@ -70,7 +68,11 @@ export default function ImageGallery({
     setIsProcessing(true);
     try {
       for (const file of incoming) {
-        if (!ACCEPTED_TYPES.includes(file.type)) {
+        const extension = file.name.match(/\.[^.]+$/)?.[0].toLowerCase() ?? "";
+        if (
+          !ACCEPTED_IMAGE_TYPES.includes(file.type) &&
+          !ACCEPTED_IMAGE_TYPES.includes(extension)
+        ) {
           nextErrors.push(`${file.name}: this file isn't a photo we can use.`);
         } else if (file.size > MAX_INPUT_SIZE_BYTES) {
           nextErrors.push(
@@ -179,7 +181,7 @@ export default function ImageGallery({
           type="file"
           aria-label="Add cat photos"
           multiple
-          accept={ACCEPTED_TYPES.join(",")}
+          accept={ACCEPTED_IMAGE_TYPES.join(",")}
           className="sr-only"
           tabIndex={-1}
           onChange={(e) => {

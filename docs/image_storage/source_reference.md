@@ -40,16 +40,36 @@ The full files below preserve the implementation, including imports, comments, J
 
 ### Shared photo limits
 
-[`lib/cat-limits.ts`](../../lib/cat-limits.ts) · lines 1–26
+[`lib/cat-limits.ts`](../../lib/cat-limits.ts) · lines 1–46
 
 <!-- prettier-ignore -->
 ```ts
 // Shared between the client form and the server actions.
-export const ACCEPTED_IMAGE_TYPES = [
+export const HEIF_IMAGE_TYPES = [
+  "image/heic",
+  "image/heif",
+  "image/heic-sequence",
+  "image/heif-sequence",
+  ".heic",
+  ".heif",
+  ".heics",
+  ".heifs",
+] as const;
+export const ACCEPTED_IMAGE_TYPES: readonly string[] = [
   "image/jpeg",
+  ".jpg",
+  ".jpeg",
   "image/png",
+  ".png",
   "image/gif",
+  ".gif",
   "image/webp",
+  ".webp",
+  "image/avif",
+  ".avif",
+  "image/bmp",
+  ".bmp",
+  ...HEIF_IMAGE_TYPES,
 ] as const;
 export const MAX_IMAGES = 5;
 
@@ -108,7 +128,7 @@ export default function ListACatPage() {
 
 ### Photo picker and previews
 
-[`app/(pages)/add_a_cat/ImageGallery.tsx`](../../app/%28pages%29/add_a_cat/ImageGallery.tsx) · lines 1–319
+[`app/(pages)/add_a_cat/ImageGallery.tsx`](../../app/%28pages%29/add_a_cat/ImageGallery.tsx) · lines 1–321
 
 <!-- prettier-ignore -->
 ```tsx
@@ -135,8 +155,6 @@ export type GalleryImage = {
   previewUrl: string;
   caption: string;
 };
-
-const ACCEPTED_TYPES: string[] = [...ACCEPTED_IMAGE_TYPES];
 
 function moveItem<T>(list: T[], from: number, to: number): T[] {
   const next = [...list];
@@ -184,7 +202,11 @@ export default function ImageGallery({
     setIsProcessing(true);
     try {
       for (const file of incoming) {
-        if (!ACCEPTED_TYPES.includes(file.type)) {
+        const extension = file.name.match(/\.[^.]+$/)?.[0].toLowerCase() ?? "";
+        if (
+          !ACCEPTED_IMAGE_TYPES.includes(file.type) &&
+          !ACCEPTED_IMAGE_TYPES.includes(extension)
+        ) {
           nextErrors.push(`${file.name}: this file isn't a photo we can use.`);
         } else if (file.size > MAX_INPUT_SIZE_BYTES) {
           nextErrors.push(
@@ -293,7 +315,7 @@ export default function ImageGallery({
           type="file"
           aria-label="Add cat photos"
           multiple
-          accept={ACCEPTED_TYPES.join(",")}
+          accept={ACCEPTED_IMAGE_TYPES.join(",")}
           className="sr-only"
           tabIndex={-1}
           onChange={(e) => {
@@ -435,11 +457,15 @@ export default function ImageGallery({
 
 ### WebP encoder
 
-[`lib/compress-image.ts`](../../lib/compress-image.ts) · lines 1–91
+[`lib/compress-image.ts`](../../lib/compress-image.ts) · lines 1–120
 
 <!-- prettier-ignore -->
 ```ts
-import { MAX_DIMENSION, TARGET_SIZE_BYTES } from "@/lib/cat-limits";
+import {
+  HEIF_IMAGE_TYPES,
+  MAX_DIMENSION,
+  TARGET_SIZE_BYTES,
+} from "@/lib/cat-limits";
 
 /** Thrown with a message that is safe to show to the user. */
 export class ImageUploadError extends Error {}
@@ -457,7 +483,24 @@ function firstPassQuality(fileSize: number) {
   return 0.52;
 }
 
-function encodeWebp(
+async function decodeImage(file: File) {
+  // Apply the photo's orientation before discarding its metadata.
+  try {
+    return await createImageBitmap(file, { imageOrientation: "from-image" });
+  } catch (error) {
+    const extension = file.name.match(/\.[^.]+$/)?.[0].toLowerCase();
+    if (
+      !HEIF_IMAGE_TYPES.some((type) => type === file.type || type === extension)
+    ) {
+      throw error;
+    }
+
+    const { heicTo } = await import("heic-to/csp");
+    return heicTo({ blob: file, type: "bitmap" });
+  }
+}
+
+async function encodeWebp(
   source: CanvasImageSource,
   width: number,
   height: number,
@@ -468,10 +511,23 @@ function encodeWebp(
   canvas.height = height;
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("Canvas 2D context is unavailable.");
-  ctx.drawImage(source, 0, 0, width, height);
-  return new Promise<Blob | null>((resolve) =>
-    canvas.toBlob(resolve, "image/webp", quality),
-  );
+  try {
+    ctx.drawImage(source, 0, 0, width, height);
+    const blob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, "image/webp", quality),
+    );
+    if (blob?.type === "image/webp") return blob;
+
+    // Safari can decode WebP but may return PNG when asked to encode it.
+    const { default: encode } = await import("@jsquash/webp/encode.js");
+    const bytes = await encode(ctx.getImageData(0, 0, width, height), {
+      quality: Math.round(quality * 100),
+    });
+    return new Blob([bytes], { type: "image/webp" });
+  } finally {
+    canvas.width = 0;
+    canvas.height = 0;
+  }
 }
 
 /**
@@ -483,23 +539,17 @@ function encodeWebp(
 export async function compressImage(file: File): Promise<File> {
   let bitmap: ImageBitmap | undefined;
   try {
-    // "from-image" applies the photo's rotation before EXIF is stripped.
-    bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
+    bitmap = await decodeImage(file);
 
     const scale = Math.min(
       1,
       MAX_DIMENSION / Math.max(bitmap.width, bitmap.height),
     );
-    let width = Math.round(bitmap.width * scale);
-    let height = Math.round(bitmap.height * scale);
+    let width = Math.max(1, Math.round(bitmap.width * scale));
+    let height = Math.max(1, Math.round(bitmap.height * scale));
     const quality = firstPassQuality(file.size);
 
     let blob = await encodeWebp(bitmap, width, height, quality);
-    if (!blob) throw new Error("canvas.toBlob returned null.");
-    // Browsers that can't encode WebP silently return PNG instead.
-    if (blob.type !== "image/webp") {
-      throw new Error(`Browser can't encode WebP (got ${blob.type}).`);
-    }
 
     if (blob.size > TARGET_SIZE_BYTES) {
       // Second (last) pass: file size scales roughly with pixel count, so
@@ -508,7 +558,6 @@ export async function compressImage(file: File): Promise<File> {
       width = Math.max(1, Math.round(width * shrink));
       height = Math.max(1, Math.round(height * shrink));
       blob = await encodeWebp(bitmap, width, height, quality);
-      if (!blob) throw new Error("canvas.toBlob returned null.");
     }
 
     if (blob.size > TARGET_SIZE_BYTES) {
@@ -525,7 +574,9 @@ export async function compressImage(file: File): Promise<File> {
   } catch (err) {
     if (err instanceof ImageUploadError) throw err;
     console.error(`Compressing ${file.name} failed:`, err);
-    throw new ImageUploadError(`${file.name}: upload failed.`);
+    throw new ImageUploadError(
+      `${file.name}: couldn't open or convert this photo. Try another copy saved as JPEG or PNG.`,
+    );
   } finally {
     bitmap?.close();
   }
