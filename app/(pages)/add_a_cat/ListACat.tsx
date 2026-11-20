@@ -171,8 +171,8 @@ export default function ListACat() {
       aria-labelledby="list-title"
     >
       {/* Photos come first on a phone; on a wide screen they sit in the
-          right-hand 30% and stay in view while the long form scrolls. */}
-      <div className="min-w-0 nav:sticky nav:top-24 nav:col-start-2 nav:row-start-1 nav:-m-1 nav:max-h-[calc(100dvh-7rem)] nav:overflow-y-auto nav:p-1">
+          right-hand 30%. */}
+      <div className="min-w-0 nav:col-start-2 nav:row-start-1">
         <ImageGallery images={images} onChange={setImages} />
       </div>
 
