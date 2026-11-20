@@ -186,10 +186,6 @@ export default function ImageGallery({
           >
             Cat photos
           </h2>
-          <p className="text-sm text-muted-foreground">
-            Add up to {MAX_IMAGES} photos, {MAX_INPUT_SIZE_MB} MB each. The
-            first photo is the cover.
-          </p>
         </div>
         <input
           ref={fileInputRef}
